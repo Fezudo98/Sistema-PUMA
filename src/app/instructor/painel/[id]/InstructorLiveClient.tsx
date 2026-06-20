@@ -59,7 +59,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
     s.on("room_update", (data) => {
       setStudents(data.students);
       if (data.status === "ACTIVE") {
-        setStatus(prev => prev === "WAITING" ? "ACTIVE" : prev);
+        setStatus((prev: string) => prev === "WAITING" ? "ACTIVE" : prev);
       }
     });
     

@@ -15,23 +15,23 @@ export default function Home() {
           alt="Arte Complementar" 
           width={400} 
           height={160} 
-          className="absolute top-12 left-12 drop-shadow-xl opacity-90 object-contain"
+          className="absolute top-12 left-12 opacity-80 object-contain invert drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]"
         />
       </div>
 
       {/* Right Side Panel */}
-      <div className="z-10 w-full md:w-[450px] bg-slate-950/70 backdrop-blur-md border-l border-slate-800 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] flex flex-col justify-center items-center px-12 py-8 relative">
+      <div className="z-10 w-full md:w-[450px] bg-black/80 backdrop-blur-xl border-l border-slate-800 shadow-[-20px_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-center items-center px-12 py-8 relative">
         
         <Image 
           src="/logo.png" 
           alt="PMCE Simula Logo" 
           width={180} 
           height={180} 
-          className="mb-6 drop-shadow-2xl"
+          className="mb-6 drop-shadow-2xl mix-blend-screen"
         />
         
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-12 drop-shadow-md text-center">
-          Sistema <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-200">PUMA</span>
+        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)] text-center">
+          SISTEMA <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-300">PUMA</span>
         </h1>
 
         <div className="flex flex-col gap-6 w-full">

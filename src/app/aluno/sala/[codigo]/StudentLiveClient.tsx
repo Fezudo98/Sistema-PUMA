@@ -4,9 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target } from "lucide-react";
+import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
+import { useSearchParams } from "next/navigation";
 
 export default function StudentLiveClient({ user, simulado }: { user: any, simulado: any }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -28,7 +29,18 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [raffleWinner, setRaffleWinner] = useState<any>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [displayStudent, setDisplayStudent] = useState<any>(null);
-  const [ranking, setRanking] = useState<{name: string, score: number, avatarUrl?: string | null}[]>([]);
+  const [ranking, setRanking] = useState<{id: string, name: string, score: number, avatarUrl?: string | null}[]>([]);
+  const [unlockedBadges, setUnlockedBadges] = useState<any[]>([]);
+
+  // Limpa o toast de badge após 6 segundos
+  useEffect(() => {
+    if (unlockedBadges.length > 0) {
+      const timer = setTimeout(() => {
+        setUnlockedBadges(prev => prev.slice(1));
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [unlockedBadges]);
 
   useEffect(() => {
     if (isRaffling && students.length > 0) {
@@ -66,11 +78,12 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         setStatus("FINISHED");
       }
       if (data.status === "ACTIVE" && data.currentQuestion) {
-        setCurrentQuestion(prev => {
+        setCurrentQuestion((prev: any) => {
           if (!prev || prev.id !== data.currentQuestion.id) {
             setQuestionEndedData(data.questionEndedData);
             setSelectedAlt(-1);
             setHasConfirmed(false);
+            setStartTime(Date.now());
             return data.currentQuestion;
           }
           return prev;
@@ -114,6 +127,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setStartTime(Date.now());
       setIsPaused(false);
       setIsTimeUp(false);
+      setHasConfirmed(false);
       
       if (!questionData.raffleWinnerId) {
         setRaffleWinner(null);
@@ -170,6 +184,12 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
     s.on("simulado_ended", () => {
       setStatus("FINISHED");
+    });
+
+    s.on("badges_unlocked", (data) => {
+      if (data.studentId === user.userId) {
+        setUnlockedBadges(prev => [...prev, ...data.newBadges]);
+      }
     });
 
     return () => {
@@ -250,6 +270,22 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
           </div>
         )}
       </header>
+
+      {/* Floating Badges Notifications */}
+      <div className="fixed top-20 right-4 z-50 flex flex-col gap-3">
+        {unlockedBadges.map((badge, idx) => (
+          <div key={idx} className="bg-slate-900 border-2 border-yellow-500 rounded-xl p-4 shadow-[0_0_30px_rgba(234,179,8,0.4)] flex items-center gap-4 animate-in slide-in-from-right-8 fade-in duration-500">
+            <div className="w-12 h-12 bg-yellow-900/30 rounded-full border border-yellow-500 flex items-center justify-center shrink-0">
+              <Trophy className="w-6 h-6 text-yellow-500" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-yellow-500 uppercase tracking-widest mb-1">Novo Brevê Desbloqueado!</p>
+              <p className="text-white font-bold text-lg leading-tight">{badge.name}</p>
+              <p className="text-slate-400 text-xs mt-1">Novo ícone de perfil disponível na Armaria.</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <main className="flex-1 overflow-hidden relative">
         {isRaffling && (

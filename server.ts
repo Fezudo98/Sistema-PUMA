@@ -4,11 +4,132 @@ import next from 'next';
 import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
+
+async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSimuladoId: string) {
+  try {
+    const student = await prisma.user.findUnique({
+      where: { id: studentId },
+      include: {
+        answers: {
+          include: { 
+            question: {
+              include: { 
+                simulado: {
+                  include: {
+                    _count: { select: { questions: true } }
+                  }
+                } 
+              }
+            } 
+          }
+        }
+      }
+    });
+
+    if (!student) return;
+
+    const totalAnswers = student.answers.length;
+    const correctAnswers = student.answers.filter(a => a.isCorrect);
+    const accuracy = totalAnswers > 0 ? Math.round((correctAnswers.length / totalAnswers) * 100) : 0;
+    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
+    
+    const simuladoGroups: Record<string, typeof student.answers> = {};
+    student.answers.forEach(a => {
+      if (!simuladoGroups[a.question.simuladoId]) simuladoGroups[a.question.simuladoId] = [];
+      simuladoGroups[a.question.simuladoId].push(a);
+    });
+
+    const simuladosCount = Object.keys(simuladoGroups).length;
+    
+    let hardSimuladosWith70Acc = 0;
+    let hardSimuladosWith75Acc = 0;
+    let hasSniper = false;
+    let hasRaio = false;
+
+    Object.values(simuladoGroups).forEach(simAnswers => {
+      if (simAnswers.length === 0) return;
+      const qCount = simAnswers.length;
+      const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
+      
+      const corrects = simAnswers.filter(a => a.isCorrect).length;
+      const acc = Math.round((corrects / qCount) * 100);
+      const avgTime = Math.round(simAnswers.reduce((acc, curr) => acc + (curr.tempoGasto || 0), 0) / qCount);
+      const difficulty = simAnswers[0].question.simulado.difficulty;
+
+      // Only evaluate if the student has answered a significant portion of the simulado
+      // Either all questions, or at least 10 questions to prevent 1-question exploits
+      const isCompleteEnough = qCount === totalQuestionsInSimulado || qCount >= 10;
+
+      if (difficulty === "DIFICIL" && isCompleteEnough) {
+        if (acc >= 70) hardSimuladosWith70Acc++;
+        if (acc >= 75) hardSimuladosWith75Acc++;
+        
+        if (qCount >= 15 && acc === 100) hasSniper = true;
+        if (acc >= 80 && avgTime <= 20) hasRaio = true;
+      }
+    });
+
+    // Recruta is given if they answered at least 3 questions or finished their first small simulado
+    const hasRecruta = Object.values(simuladoGroups).some(simAnswers => {
+      return simAnswers.length >= 3 || simAnswers.length === simAnswers[0].question.simulado._count.questions;
+    });
+
+    let badges = [
+      { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
+      { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 5, exclusive: false },
+      { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 10, exclusive: false },
+      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper, exclusive: true },
+      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio, exclusive: true },
+      { id: 'caveira', name: 'Caveira', earned: simuladosCount >= 15 && accuracy >= 95, exclusive: true },
+      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 15000 && accuracy >= 90, exclusive: true }
+    ];
+
+    // Check exclusivity
+    for (let i = 0; i < badges.length; i++) {
+      if (badges[i].exclusive && badges[i].earned) {
+        const existingExclusive = await prisma.exclusiveBadge.findFirst({
+          where: { badgeId: badges[i].id }
+        });
+
+        if (existingExclusive) {
+          // If already claimed by someone else in a different simulado
+          if (existingExclusive.simuladoId !== currentSimuladoId) {
+            badges[i].earned = false;
+          }
+        } else {
+          // Claim it now for this simulado
+          await prisma.exclusiveBadge.create({
+            data: { badgeId: badges[i].id, userId: studentId, simuladoId: currentSimuladoId }
+          });
+        }
+      }
+    }
+
+    const earnedBadgeIds = badges.filter(b => b.earned).map(b => b.id);
+    const previouslyUnlocked = (student as any).unlockedBadges ? (student as any).unlockedBadges.split(',').filter(Boolean) : [];
+
+    const newlyUnlocked = earnedBadgeIds.filter(id => !previouslyUnlocked.includes(id));
+
+    if (newlyUnlocked.length > 0) {
+      const newUnlockedBadges = [...previouslyUnlocked, ...newlyUnlocked].join(',');
+      await prisma.user.update({
+        where: { id: studentId },
+        data: { unlockedBadges: newUnlockedBadges }
+      });
+
+      const unlockedDetails = badges.filter(b => newlyUnlocked.includes(b.id));
+      ioServer.emit('badges_unlocked', { studentId, newBadges: unlockedDetails });
+    }
+  } catch (error) {
+    console.error("Error checking badges:", error);
+  }
+}
+
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = '0.0.0.0';
 const port = 3000;
 
-const prisma = new PrismaClient();
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
@@ -341,12 +462,19 @@ app.prepare().then(() => {
         room.studentScores[studentId].score += pontuacao;
       }
 
+      let safeTempoGasto = Number(tempoGasto) || 0;
+      if (safeTempoGasto < 0) safeTempoGasto = 0;
+      // Clamp to a reasonable max (twice the time limit just in case of lag/pause bugs)
+      if (safeTempoGasto > room.currentQuestion.tempoLimite * 2) {
+        safeTempoGasto = room.currentQuestion.tempoLimite;
+      }
+
       await prisma.answer.create({
         data: {
           questionId,
           studentId,
           alternativa,
-          tempoGasto,
+          tempoGasto: safeTempoGasto,
           isCorrect,
           pontuacao
         }
@@ -364,6 +492,11 @@ app.prepare().then(() => {
         room.isPaused = false;
         io.to(roomCode).emit('time_up');
       }
+
+      // Checagem silenciosa de brevês conquistados e envio global caso haja novo
+      const currentSimuladoId = room.currentQuestion.simuladoId;
+      checkAndUnlockBadges(studentId, io, currentSimuladoId);
+
     });
 
     // Instructor ends simulado

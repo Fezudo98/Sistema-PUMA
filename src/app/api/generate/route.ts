@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
       try {
         const genAI = new GoogleGenerativeAI(primaryKey);
-        const model = genAI.getGenerativeModel(genConfig);
+        const model = genAI.getGenerativeModel(genConfig as any);
         return await model.generateContent(content);
       } catch (error: any) {
         console.warn("Chave principal falhou:", error.message);
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
         if (isQuotaError && fallbackKey) {
           console.log("Tentando chave fallback...");
           const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-          const fallbackModel = fallbackGenAI.getGenerativeModel(genConfig);
+          const fallbackModel = fallbackGenAI.getGenerativeModel(genConfig as any);
           return await fallbackModel.generateContent(content);
         }
         throw error;

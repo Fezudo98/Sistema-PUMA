@@ -10,6 +10,8 @@ import { logout } from "@/app/actions/auth";
 import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { updateUserAvatar } from "@/app/actions/user";
 
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
@@ -19,8 +21,8 @@ const getBadges = (stats: any) => {
       id: 'recruta',
       name: 'Recruta',
       icon: Shield,
-      earned: s.simuladosCount >= 1,
-      desc: 'Participou do seu primeiro simulado no sistema.',
+      earned: s.simuladosCount >= 1, // Only for preview, actual logic is on server
+      desc: 'Concluir por completo um simulado, seja qual for.',
       color: 'text-amber-600',
       bg: 'bg-amber-900/20',
       border: 'border-amber-700/50'
@@ -29,8 +31,8 @@ const getBadges = (stats: any) => {
       id: 'guerreiro',
       name: 'Guerreiro',
       icon: ShieldCheck,
-      earned: s.simuladosCount >= 10,
-      desc: 'Completou 10 simulados. Mostrou persistência no combate.',
+      earned: s.simuladosCount >= 5, 
+      desc: 'Completar 5 simulados de nível difícil e ter no mínimo 70% de média de acertos neles.',
       color: 'text-slate-300',
       bg: 'bg-slate-700/30',
       border: 'border-slate-400/50'
@@ -39,8 +41,8 @@ const getBadges = (stats: any) => {
       id: 'veterano',
       name: 'Veterano',
       icon: ShieldAlert,
-      earned: s.simuladosCount >= 25,
-      desc: 'Completou 25 simulados. Um verdadeiro veterano de guerra.',
+      earned: s.simuladosCount >= 10,
+      desc: 'Completar 10 simulados de nível difícil e ter no mínimo 75% de média de acertos neles.',
       color: 'text-yellow-500',
       bg: 'bg-yellow-900/20',
       border: 'border-yellow-500/50'
@@ -49,8 +51,9 @@ const getBadges = (stats: any) => {
       id: 'sniper',
       name: 'Atirador de Elite',
       icon: Crosshair,
-      earned: s.history && s.history.some((h: any) => h.accuracy === 100 && h.totalQuestions >= 5),
-      desc: 'Gabaritou 100% de acertos em um simulado com pelo menos 5 questões.',
+      earned: false, 
+      exclusive: true,
+      desc: 'Atingir 100% de acerto em um simulado de nível difícil de no mínimo 15 questões.',
       color: 'text-emerald-500',
       bg: 'bg-emerald-900/20',
       border: 'border-emerald-500/50'
@@ -59,8 +62,9 @@ const getBadges = (stats: any) => {
       id: 'raio',
       name: 'Pronto Resposta (Raio)',
       icon: Zap,
-      earned: s.simuladosCount >= 5 && s.avgTime <= 10 && s.avgTime > 0,
-      desc: 'Manteve tempo médio de resposta abaixo de 10 segundos (mínimo 5 simulados).',
+      earned: false,
+      exclusive: true,
+      desc: 'Concluir um simulado de nível difícil, com tempo médio máximo de 20s e mín 80% de acertos.',
       color: 'text-amber-400',
       bg: 'bg-amber-900/20',
       border: 'border-amber-400/50'
@@ -69,8 +73,9 @@ const getBadges = (stats: any) => {
       id: 'caveira',
       name: 'Caveira',
       icon: Skull,
-      earned: s.simuladosCount >= 10 && s.accuracy >= 90,
-      desc: 'Manteve taxa global de acertos acima de 90% (mínimo 10 simulados).',
+      earned: false,
+      exclusive: true,
+      desc: 'Concluir no mínimo 15 simulados difíceis e ter taxa global de acertos no mínimo 95%.',
       color: 'text-purple-500',
       bg: 'bg-purple-900/20',
       border: 'border-purple-500/50'
@@ -79,8 +84,9 @@ const getBadges = (stats: any) => {
       id: 'padrao',
       name: 'Padrão PM',
       icon: Medal,
-      earned: s.totalScore >= 15000,
-      desc: 'Alcançou a incrível marca de 15.000 pontos totais acumulados.',
+      earned: false,
+      exclusive: true,
+      desc: 'Alcançar 15.000 pontos totais e ter no mínimo taxa global de acertos em 90%.',
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'
@@ -92,6 +98,7 @@ export default function StudentDashboardClient({ user, stats }: { user: any, sta
   const [codigo, setCodigo] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState("");
   const [loadingAi, setLoadingAi] = useState(false);
+  const [isArmariaOpen, setIsArmariaOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -130,6 +137,12 @@ export default function StudentDashboardClient({ user, stats }: { user: any, sta
     router.push("/");
   };
 
+  const handleChangeAvatar = async (badgeId: string) => {
+    const newAvatar = badgeId ? `/avatars/${badgeId}.png` : "";
+    await updateUserAvatar(newAvatar);
+    setIsArmariaOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
       {/* Top Header */}
@@ -146,12 +159,17 @@ export default function StudentDashboardClient({ user, stats }: { user: any, sta
           <div className="flex items-center gap-6">
             <div className="text-right hidden sm:block">
               <p className="text-sm text-slate-400">QRA</p>
-              <p className="text-lg font-bold text-white uppercase">{user?.name || "Aluno"}</p>
+              <p className="text-lg font-bold text-white uppercase">
+                {user?.numero ? `${String(user.numero).padStart(2, '0')} - ${user.name}` : user?.name || "Aluno"}
+              </p>
             </div>
-            <HeaderAvatar 
-              initials={user?.name?.substring(0, 2).toUpperCase() || "AL"} 
-              avatarUrl={user?.avatarUrl || null} 
-            />
+            <button onClick={() => setIsArmariaOpen(true)} className="hover:scale-105 transition-transform" title="Abrir Armaria de Ícones">
+              <HeaderAvatar 
+                initials={user?.name?.substring(0, 2).toUpperCase() || "AL"} 
+                avatarUrl={user?.avatarUrl || null} 
+                disableModal={true}
+              />
+            </button>
             <Button variant="ghost" onClick={handleSair} className="text-slate-500 hover:text-red-400">
               <LogOut className="w-5 h-5" />
             </Button>
@@ -231,15 +249,23 @@ export default function StudentDashboardClient({ user, stats }: { user: any, sta
                 <CardDescription className="text-xs">Desbloqueie insígnias pelo seu desempenho em combate.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
-                {getBadges(stats).map((b) => {
+                {getBadges(stats).map((b: any) => {
+                  const isUnlocked = user?.unlockedBadges?.includes(b.id);
                   const Icon = b.icon;
                   return (
-                    <div key={b.id} className={`flex items-start gap-4 p-3 rounded-lg border ${b.earned ? b.border + ' ' + b.bg : 'border-slate-800 bg-slate-900/30 grayscale opacity-50'} transition-all`}>
-                      <div className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-inner ${b.earned ? b.border + ' ' + b.color : 'border-slate-700 text-slate-500'}`}>
-                        {b.earned ? <Icon className="w-6 h-6" /> : <Lock className="w-5 h-5" />}
+                    <div key={b.id} className={`flex items-start gap-4 p-3 rounded-lg border ${isUnlocked ? b.border + ' ' + b.bg : 'border-slate-800 bg-slate-900/30 grayscale opacity-50'} transition-all`}>
+                      <div className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-inner ${isUnlocked ? b.border + ' ' + b.color : 'border-slate-700 text-slate-500'}`}>
+                        {isUnlocked ? <Icon className="w-6 h-6" /> : <Lock className="w-5 h-5" />}
                       </div>
                       <div className="flex-1">
-                        <h4 className={`font-bold text-sm tracking-wide uppercase ${b.earned ? b.color : 'text-slate-400'}`}>{b.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className={`font-bold text-sm tracking-wide uppercase ${isUnlocked ? b.color : 'text-slate-400'}`}>{b.name}</h4>
+                          {b.exclusive && (
+                            <span className="text-[10px] font-black bg-amber-500/20 text-amber-500 border border-amber-500/30 px-1.5 py-0.5 rounded uppercase tracking-widest">
+                              Exclusivo
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-400 mt-1">{b.desc}</p>
                       </div>
                     </div>
@@ -336,6 +362,78 @@ export default function StudentDashboardClient({ user, stats }: { user: any, sta
           </div>
         </div>
       </main>
+
+      {/* Armaria Modal */}
+      <Dialog open={isArmariaOpen} onOpenChange={setIsArmariaOpen}>
+        <DialogContent className="bg-slate-950 border-slate-800 text-slate-200 sm:max-w-2xl max-h-[80vh] overflow-y-auto custom-scrollbar">
+          <DialogHeader className="border-b border-slate-800 pb-4">
+            <DialogTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+              <Target className="w-6 h-6 text-blue-500" />
+              Armaria: Ícones de Perfil
+            </DialogTitle>
+            <DialogDescription className="text-slate-500 font-bold uppercase tracking-widest text-xs pt-1">
+              Selecione um brevê desbloqueado para usar como foto de perfil tática.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
+            {/* Ícone Padrão (Sem Foto) */}
+            <button 
+              onClick={() => handleChangeAvatar("")}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800 transition-all gap-3 h-40"
+            >
+              <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-400 font-bold text-xl">
+                {user?.name?.substring(0, 2).toUpperCase() || "AL"}
+              </div>
+              <span className="text-xs font-bold text-slate-400 uppercase">Recruta (Sem Foto)</span>
+            </button>
+
+            {/* Ícones Básicos / Iniciais */}
+            {["01", "02", "03", "04", "05"].map((avatarId) => (
+              <button 
+                key={avatarId}
+                onClick={() => handleChangeAvatar(`predefined/${avatarId}`)}
+                className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-700 bg-slate-800/30 hover:bg-slate-800 transition-all gap-3 h-40 group"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-slate-600 group-hover:border-blue-500 transition-colors">
+                  <img src={`/avatars/predefined/${avatarId}.png`} alt={`Avatar ${avatarId}`} className="w-full h-full object-cover" />
+                </div>
+                <span className="text-xs font-bold text-slate-400 uppercase">Padrão {avatarId}</span>
+              </button>
+            ))}
+
+            {/* Brevês Desbloqueados */}
+            {getBadges(stats).map(badge => {
+              const isUnlocked = user?.unlockedBadges?.includes(badge.id);
+              const Icon = badge.icon;
+              
+              if (!isUnlocked) return null;
+
+              return (
+                <button 
+                  key={badge.id}
+                  onClick={() => handleChangeAvatar(badge.id)}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border ${badge.border} ${badge.bg} hover:brightness-125 transition-all gap-3 h-40 group relative overflow-hidden`}
+                >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-50 transition-opacity"></div>
+                  <div className={`w-16 h-16 rounded-full border-2 border-white/20 flex items-center justify-center shrink-0 bg-slate-950/50 relative overflow-hidden group-hover:border-white/50 transition-colors`}>
+                    <img src={`/avatars/${badge.id}.png`} alt={`Avatar ${badge.name}`} className="w-full h-full object-cover" />
+                  </div>
+                  <span className={`text-xs font-black uppercase tracking-wider text-center ${badge.color}`}>
+                    {badge.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 p-4 bg-blue-950/30 border border-blue-900/50 rounded-lg">
+            <p className="text-sm text-blue-400">
+              <strong>Nota do Comando:</strong> Continue cumprindo missões e se destacando nas operações para desbloquear novos avatares. Os brevês não conquistados ainda não aparecem no seu arsenal.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

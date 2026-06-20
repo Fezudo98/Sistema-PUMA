@@ -18,7 +18,7 @@ export default function InstructorAuth() {
     formData.append("role", "INSTRUCTOR");
     
     // For login, name might not be provided, but username is.
-    const res = isLogin ? await loginUser(formData) : await registerUser(formData);
+    const res: any = isLogin ? await loginUser(formData) : await registerUser(formData);
     
     if (res?.error) {
       setError(res.error);

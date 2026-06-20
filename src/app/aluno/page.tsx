@@ -1,17 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
-import { loginUser, registerUser } from "@/app/actions/auth";
+import { getTakenNumbers, loginUser, registerUser } from "@/app/actions/auth";
 
 export default function StudentAuth() {
   const [error, setError] = useState("");
+  const [takenNumbers, setTakenNumbers] = useState<number[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    getTakenNumbers().then(setTakenNumbers);
+  }, []);
 
   const handleAction = async (formData: FormData, isLogin: boolean) => {
     setError("");
@@ -23,7 +28,7 @@ export default function StudentAuth() {
       formData.append("name", qra);
     }
     
-    const res = isLogin ? await loginUser(formData) : await registerUser(formData);
+    const res: any = isLogin ? await loginUser(formData) : await registerUser(formData);
     
     if (res?.error) {
       setError(res.error);
@@ -82,6 +87,22 @@ export default function StudentAuth() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-300">QRA (Nome de Guerra)</label>
                     <Input name="username" placeholder="Seu QRA" required className="bg-slate-800/50 border-slate-700 h-12 uppercase" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-300">Número do Combatente (1 a 31)</label>
+                    <select 
+                      name="numero" 
+                      required 
+                      defaultValue=""
+                      className="flex h-12 w-full rounded-md bg-slate-800/50 border border-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="" disabled>Selecione seu número</option>
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num} disabled={takenNumbers.includes(num)}>
+                          {num < 10 ? `0${num}` : num} {takenNumbers.includes(num) ? "(Indisponível)" : ""}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-300">Senha</label>

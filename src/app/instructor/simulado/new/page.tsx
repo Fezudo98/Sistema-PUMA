@@ -83,7 +83,7 @@ export default function NovoSimulado() {
       }
 
       localStorage.setItem("generated_questions", JSON.stringify(data.questions));
-      localStorage.setItem("simulado_config", JSON.stringify({ tempo: parseInt(tempo), isRaffleMode }));
+      localStorage.setItem("simulado_config", JSON.stringify({ tempo: parseInt(tempo), isRaffleMode, dificuldade }));
       
       router.push("/instructor/simulado/review");
       
@@ -124,7 +124,7 @@ export default function NovoSimulado() {
                   Fonte do Material Base
                 </label>
                 
-                <Select value={selectedApostilaId} onValueChange={setSelectedApostilaId}>
+                <Select value={selectedApostilaId} onValueChange={(v) => setSelectedApostilaId(v || "")}>
                   <SelectTrigger className="h-12 text-lg">
                     <SelectValue placeholder="Selecione a origem do PDF" />
                   </SelectTrigger>
@@ -183,7 +183,7 @@ export default function NovoSimulado() {
                 {/* Quantidade */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Qtd. de Questões</label>
-                  <Select value={qtd} onValueChange={setQtd}>
+                  <Select value={qtd} onValueChange={(v) => setQtd(v || "")}>
                     <SelectTrigger className="h-12 text-lg">
                       <SelectValue />
                     </SelectTrigger>
@@ -202,7 +202,7 @@ export default function NovoSimulado() {
                 {/* Dificuldade */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Dificuldade</label>
-                  <Select value={dificuldade} onValueChange={setDificuldade}>
+                  <Select value={dificuldade} onValueChange={(v) => setDificuldade(v || "")}>
                     <SelectTrigger className="h-12 text-lg">
                       <SelectValue />
                     </SelectTrigger>
@@ -217,7 +217,7 @@ export default function NovoSimulado() {
                 {/* Tempo */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Tempo/Questão</label>
-                  <Select value={tempo} onValueChange={setTempo}>
+                  <Select value={tempo} onValueChange={(v) => setTempo(v || "")}>
                     <SelectTrigger className="h-12 text-lg">
                       <SelectValue />
                     </SelectTrigger>

@@ -19,6 +19,25 @@ export async function registerUser(formData: FormData) {
   const password = formData.get("password") as string;
   const role = formData.get("role") as string; // 'INSTRUCTOR' | 'STUDENT'
 
+  const numeroStr = formData.get("numero") as string;
+  let numero = null;
+
+  if (role === "STUDENT") {
+    if (!numeroStr) return { error: "O número do combatente é obrigatório." };
+    numero = parseInt(numeroStr, 10);
+    if (isNaN(numero) || numero < 1 || numero > 31) {
+      return { error: "O número deve ser entre 1 e 31." };
+    }
+
+    // Check if number is taken
+    const numberTaken = await prisma.user.findFirst({
+      where: { role: "STUDENT", numero }
+    });
+    if (numberTaken) {
+      return { error: `O número ${numero} já está sendo utilizado por outro combatente.` };
+    }
+  }
+
   if (!name || !username || !password || !role) {
     return { error: "Todos os campos são obrigatórios." };
   }
@@ -42,11 +61,20 @@ export async function registerUser(formData: FormData) {
       name,
       username,
       senha: hashedPassword,
-      role
+      role,
+      numero
     }
   });
 
   return await loginUser(formData);
+}
+
+export async function getTakenNumbers() {
+  const students = await prisma.user.findMany({
+    where: { role: "STUDENT", numero: { not: null } },
+    select: { numero: true }
+  });
+  return students.map(s => s.numero as number);
 }
 
 export async function loginUser(formData: FormData) {

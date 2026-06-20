@@ -21,6 +21,7 @@ export default function ReviewSimulado() {
   const [apostilaName, setApostilaName] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [isRaffleMode, setIsRaffleMode] = useState(false);
+  const [dificuldade, setDificuldade] = useState("NORMAL");
 
   useEffect(() => {
     const qData = localStorage.getItem("generated_questions");
@@ -36,6 +37,9 @@ export default function ReviewSimulado() {
       const parsed = JSON.parse(cData);
       setTempo(parsed.tempo);
       setApostilaName(parsed.apostilaName);
+      if (parsed.dificuldade) {
+        setDificuldade(parsed.dificuldade);
+      }
       if (parsed.isRaffleMode) {
         setIsRaffleMode(true);
       }
@@ -47,6 +51,7 @@ export default function ReviewSimulado() {
     const res = await createSimulado({
       tempoPorQuestao: tempo,
       apostilaName,
+      difficulty: dificuldade,
       questions
     });
 

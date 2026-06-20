@@ -14,10 +14,16 @@ export default async function AlunoPainel() {
   }
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.userId } });
+  
+  if (!dbUser) {
+    redirect("/api/auth/force-logout");
+  }
 
   const clientUser = {
     ...user,
-    avatarUrl: dbUser?.avatarUrl || null
+    avatarUrl: dbUser?.avatarUrl || null,
+    unlockedBadges: (dbUser as any)?.unlockedBadges ? (dbUser as any).unlockedBadges.split(',').filter(Boolean) : [],
+    numero: (dbUser as any)?.numero || null
   };
 
   const answers = await prisma.answer.findMany({

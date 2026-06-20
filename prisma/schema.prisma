@@ -16,6 +16,8 @@ model User {
   avatarUrl String? // Foto de perfil
   aiAnalysis String?
   aiAnalysisSimuladoCount Int? @default(0)
+  unlockedBadges String? @default("")
+  numero   Int?
   answers  Answer[]
 }
 
@@ -25,6 +27,7 @@ model Simulado {
   status       String     @default("WAITING") // WAITING | ACTIVE | FINISHED
   instructorId String
   apostilaName String?
+  difficulty   String     @default("NORMAL") // NORMAL | HARD
   createdAt    DateTime   @default(now())
   questions    Question[]
 }
@@ -60,4 +63,12 @@ model Apostila {
   filePath     String
   instructorId String
   createdAt    DateTime @default(now())
+}
+
+model ExclusiveBadge {
+  id          String   @id @default(uuid())
+  badgeId     String
+  userId      String
+  simuladoId  String
+  createdAt   DateTime @default(now())
 }
