@@ -1,0 +1,495 @@
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import { io, Socket } from "socket.io-client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target } from "lucide-react";
+import Link from "next/link";
+import { Progress } from "@/components/ui/progress";
+
+export default function StudentLiveClient({ user, simulado }: { user: any, simulado: any }) {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [status, setStatus] = useState("WAITING");
+  
+  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  
+  const [selectedAlt, setSelectedAlt] = useState<number>(-1);
+  const [startTime, setStartTime] = useState<number>(0);
+  
+  const [questionEndedData, setQuestionEndedData] = useState<any>(null);
+
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTimeUp, setIsTimeUp] = useState(false);
+  const [hasConfirmed, setHasConfirmed] = useState(false);
+  const searchParams = useSearchParams();
+  const [isRaffling, setIsRaffling] = useState(false);
+  const [raffleWinner, setRaffleWinner] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const [displayStudent, setDisplayStudent] = useState<any>(null);
+  const [ranking, setRanking] = useState<{name: string, score: number, avatarUrl?: string | null}[]>([]);
+
+  useEffect(() => {
+    if (isRaffling && students.length > 0) {
+      const interval = setInterval(() => {
+        const random = students[Math.floor(Math.random() * students.length)];
+        setDisplayStudent(random);
+      }, 100);
+
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        setDisplayStudent(raffleWinner);
+      }, 3000); // 3s spin, 1s rest
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    } else {
+      setDisplayStudent(raffleWinner);
+    }
+  }, [isRaffling, students, raffleWinner]);
+
+  useEffect(() => {
+    const s = io();
+    setSocket(s);
+
+    s.emit("join_room", { roomCode: simulado.codigoSala, user });
+
+    s.on("room_update", (data) => {
+      if (data.students) setStudents(data.students);
+      if (data.status === "ACTIVE") {
+        setStatus(prev => prev === "WAITING" ? "ACTIVE" : prev);
+      }
+      if (data.status === "FINISHED" && status !== "FINISHED") {
+        setStatus("FINISHED");
+      }
+      if (data.status === "ACTIVE" && data.currentQuestion) {
+        setCurrentQuestion(prev => {
+          if (!prev || prev.id !== data.currentQuestion.id) {
+            setQuestionEndedData(data.questionEndedData);
+            setSelectedAlt(-1);
+            setHasConfirmed(false);
+            return data.currentQuestion;
+          }
+          return prev;
+        });
+        
+        // Sincroniza o estado exato
+        setTimeLeft(data.timeLeft);
+        setIsPaused(data.isPaused);
+        
+        if (data.raffleWinnerId) {
+          const winner = data.students.find((st: any) => st.id === data.raffleWinnerId);
+          setRaffleWinner(winner || null);
+        } else {
+          setRaffleWinner(null);
+        }
+
+        if (data.questionEndedData) {
+           setQuestionEndedData(data.questionEndedData);
+           setIsTimeUp(true); // Se tem dados finais, tempo acabou
+        } else {
+           setQuestionEndedData(null);
+           if (data.timeLeft <= 0 && data.currentQuestion.id) {
+             setIsTimeUp(true);
+           } else {
+             setIsTimeUp(false);
+           }
+        }
+      }
+    });
+
+    s.on("simulado_started", () => {
+      setStatus("ACTIVE");
+    });
+
+    s.on("new_question", (questionData) => {
+      setStatus("ACTIVE");
+      setCurrentQuestion(questionData);
+      setTimeLeft(questionData.tempoLimite);
+      setSelectedAlt(-1);
+      setQuestionEndedData(null);
+      setStartTime(Date.now());
+      setIsPaused(false);
+      setIsTimeUp(false);
+      
+      if (!questionData.raffleWinnerId) {
+        setRaffleWinner(null);
+      }
+    });
+
+    s.on("ranking_update", (data) => {
+      setRanking(data.ranking);
+    });
+
+    s.on("raffle_started", ({ winner }) => {
+      setRaffleWinner(winner);
+      setIsRaffling(true);
+      setTimeout(() => {
+        setIsRaffling(false);
+      }, 4000);
+    });
+
+    s.on("time_tick", (data) => {
+      setTimeLeft(data.timeLeft);
+    });
+
+    s.on("time_paused", () => {
+      setIsPaused(true);
+    });
+
+    s.on("time_resumed", () => {
+      setIsPaused(false);
+      // adjust startTime so that the pause time is not counted in tempoGasto
+      setStartTime(Date.now());
+    });
+
+    s.on("time_up", () => {
+      setIsTimeUp(true);
+      setIsPaused(false);
+    });
+
+    s.on("question_ended", (data) => {
+      setQuestionEndedData(data);
+      setIsTimeUp(false);
+    });
+
+    s.on("question_cancelled", () => {
+      setCurrentQuestion(null);
+      setQuestionEndedData(null);
+      setSelectedAlt(-1);
+      setHasConfirmed(false);
+      setIsPaused(false);
+      setIsTimeUp(false);
+      setRaffleWinner(null);
+      setIsRaffling(false);
+      alert("⚠️ A questão atual foi anulada pelo instrutor.");
+    });
+
+    s.on("simulado_ended", () => {
+      setStatus("FINISHED");
+    });
+
+    return () => {
+      s.disconnect();
+    };
+  }, [simulado.codigoSala, user.userId]);
+
+  const handleSelectAlternative = (index: number) => {
+    if (hasConfirmed || questionEndedData) return; // Already confirmed or ended
+    
+    setSelectedAlt(index);
+  };
+
+  const handleConfirmAnswer = () => {
+    if (selectedAlt === -1 || hasConfirmed || questionEndedData || isTimeUp) return;
+
+    setHasConfirmed(true);
+    const timeGasto = Math.floor((Date.now() - startTime) / 1000);
+    
+    socket?.emit("submit_answer", {
+      roomCode: simulado.codigoSala,
+      questionId: currentQuestion.id,
+      studentId: user.userId,
+      alternativa: selectedAlt,
+      tempoGasto: timeGasto
+    });
+  };
+
+  if (status === "WAITING") {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center relative">
+        <Link href="/aluno/painel" className="absolute top-6 left-6">
+          <Button variant="ghost" className="text-slate-400 hover:text-white">Sair da Sala</Button>
+        </Link>
+        <div className="w-24 h-24 rounded-full bg-slate-900 border-2 border-blue-500/30 flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
+          <ShieldAlert className="w-10 h-10 text-blue-500 animate-pulse" />
+        </div>
+        <h1 className="text-2xl font-bold text-white mb-2">Sala {simulado.codigoSala}</h1>
+        <p className="text-slate-400 max-w-sm mb-12">Você entrou com sucesso. Aguarde o instrutor iniciar o simulado na tela principal.</p>
+        
+        <div className="flex gap-2 items-center">
+          <div className="w-3 h-3 rounded-full bg-blue-500 animate-ping"></div>
+          <span className="text-sm font-bold text-blue-400 tracking-widest uppercase">Conectado ao Telão</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "FINISHED") {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+        <Trophy className="w-20 h-20 text-yellow-500 mb-6" />
+        <h1 className="text-3xl font-black text-white mb-2">Simulado Concluído</h1>
+        <p className="text-slate-400 mb-8">O instrutor finalizou o treinamento.</p>
+        <Link href="/aluno/painel">
+          <Button className="w-full max-w-xs h-14 bg-blue-600 hover:bg-blue-500 font-bold">Voltar ao Painel</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
+      {/* Top Bar */}
+      <header className="h-16 border-b border-slate-800 flex justify-between items-center px-4 bg-slate-900 shrink-0">
+        <div className="flex items-center gap-4">
+          <Link href="/aluno/painel">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white px-2">Sair</Button>
+          </Link>
+          <span className="font-bold text-slate-300">SALA {simulado.codigoSala}</span>
+        </div>
+        {currentQuestion && !questionEndedData && (
+          <div className={`flex items-center gap-2 ${isPaused ? 'bg-amber-900/40 border border-amber-500/50' : 'bg-slate-800'} px-3 py-1.5 rounded-full transition-colors`}>
+            {isPaused ? <Clock className="w-4 h-4 text-amber-500 animate-pulse" /> : <Clock className="w-4 h-4 text-amber-400" />}
+            <span className={`font-mono font-bold ${isPaused ? 'text-amber-500' : 'text-amber-400'}`}>
+              {isPaused ? 'PAUSADO' : `${timeLeft}s`}
+            </span>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-1 overflow-hidden relative">
+        {isRaffling && (
+          <div className="absolute inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center p-4">
+            <Target className="w-24 h-24 text-red-500 mb-6 animate-[spin_0.5s_linear_infinite]" />
+            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest text-center animate-pulse">Sorteando Alvo...</h2>
+            <div className="mt-8 p-6 bg-red-900/20 rounded-xl border border-red-500/30 flex flex-col items-center gap-4 w-full max-w-sm">
+              {displayStudent?.avatarUrl ? (
+                <img src={displayStudent.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-red-500 object-cover shadow-[0_0_30px_rgba(239,68,68,0.5)]" />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-red-500 flex items-center justify-center text-4xl font-bold text-slate-400 shadow-[0_0_30px_rgba(239,68,68,0.5)]">
+                  {displayStudent?.name?.substring(0, 2).toUpperCase() || "?"}
+                </div>
+              )}
+              <p className="text-3xl text-red-400 font-black uppercase tracking-wider text-center line-clamp-1">{displayStudent?.name || "???"}</p>
+            </div>
+          </div>
+        )}
+
+        {!currentQuestion ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-blue-500 animate-spin mb-6"></div>
+            <p className="text-lg font-bold text-slate-300">Aguardando Instrutor liberar a próxima questão...</p>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col p-4 max-w-lg mx-auto overflow-y-auto custom-scrollbar">
+            <div className="mb-6 flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-blue-500" />
+                <h3 className="text-slate-400 font-bold tracking-widest uppercase text-sm">Questão Ao Vivo</h3>
+              </div>
+              <p className="text-lg text-slate-200 leading-relaxed font-medium">{currentQuestion.enunciado}</p>
+            </div>
+
+            {raffleWinner && raffleWinner.id !== user.userId && !questionEndedData && (
+              <div className="mb-6 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                <Target className="w-8 h-8 text-red-500 animate-pulse shrink-0" />
+                <div>
+                  <p className="text-red-400 font-black text-sm uppercase tracking-widest">Alvo Sorteado</p>
+                  <p className="text-slate-300 text-sm mt-0.5">Aguardando a resposta de: <strong className="text-white">{raffleWinner.name}</strong></p>
+                </div>
+              </div>
+            )}
+
+            {questionEndedData && (
+              <Card className={`border mb-6 ${selectedAlt === questionEndedData.correta ? 'border-emerald-500 bg-emerald-950/20' : 'border-red-500 bg-red-950/20'}`}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    {selectedAlt === questionEndedData.correta ? (
+                      <><CheckCircle className="w-6 h-6 text-emerald-500" /> <span className="text-emerald-400">Você Acertou!</span></>
+                    ) : (
+                      <><XCircle className="w-6 h-6 text-red-500" /> <span className="text-red-400">Você Errou.</span></>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm font-bold text-slate-300 mb-2">Justificativa:</p>
+                  <p className="text-sm text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                    {questionEndedData.justificativa}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="flex flex-col gap-3 mb-8">
+              {currentQuestion.alternativas?.map((alt: string, index: number) => {
+                const isSelected = selectedAlt === index;
+                const isEnded = questionEndedData !== null;
+                const isCorrect = isEnded && questionEndedData.correta === index;
+                const isWrongSelected = isEnded && isSelected && !isCorrect;
+                
+                const isObserver = raffleWinner && raffleWinner.id !== user.userId;
+
+                let btnClass = "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800";
+                
+                if (isEnded) {
+                  if (isCorrect) btnClass = "bg-emerald-900/50 border-emerald-500 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]";
+                  else if (isWrongSelected) btnClass = "bg-red-900/50 border-red-500 text-red-400";
+                  else btnClass = "bg-slate-950 border-slate-800 text-slate-600 opacity-50";
+                } else if (isSelected) {
+                  btnClass = "bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]";
+                }
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleSelectAlternative(index)}
+                    disabled={hasConfirmed || isTimeUp || isEnded || isObserver}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex gap-4 items-start ${btnClass} ${isObserver && !isEnded ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                  >
+                    <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold border ${
+                      isEnded && isCorrect ? 'bg-emerald-500 border-emerald-400 text-white' :
+                      isEnded && isWrongSelected ? 'bg-red-500 border-red-400 text-white' :
+                      isSelected && !isEnded ? 'bg-white border-white text-blue-600' :
+                      'bg-slate-800 border-slate-600 text-slate-400'
+                    }`}>
+                      {String.fromCharCode(65 + index)}
+                    </span>
+                    <span className="flex-1 pt-1 text-base leading-snug">{alt.replace(/^[A-E]\)\s*/, '')}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedAlt !== -1 && !hasConfirmed && !questionEndedData && !isTimeUp && (
+              <div className="flex flex-col gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2">
+                <Button 
+                  onClick={handleConfirmAnswer} 
+                  className="w-full h-16 font-black text-xl bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] animate-pulse"
+                >
+                  <CheckCircle className="w-6 h-6 mr-2" /> CONFIRMAR RESPOSTA
+                </Button>
+                <p className="text-xs text-center text-slate-400">O seu tempo de resposta só será travado após a confirmação.</p>
+              </div>
+            )}
+
+            {hasConfirmed && !questionEndedData && !isTimeUp && (
+              <div className="text-center p-4 bg-blue-950/30 rounded-lg border border-blue-900/50 animate-pulse">
+                <p className="text-blue-400 font-medium">Resposta Registrada! Aguardando o tempo acabar...</p>
+              </div>
+            )}
+
+            {/* Time Up Waiting for Reveal */}
+            {!questionEndedData && isTimeUp && (
+              <div className="text-center p-6 bg-amber-950/30 rounded-lg border border-amber-500/50 animate-pulse shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                <p className="text-amber-400 font-bold text-lg">⏳ Tempo Esgotado!</p>
+                <p className="text-amber-500/80 text-sm mt-1">Aguardando o instrutor revelar o gabarito...</p>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {status === "FINISHED" && (
+          <div className="h-full flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 overflow-y-auto custom-scrollbar">
+            <Trophy className="w-20 h-20 text-yellow-500 mb-2 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]" />
+            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">Missão Cumprida!</h2>
+            <p className="text-slate-400 mb-8 max-w-md text-sm">
+              O instrutor encerrou este simulado. Suas respostas e pontuações já foram processadas no sistema.
+            </p>
+
+            {/* Resultado Pessoal */}
+            {(() => {
+              const myRankIndex = ranking.findIndex(r => r.id === user.userId);
+              if (myRankIndex === -1) return null;
+              
+              const myRank = myRankIndex + 1;
+              const myData = ranking[myRankIndex];
+              
+              return (
+                <div className="w-full max-w-md bg-gradient-to-br from-blue-900/40 to-slate-900 border border-blue-500/30 rounded-xl p-6 mb-8 flex items-center gap-6 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
+                  <div className="w-20 h-20 rounded-full border-4 border-blue-500 overflow-hidden bg-slate-800 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-blue-500 font-bold text-2xl">{user.name.substring(0,2).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="text-left flex-1">
+                    <h3 className="text-slate-400 text-xs font-bold tracking-widest uppercase mb-1">Seu Desempenho</h3>
+                    <p className="text-white font-black text-2xl mb-1">{myData.score} pts</p>
+                    <p className="text-blue-400 font-medium text-sm flex items-center gap-1">
+                      <BarChart2 className="w-4 h-4" /> Você ficou em {myRank}º lugar
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Podium Top 3 */}
+            {ranking.length > 0 && (
+              <div className="w-full max-w-md bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-8">
+                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-4">Top 3 Combatentes</h3>
+                <div className="flex justify-center items-end gap-2 h-40">
+                  {/* Segundo Colocado */}
+                  {ranking.length > 1 && (
+                    <div className="flex flex-col items-center w-24">
+                      <div className="w-10 h-10 rounded-full border-2 border-slate-400 mb-2 overflow-hidden bg-slate-800 flex items-center justify-center">
+                        {ranking[1].avatarUrl ? (
+                          <img src={ranking[1].avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-slate-400 font-bold text-sm">{ranking[1].name.substring(0,2).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-300 truncate w-full text-center">{ranking[1].name.split(' ')[0]}</div>
+                      <div className="text-xs font-bold text-slate-300 mb-2">{ranking[1].score} pts</div>
+                      <div className="w-full h-16 bg-slate-700 rounded-t-lg flex items-end justify-center pb-2 text-slate-400 font-black text-xl">2</div>
+                    </div>
+                  )}
+                  {/* Primeiro Colocado */}
+                  {ranking.length > 0 && (
+                    <div className="flex flex-col items-center w-28">
+                      <Trophy className="w-5 h-5 text-yellow-500 mb-1" />
+                      <div className="w-12 h-12 rounded-full border-2 border-yellow-500 mb-2 overflow-hidden bg-slate-800 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.3)]">
+                        {ranking[0].avatarUrl ? (
+                          <img src={ranking[0].avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-yellow-500 font-bold text-sm">{ranking[0].name.substring(0,2).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="text-sm font-bold text-yellow-500 truncate w-full text-center">{ranking[0].name.split(' ')[0]}</div>
+                      <div className="text-sm font-bold text-yellow-400 mb-2">{ranking[0].score} pts</div>
+                      <div className="w-full h-24 bg-gradient-to-t from-yellow-700 to-yellow-600 rounded-t-lg flex items-end justify-center pb-2 text-white font-black text-2xl shadow-lg">1</div>
+                    </div>
+                  )}
+                  {/* Terceiro Colocado */}
+                  {ranking.length > 2 && (
+                    <div className="flex flex-col items-center w-24">
+                      <div className="w-10 h-10 rounded-full border-2 border-amber-700 mb-2 overflow-hidden bg-slate-800 flex items-center justify-center">
+                        {ranking[2].avatarUrl ? (
+                          <img src={ranking[2].avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-amber-700 font-bold text-sm">{ranking[2].name.substring(0,2).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-300 truncate w-full text-center">{ranking[2].name.split(' ')[0]}</div>
+                      <div className="text-xs font-bold text-amber-500 mb-2">{ranking[2].score} pts</div>
+                      <div className="w-full h-12 bg-amber-900 rounded-t-lg flex items-end justify-center pb-2 text-amber-700 font-black text-xl">3</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-4 w-full max-w-sm mx-auto">
+              <Link href={`/aluno/simulado/${simulado.id}/review`} className="w-full">
+                <Button className="w-full h-14 font-bold text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+                  <BookOpen className="w-5 h-5 mr-2" />
+                  Ver Meu Desempenho
+                </Button>
+              </Link>
+              <Link href="/aluno/painel" className="w-full">
+                <Button variant="outline" className="w-full h-14 font-bold text-lg border-slate-700 text-slate-300 hover:bg-slate-800">
+                  Voltar ao QG
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

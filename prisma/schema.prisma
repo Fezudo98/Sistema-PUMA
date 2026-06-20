@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(uuid())
+  name     String   // Nome (Instrutor) ou QRA (Aluno)
+  username String   @unique // Login único
+  senha    String
+  role     String   @default("INSTRUCTOR") // INSTRUCTOR | STUDENT
+  avatarUrl String? // Foto de perfil
+  aiAnalysis String?
+  aiAnalysisSimuladoCount Int? @default(0)
+  answers  Answer[]
+}
+
+model Simulado {
+  id           String     @id @default(uuid())
+  codigoSala   String     @unique
+  status       String     @default("WAITING") // WAITING | ACTIVE | FINISHED
+  instructorId String
+  apostilaName String?
+  createdAt    DateTime   @default(now())
+  questions    Question[]
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  simuladoId    String
+  simulado      Simulado @relation(fields: [simuladoId], references: [id])
+  enunciado     String
+  alternativas  String   // JSON array
+  correta       Int      // Index
+  justificativa String
+  tempoLimite   Int      // Segundos
+  status        String   @default("PENDING") // PENDING | ACTIVE | FINISHED
+  answers       Answer[]
+}
+
+model Answer {
+  id          String   @id @default(uuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id])
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id])
+  alternativa Int
+  tempoGasto  Int
+  isCorrect   Boolean
+  pontuacao   Int
+}
+
+model Apostila {
+  id           String   @id @default(uuid())
+  title        String
+  filePath     String
+  instructorId String
+  createdAt    DateTime @default(now())
+}
