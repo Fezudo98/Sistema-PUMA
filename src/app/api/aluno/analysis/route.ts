@@ -67,22 +67,41 @@ export async function POST(req: NextRequest) {
     const generateWithFallback = async (promptText: string) => {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
+      const modelVersions = ["gemini-3.5-flash", "gemini-3.1-flash", "gemini-3.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
 
-      try {
-        const genAI = new GoogleGenerativeAI(primaryKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        return await model.generateContent(promptText);
-      } catch (error: any) {
-        console.warn("Chave principal falhou:", error.message);
-        const isQuotaError = error.status === 429 || error.status === 503 || error.message?.includes("429") || error.message?.includes("503") || error.message?.includes("quota") || error.message?.includes("exhausted");
-        if (isQuotaError && fallbackKey) {
-          console.log("Tentando chave fallback...");
-          const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-          const fallbackModel = fallbackGenAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          return await fallbackModel.generateContent(promptText);
+      for (const modelVersion of modelVersions) {
+        try {
+          const genAI = new GoogleGenerativeAI(primaryKey);
+          const model = genAI.getGenerativeModel({ model: modelVersion });
+          return await model.generateContent(promptText);
+        } catch (error: any) {
+          console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
+          
+          const isQuotaError = error.status === 429 || error.status === 503 || error.message?.includes("429") || error.message?.includes("503") || error.message?.includes("quota") || error.message?.includes("exhausted");
+          const isNotFoundError = error.status === 404 || error.message?.includes("404") || error.message?.includes("not found");
+          
+          // Se for erro de cota e tivermos chave reserva, tenta com a chave reserva E com o mesmo modelo
+          if (isQuotaError && fallbackKey) {
+            console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
+            try {
+              const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
+              const fallbackModel = fallbackGenAI.getGenerativeModel({ model: modelVersion });
+              return await fallbackModel.generateContent(promptText);
+            } catch (fallbackError: any) {
+              console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
+              // Se falhar a fallback por cota ou not found, deixa o loop continuar pro próximo modelo
+            }
+          }
+          
+          // Se não for erro de cota nem not found, throw error crítico (ex: auth error)
+          if (!isQuotaError && !isNotFoundError && !error.message?.includes("403")) {
+             throw error;
+          }
+          // Caso seja 404 ou 403 (modelo inexistente ou não registrado), o loop continua e tenta a próxima versão
         }
-        throw error;
       }
+      
+      throw new Error("Todas as versões do modelo Gemini falharam.");
     };
 
     const result = await generateWithFallback(prompt);

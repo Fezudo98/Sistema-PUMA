@@ -103,22 +103,41 @@ export async function POST(req: NextRequest) {
     const generateWithFallback = async (content: any[]) => {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
+      const modelVersions = ["gemini-3.5-flash", "gemini-3.1-flash", "gemini-3.0-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
 
-      try {
-        const genAI = new GoogleGenerativeAI(primaryKey);
-        const model = genAI.getGenerativeModel(genConfig as any);
-        return await model.generateContent(content);
-      } catch (error: any) {
-        console.warn("Chave principal falhou:", error.message);
-        const isQuotaError = error.status === 429 || error.status === 503 || error.message?.includes("429") || error.message?.includes("503") || error.message?.includes("quota") || error.message?.includes("exhausted");
-        if (isQuotaError && fallbackKey) {
-          console.log("Tentando chave fallback...");
-          const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-          const fallbackModel = fallbackGenAI.getGenerativeModel(genConfig as any);
-          return await fallbackModel.generateContent(content);
+      for (const modelVersion of modelVersions) {
+        const dynamicGenConfig = {
+          model: modelVersion,
+          generationConfig: genConfig.generationConfig
+        };
+        
+        try {
+          const genAI = new GoogleGenerativeAI(primaryKey);
+          const model = genAI.getGenerativeModel(dynamicGenConfig as any);
+          return await model.generateContent(content);
+        } catch (error: any) {
+          console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
+          
+          const isQuotaError = error.status === 429 || error.status === 503 || error.message?.includes("429") || error.message?.includes("503") || error.message?.includes("quota") || error.message?.includes("exhausted");
+          const isNotFoundError = error.status === 404 || error.message?.includes("404") || error.message?.includes("not found");
+          
+          if (isQuotaError && fallbackKey) {
+            console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
+            try {
+              const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
+              const fallbackModel = fallbackGenAI.getGenerativeModel(dynamicGenConfig as any);
+              return await fallbackModel.generateContent(content);
+            } catch (fallbackError: any) {
+              console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
+            }
+          }
+          
+          if (!isQuotaError && !isNotFoundError && !error.message?.includes("403")) {
+             throw error;
+          }
         }
-        throw error;
       }
+      throw new Error("Todas as versões do modelo Gemini falharam.");
     };
 
     // Envia o prompt de texto JUNTO com o arquivo PDF em base64 nativamente!
