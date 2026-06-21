@@ -29,7 +29,8 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [raffleWinner, setRaffleWinner] = useState<any>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [displayStudent, setDisplayStudent] = useState<any>(null);
-  const [ranking, setRanking] = useState<{id: string, name: string, score: number, avatarUrl?: string | null}[]>([]);
+  const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null}[]>([]);
+  const [notifications, setNotifications] = useState<{id: string, text: string}[]>([]);
   const [unlockedBadges, setUnlockedBadges] = useState<any[]>([]);
 
   // Limpa o toast de badge após 6 segundos
@@ -138,6 +139,18 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setRanking(data.ranking);
     });
 
+    s.on("streak_notifications", (data) => {
+      data.notifications.forEach((notif: string, index: number) => {
+        setTimeout(() => {
+          const id = Math.random().toString(36).substr(2, 9);
+          setNotifications(prev => [...prev.slice(-4), { id, text: notif }]);
+          setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+          }, 6000);
+        }, index * 800);
+      });
+    });
+
     s.on("raffle_started", ({ winner }) => {
       setRaffleWinner(winner);
       setIsRaffling(true);
@@ -220,7 +233,15 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
   if (status === "WAITING") {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center relative">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+        {/* Toast Notifications */}
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-72 sm:w-80">
+          {notifications.map(n => (
+            <div key={n.id} className="bg-slate-900 border border-slate-700 text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+              <span className="text-sm font-bold leading-tight">{n.text}</span>
+            </div>
+          ))}
+        </div>
         <Link href="/aluno/painel" className="absolute top-6 left-6">
           <Button variant="ghost" className="text-slate-400 hover:text-white">Sair da Sala</Button>
         </Link>
@@ -240,7 +261,15 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
   if (status === "FINISHED") {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+        {/* Toast Notifications */}
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-72 sm:w-80">
+          {notifications.map(n => (
+            <div key={n.id} className="bg-slate-900 border border-slate-700 text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+              <span className="text-sm font-bold leading-tight">{n.text}</span>
+            </div>
+          ))}
+        </div>
         <Trophy className="w-20 h-20 text-yellow-500 mb-6" />
         <h1 className="text-3xl font-black text-white mb-2">Simulado Concluído</h1>
         <p className="text-slate-400 mb-8">O instrutor finalizou o treinamento.</p>
@@ -252,7 +281,15 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col relative overflow-hidden">
+      {/* Toast Notifications */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-72 sm:w-80">
+        {notifications.map(n => (
+          <div key={n.id} className="bg-slate-900 border border-slate-700 text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+            <span className="text-sm font-bold leading-tight">{n.text}</span>
+          </div>
+        ))}
+      </div>
       {/* Top Bar */}
       <header className="h-16 border-b border-slate-800 flex justify-between items-center px-4 bg-slate-900 shrink-0">
         <div className="flex items-center gap-4">

@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     };
 
     const genConfig = { 
-      model: "gemini-3.5-flash", // Utilizando a versão 3.5 Flash solicitada
+      model: "gemini-1.5-flash", // Utilizando a versão 1.5 Flash (A API do Gemini não possui versão 3.5)
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,

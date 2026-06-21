@@ -70,6 +70,7 @@ export default async function AlunoPainel() {
 
   const stats = {
     simuladosCount: history.length,
+    totalAnswers,
     accuracy,
     avgTime,
     totalScore,

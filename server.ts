@@ -142,10 +142,11 @@ interface RoomState {
   timerInterval: NodeJS.Timeout | null;
   isPaused: boolean;
   students: { id: string; name: string; avatarUrl?: string | null }[];
-  studentScores: Record<string, { id: string; name: string; score: number; avatarUrl?: string | null }>;
+  studentScores: Record<string, { id: string; name: string; score: number; avatarUrl?: string | null; streak: number }>;
   answersReceived: number;
   raffleWinnerId: string | null;
   questionEndedData: { correta: number, justificativa: string } | null;
+  pendingNotifications: string[];
 }
 const rooms = new Map<string, RoomState>();
 
@@ -189,7 +190,8 @@ app.prepare().then(() => {
           studentScores: {},
           answersReceived: 0,
           raffleWinnerId: null,
-          questionEndedData: null
+          questionEndedData: null,
+          pendingNotifications: []
         });
       }
 
@@ -204,7 +206,7 @@ app.prepare().then(() => {
         }
         
         if (!room.studentScores[uid]) {
-          room.studentScores[uid] = { id: uid, name: user.name, score: 0, avatarUrl: user.avatarUrl };
+          room.studentScores[uid] = { id: uid, name: user.name, score: 0, avatarUrl: user.avatarUrl, streak: 0 };
         } else {
           room.studentScores[uid].avatarUrl = user.avatarUrl;
         }
@@ -391,6 +393,11 @@ app.prepare().then(() => {
         
         const ranking = Object.values(room.studentScores).sort((a, b) => b.score - a.score);
         io.to(roomCode).emit('ranking_update', { ranking });
+        
+        if (room.pendingNotifications && room.pendingNotifications.length > 0) {
+          io.to(roomCode).emit('streak_notifications', { notifications: room.pendingNotifications });
+          room.pendingNotifications = []; // Clear for next round
+        }
       }
     });
 
@@ -457,9 +464,37 @@ app.prepare().then(() => {
         pontuacao = 100 + bonus;
       }
 
-      // Atualiza o Ranking Acumulado
+      // Atualiza o Ranking Acumulado e a Sequência (Streak)
       if (room.studentScores[studentId]) {
         room.studentScores[studentId].score += pontuacao;
+        
+        const currentStreak = room.studentScores[studentId].streak;
+        const studentName = room.studentScores[studentId].name.split(' ')[0]; // Pega só o primeiro nome
+        let newStreak = 0;
+        
+        if (!room.pendingNotifications) {
+          room.pendingNotifications = [];
+        }
+
+        if (isCorrect) {
+          newStreak = currentStreak > 0 ? currentStreak + 1 : 1;
+          
+          if (currentStreak <= -3) {
+            room.pendingNotifications.push(`🧊 ${studentName} quebrou o gelo e se recuperou de uma sequência de ${Math.abs(currentStreak)} erros!`);
+          } else if (newStreak >= 3 && newStreak % 3 === 0) {
+             room.pendingNotifications.push(`🔥 ${studentName} alcançou uma sequência implacável de ${newStreak} acertos!`);
+          }
+        } else {
+          newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
+          
+          if (currentStreak >= 3) {
+            room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
+          } else if (newStreak <= -3 && Math.abs(newStreak) % 3 === 0) {
+            room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
+          }
+        }
+        
+        room.studentScores[studentId].streak = newStreak;
       }
 
       let safeTempoGasto = Number(tempoGasto) || 0;

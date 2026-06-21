@@ -18,20 +18,23 @@ export async function POST(req: NextRequest) {
 
     const userDb = await prisma.user.findUnique({ where: { id: user.userId } });
     
-    // Se o aluno já tem uma análise salva para essa mesma quantidade de simulados, retorna do cache
-    if (userDb && userDb.aiAnalysis && userDb.aiAnalysisSimuladoCount === stats.simuladosCount) {
+    // Se o aluno já tem uma análise salva para essa mesma quantidade de respostas, retorna do cache
+    if (userDb && userDb.aiAnalysis && userDb.aiAnalysisSimuladoCount === stats.totalAnswers) {
       return NextResponse.json({ analysis: userDb.aiAnalysis });
     }
 
     // Buscar as últimas respostas do aluno para dar contexto real para a IA
-    const recentAnswers = await prisma.answer.findMany({
+    const allAnswers = await prisma.answer.findMany({
       where: { studentId: user.userId },
       include: {
         question: true
-      },
-      orderBy: { id: "desc" },
-      take: 10
+      }
     });
+    
+    // Como o id é UUID e não temos createdAt na tabela Answer, 
+    // buscamos todas as respostas (que vêm na ordem de inserção do banco) 
+    // e pegamos as 10 últimas.
+    const recentAnswers = allAnswers.slice(-10);
 
     const recentPerformance = recentAnswers.map(a => `
       - Questão: ${a.question.enunciado}
@@ -67,7 +70,7 @@ export async function POST(req: NextRequest) {
 
       try {
         const genAI = new GoogleGenerativeAI(primaryKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         return await model.generateContent(promptText);
       } catch (error: any) {
         console.warn("Chave principal falhou:", error.message);
@@ -75,7 +78,7 @@ export async function POST(req: NextRequest) {
         if (isQuotaError && fallbackKey) {
           console.log("Tentando chave fallback...");
           const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-          const fallbackModel = fallbackGenAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+          const fallbackModel = fallbackGenAI.getGenerativeModel({ model: "gemini-1.5-flash" });
           return await fallbackModel.generateContent(promptText);
         }
         throw error;
@@ -85,12 +88,12 @@ export async function POST(req: NextRequest) {
     const result = await generateWithFallback(prompt);
     const text = result.response.text();
 
-    // Salva a nova análise no banco de dados vinculada à quantidade de simulados atual
+    // Salva a nova análise no banco de dados vinculada à quantidade de respostas atual
     await prisma.user.update({
       where: { id: user.userId },
       data: {
         aiAnalysis: text,
-        aiAnalysisSimuladoCount: stats.simuladosCount
+        aiAnalysisSimuladoCount: stats.totalAnswers
       }
     });
 

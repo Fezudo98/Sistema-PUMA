@@ -5,7 +5,7 @@ import { io, Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
-import { Users, Play, Square, ChevronRight, Clock, Target, CheckCircle, Trophy, BarChart2, Pause, Ban } from "lucide-react";
+import { Clock, Users, Play, Target, Square, Pause, CheckCircle, Trophy, Flame, Snowflake, Ban, BarChart2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { endSimulado } from "@/app/actions/simulado";
@@ -14,7 +14,8 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState(simulado.status);
   const [students, setStudents] = useState<any[]>([]);
-  const [ranking, setRanking] = useState<{name: string, score: number, avatarUrl?: string | null}[]>([]);
+  const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null}[]>([]);
+  const [notifications, setNotifications] = useState<{id: string, text: string}[]>([]);
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [isQuestionActive, setIsQuestionActive] = useState(false);
@@ -65,6 +66,18 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
     
     s.on("ranking_update", (data) => {
       setRanking(data.ranking);
+    });
+
+    s.on("streak_notifications", (data) => {
+      data.notifications.forEach((notif: string, index: number) => {
+        setTimeout(() => {
+          const id = Math.random().toString(36).substr(2, 9);
+          setNotifications(prev => [...prev.slice(-4), { id, text: notif }]);
+          setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+          }, 6000);
+        }, index * 800); // Stagger animations
+      });
     });
 
     s.on("simulado_started", () => {
@@ -172,7 +185,15 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const currentQuestion = currentQuestionIndex >= 0 ? simulado.questions[currentQuestionIndex] : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col relative overflow-hidden">
+      {/* Toast Notifications */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-80">
+        {notifications.map(n => (
+          <div key={n.id} className="bg-slate-900 border border-slate-700 text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+            <span className="text-sm font-bold leading-tight">{n.text}</span>
+          </div>
+        ))}
+      </div>
       <header className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold text-white tracking-widest uppercase">
@@ -444,7 +465,19 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                 {aluno.name.substring(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <span className="font-medium text-slate-200 truncate">{aluno.name}</span>
+                            <span className="font-medium text-slate-200 truncate flex items-center">
+                              {aluno.name}
+                              {aluno.streak >= 3 && (
+                                <span className="text-orange-500 font-bold flex items-center text-xs ml-2 animate-pulse" title={`${aluno.streak} acertos seguidos`}>
+                                  <Flame className="w-3 h-3 mr-0.5" /> {aluno.streak}
+                                </span>
+                              )}
+                              {aluno.streak <= -3 && (
+                                <span className="text-cyan-400 font-bold flex items-center text-xs ml-2" title={`${Math.abs(aluno.streak)} erros seguidos`}>
+                                  <Snowflake className="w-3 h-3 mr-0.5" /> {Math.abs(aluno.streak)}
+                                </span>
+                              )}
+                            </span>
                           </div>
                           <span className="font-bold text-blue-400 font-mono ml-2 shrink-0">{aluno.score} pts</span>
                         </li>
