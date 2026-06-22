@@ -51,6 +51,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
 
     const simuladosCount = Object.keys(simuladoGroups).length;
     
+    let advancedSimuladosCount = 0;
     let hardSimuladosWith70Acc = 0;
     let hardSimuladosWith75Acc = 0;
     let hasSniper = false;
@@ -71,6 +72,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       const isCompleteEnough = qCount === totalQuestionsInSimulado || qCount >= 10;
 
       if (difficulty === "AVANCADO" && isCompleteEnough) {
+        advancedSimuladosCount++;
         if (acc >= 70) hardSimuladosWith70Acc++;
         if (acc >= 75) hardSimuladosWith75Acc++;
         
@@ -90,7 +92,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 10, exclusive: false },
       { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper, exclusive: true },
       { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio, exclusive: true },
-      { id: 'caveira', name: 'Caveira', earned: simuladosCount >= 15 && accuracy >= 95, exclusive: true },
+      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 15 && accuracy >= 95, exclusive: true },
       { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 15000 && accuracy >= 90, exclusive: true }
     ];
 
