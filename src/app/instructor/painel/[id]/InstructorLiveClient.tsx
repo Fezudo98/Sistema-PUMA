@@ -160,11 +160,12 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       setIsPaused(false);
       setIsTimeUp(false);
       
+      const isLast = nextIndex === simulado.questions.length - 1;
       if (isRaffleMode) {
-        socket?.emit("next_question_raffle", { roomCode: simulado.codigoSala, question: q });
+        socket?.emit("next_question_raffle", { roomCode: simulado.codigoSala, question: q, isLast });
       } else {
         setRaffleWinner(null);
-        socket?.emit("next_question", { roomCode: simulado.codigoSala, question: q });
+        socket?.emit("next_question", { roomCode: simulado.codigoSala, question: q, isLast });
       }
     } else {
       setStatus("FINISHED");

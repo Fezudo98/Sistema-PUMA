@@ -86,6 +86,38 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       return simAnswers.length >= 3 || simAnswers.length === simAnswers[0].question.simulado._count.questions;
     });
 
+    // Evaluation of Negative/Humorous Badges
+    let maxConsecutiveErrors = 0;
+    let currentConsecutiveErrors = 0;
+    student.answers.forEach(a => {
+      if (!a.isCorrect) {
+        currentConsecutiveErrors++;
+        if (currentConsecutiveErrors > maxConsecutiveErrors) {
+          maxConsecutiveErrors = currentConsecutiveErrors;
+        }
+      } else {
+        currentConsecutiveErrors = 0;
+      }
+    });
+    const hasBizonho = maxConsecutiveErrors >= 3;
+
+    const hasAfoito = student.answers.some(a => !a.isCorrect && a.tempoGasto > 0 && a.tempoGasto < 3);
+    const hasDorminhoco = student.answers.some(a => a.alternativa === -1);
+
+    let hasPepreto = false;
+    Object.values(simuladoGroups).forEach(simAnswers => {
+      if (simAnswers.length === 0) return;
+      const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
+      const corrects = simAnswers.filter(a => a.isCorrect).length;
+      const acc = Math.round((corrects / totalQuestionsInSimulado) * 100);
+      
+      if (totalQuestionsInSimulado >= 5 && simAnswers.length === totalQuestionsInSimulado) {
+        if (acc < 10) {
+          hasPepreto = true;
+        }
+      }
+    });
+
     let badges = [
       { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
       { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 5, exclusive: false },
@@ -93,7 +125,11 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper, exclusive: true },
       { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio, exclusive: true },
       { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 15 && accuracy >= 95, exclusive: true },
-      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 15000 && accuracy >= 90, exclusive: true }
+      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 15000 && accuracy >= 90, exclusive: true },
+      { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
+      { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
+      { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },
+      { id: 'pepreto', name: 'Pé Preto', earned: hasPepreto, exclusive: false }
     ];
 
     // Check exclusivity
@@ -284,7 +320,7 @@ app.prepare().then(() => {
     });
 
     // Instructor launches next question
-    socket.on('next_question', async ({ roomCode, question }) => {
+    socket.on('next_question', async ({ roomCode, question, isLast }) => {
       const room = rooms.get(roomCode);
       if (!room) return;
 
@@ -309,6 +345,18 @@ app.prepare().then(() => {
 
       io.to(roomCode).emit('new_question', questionPayload);
 
+      if (isLast) {
+        const ranking = Object.values(room.studentScores).sort((a: any, b: any) => b.score - a.score);
+        if (ranking.length >= 2) {
+          const leader = ranking[0].name.split(' ')[0];
+          const runnerUp = ranking[1].name.split(' ')[0];
+          if (!room.pendingNotifications) room.pendingNotifications = [];
+          room.pendingNotifications.push(`⚔️ COMBATE NO TOPO: A última questão decidirá o combate direto entre ${leader} e ${runnerUp}!`);
+          io.to(roomCode).emit('streak_notifications', { notifications: room.pendingNotifications });
+          room.pendingNotifications = [];
+        }
+      }
+
       room.timerInterval = setInterval(async () => {
         room.timeLeft -= 1;
         io.to(roomCode).emit('time_tick', { timeLeft: room.timeLeft });
@@ -323,7 +371,7 @@ app.prepare().then(() => {
     });
 
     // Instructor launches next question in raffle mode
-    socket.on('next_question_raffle', async ({ roomCode, question }) => {
+    socket.on('next_question_raffle', async ({ roomCode, question, isLast }) => {
       const room = rooms.get(roomCode);
       if (!room || room.students.length === 0) return;
 
@@ -360,6 +408,18 @@ app.prepare().then(() => {
         };
 
         io.to(roomCode).emit('new_question', questionPayload);
+
+        if (isLast) {
+          const ranking = Object.values(currentRoom.studentScores).sort((a: any, b: any) => b.score - a.score);
+          if (ranking.length >= 2) {
+            const leader = ranking[0].name.split(' ')[0];
+            const runnerUp = ranking[1].name.split(' ')[0];
+            if (!currentRoom.pendingNotifications) currentRoom.pendingNotifications = [];
+            currentRoom.pendingNotifications.push(`⚔️ COMBATE NO TOPO: A última questão decidirá o combate direto entre ${leader} e ${runnerUp}!`);
+            io.to(roomCode).emit('streak_notifications', { notifications: currentRoom.pendingNotifications });
+            currentRoom.pendingNotifications = [];
+          }
+        }
 
         currentRoom.timerInterval = setInterval(async () => {
           currentRoom.timeLeft -= 1;
@@ -400,6 +460,43 @@ app.prepare().then(() => {
         room.questionEndedData = { correta: question.correta, justificativa: question.justificativa };
         
         await prisma.question.update({ where: { id: question.id }, data: { status: 'FINISHED' } });
+
+        // Registra respostas em branco para os alunos na sala que não responderam
+        const answeredIds = room.answeredStudentIds || [];
+        const unansweredStudents = room.students.filter(st => !answeredIds.includes(st.id));
+        
+        for (const st of unansweredStudents) {
+          try {
+            await prisma.answer.create({
+              data: {
+                questionId: question.id,
+                studentId: st.id,
+                alternativa: -1, // -1 indica timeout / sem resposta
+                tempoGasto: question.tempoLimite,
+                isCorrect: false,
+                pontuacao: 0
+              }
+            });
+
+            // Atualiza o streak de erro para quem não respondeu
+            if (room.studentScores[st.id]) {
+              const currentStreak = room.studentScores[st.id].streak;
+              const newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
+              room.studentScores[st.id].streak = newStreak;
+
+              const studentName = room.studentScores[st.id].name.split(' ')[0];
+              if (!room.pendingNotifications) room.pendingNotifications = [];
+
+              if (currentStreak >= 3) {
+                room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
+              } else if (newStreak <= -3 && Math.abs(newStreak) % 3 === 0) {
+                room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
+              }
+            }
+          } catch (e) {
+            console.error("Error saving unanswered record:", e);
+          }
+        }
         
         io.to(roomCode).emit('question_ended', {
           questionId: question.id,
@@ -483,7 +580,18 @@ app.prepare().then(() => {
 
       // Atualiza o Ranking Acumulado e a Sequência (Streak)
       if (room.studentScores[studentId]) {
+        // Rastreia ranking antes e depois para notificações de ultrapassagem
+        const rankingBefore = Object.values(room.studentScores)
+          .sort((a: any, b: any) => b.score - a.score)
+          .map(s => s.id);
+        const positionBefore = rankingBefore.indexOf(studentId);
+
         room.studentScores[studentId].score += pontuacao;
+
+        const rankingAfter = Object.values(room.studentScores)
+          .sort((a: any, b: any) => b.score - a.score)
+          .map(s => s.id);
+        const positionAfter = rankingAfter.indexOf(studentId);
         
         const currentStreak = room.studentScores[studentId].streak;
         const studentName = room.studentScores[studentId].name.split(' ')[0]; // Pega só o primeiro nome
@@ -493,13 +601,28 @@ app.prepare().then(() => {
           room.pendingNotifications = [];
         }
 
+        // Notificação de ultrapassagem caso tenha acertado e subido de posição
+        if (positionBefore !== -1 && positionAfter < positionBefore && isCorrect) {
+          const diff = positionBefore - positionAfter;
+          if (positionBefore >= 3) {
+            // O aluno estava em 4º ou pior e subiu de posição
+            room.pendingNotifications.push(`⚡ RECUPERAÇÃO! ${studentName} acelerou o passo e ultrapassou ${diff} combatente${diff > 1 ? 's' : ''}!`);
+          } else {
+            room.pendingNotifications.push(`🏃 QRA ${studentName} avançou no ranking e ultrapassou ${diff} combatente${diff > 1 ? 's' : ''}!`);
+          }
+        }
+
         if (isCorrect) {
           newStreak = currentStreak > 0 ? currentStreak + 1 : 1;
           
           if (currentStreak <= -3) {
             room.pendingNotifications.push(`🧊 ${studentName} quebrou o gelo e se recuperou de uma sequência de ${Math.abs(currentStreak)} erros!`);
-          } else if (newStreak >= 3 && newStreak % 3 === 0) {
-             room.pendingNotifications.push(`🔥 ${studentName} alcançou uma sequência implacável de ${newStreak} acertos!`);
+          } else if (newStreak === 3) {
+            room.pendingNotifications.push(`🔥 ${studentName} está aquecendo com 3 acertos seguidos!`);
+          } else if (newStreak === 5) {
+            room.pendingNotifications.push(`⚡ IMPARÁVEL! ${studentName} atingiu uma sequência implacável de 5 acertos!`);
+          } else if (newStreak > 5 && newStreak % 3 === 0) {
+            room.pendingNotifications.push(`💀 OPERACIONAL HABILITADO! ${studentName} alcançou ${newStreak} acertos seguidos!`);
           }
         } else {
           newStreak = currentStreak < 0 ? currentStreak - 1 : -1;

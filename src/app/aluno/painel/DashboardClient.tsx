@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -90,6 +90,46 @@ const getBadges = (stats: any) => {
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'
+    },
+    {
+      id: 'bizonho',
+      name: 'Bizonho',
+      icon: Frown,
+      earned: false,
+      desc: 'Errar 3 questões seguidas em qualquer simulado.',
+      color: 'text-red-400',
+      bg: 'bg-red-950/20',
+      border: 'border-red-900/50'
+    },
+    {
+      id: 'afoito',
+      name: 'Gatilho Afoito',
+      icon: Timer,
+      earned: false,
+      desc: 'Responder em menos de 3 segundos e errar a questão.',
+      color: 'text-orange-400',
+      bg: 'bg-orange-950/20',
+      border: 'border-orange-900/50'
+    },
+    {
+      id: 'dorminhoco',
+      name: 'Dormiu na Guarita',
+      icon: Moon,
+      earned: false,
+      desc: 'Deixar o tempo expirar sem responder a uma questão.',
+      color: 'text-indigo-400',
+      bg: 'bg-indigo-950/20',
+      border: 'border-indigo-900/50'
+    },
+    {
+      id: 'pepreto',
+      name: 'Pé Preto',
+      icon: TrendingDown,
+      earned: false,
+      desc: 'Ter aproveitamento abaixo de 10% em um simulado de no mínimo 5 questões.',
+      color: 'text-rose-600',
+      bg: 'bg-rose-950/20',
+      border: 'border-rose-900/50'
     }
   ];
 };
