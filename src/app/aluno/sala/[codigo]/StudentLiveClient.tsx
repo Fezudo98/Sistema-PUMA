@@ -273,27 +273,6 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
     );
   }
 
-  if (status === "FINISHED") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-        {/* Toast Notifications */}
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-72 sm:w-80">
-          {notifications.map(n => (
-            <div key={n.id} className="bg-slate-900 border border-slate-700 text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
-              <span className="text-sm font-bold leading-tight">{n.text}</span>
-            </div>
-          ))}
-        </div>
-        <Trophy className="w-20 h-20 text-yellow-500 mb-6" />
-        <h1 className="text-3xl font-black text-white mb-2">Simulado Concluído</h1>
-        <p className="text-slate-400 mb-8">O instrutor finalizou o treinamento.</p>
-        <Link href="/aluno/painel">
-          <Button className="w-full max-w-xs h-14 bg-blue-600 hover:bg-blue-500 font-bold">Voltar ao Painel</Button>
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col relative overflow-hidden">
       {/* Toast Notifications */}
@@ -356,7 +335,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
           </div>
         )}
 
-        {!currentQuestion ? (
+        {status === "FINISHED" ? null : !currentQuestion ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-blue-500 animate-spin mb-6"></div>
             <p className="text-lg font-bold text-slate-300">Aguardando Instrutor liberar a próxima questão...</p>
