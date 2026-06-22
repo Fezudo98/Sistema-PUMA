@@ -1,4 +1,5 @@
 @echo off
+if "%1"=="--no-self-update" goto :skip_update_check
 title Sistema PUMA - Atualizador de Campanha
 color 0E
 echo ========================================================
@@ -27,11 +28,15 @@ if defined GIT_CMD (
     echo Baixando codigos do GitHub e limpando alteracoes locais...
     call %GIT_CMD% fetch origin
     call %GIT_CMD% reset --hard origin/main
+    call "%~f0" --no-self-update
+    exit /b
 ) else (
     echo [ERRO] Git nao encontrado! Instale o Git para conseguir atualizar online.
     pause
     exit /b
 )
+
+:skip_update_check
 
 :: 2. Re-aplicando as Otimizacoes Locais para o Batalhao (Producao & Login local)
 echo.
