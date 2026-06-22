@@ -58,6 +58,7 @@ call npx prisma db push --accept-data-loss
 echo.
 echo [4/4] Gerando build otimizado de producao...
 echo Isso pode demorar de 1 a 2 minutos, por favor aguarde...
+call npm run build:server
 call npm run build
 
 echo.
