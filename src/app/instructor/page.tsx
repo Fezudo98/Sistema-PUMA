@@ -35,14 +35,38 @@ export default async function InstructorDashboard() {
   const students = await prisma.user.findMany({
     where: { role: "STUDENT" },
     include: {
-      answers: true
+      answers: {
+        include: {
+          question: {
+            include: {
+              simulado: {
+                include: {
+                  _count: {
+                    select: { questions: true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   });
 
   const studentsPerformance = students.map(student => {
     const totalAnswers = student.answers.length;
     const correctAnswers = student.answers.filter(a => a.isCorrect).length;
-    const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+    
+    // Calculate total questions across all unique simulados the student participated in
+    const participatedSimulados = new Map<string, number>();
+    student.answers.forEach(a => {
+      const simuladoId = a.question.simuladoId;
+      const totalQ = (a.question.simulado as any)._count?.questions || 0;
+      participatedSimulados.set(simuladoId, totalQ);
+    });
+
+    const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
+    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
     const totalScore = student.answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
     const avgTime = totalAnswers > 0 ? Math.round(student.answers.reduce((acc, curr) => acc + curr.tempoGasto, 0) / totalAnswers) : 0;
 

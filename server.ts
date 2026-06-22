@@ -29,9 +29,18 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
 
     if (!student) return;
 
-    const totalAnswers = student.answers.length;
     const correctAnswers = student.answers.filter(a => a.isCorrect);
-    const accuracy = totalAnswers > 0 ? Math.round((correctAnswers.length / totalAnswers) * 100) : 0;
+
+    // Calculate total questions across all unique simulados the student participated in
+    const participatedSimulados = new Map<string, number>();
+    student.answers.forEach(a => {
+      const simuladoId = a.question.simuladoId;
+      const totalQ = a.question.simulado._count.questions;
+      participatedSimulados.set(simuladoId, totalQ);
+    });
+
+    const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
+    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers.length / totalQuestions) * 100) : 0;
     const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
     
     const simuladoGroups: Record<string, typeof student.answers> = {};
@@ -51,9 +60,9 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       if (simAnswers.length === 0) return;
       const qCount = simAnswers.length;
       const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
-      
       const corrects = simAnswers.filter(a => a.isCorrect).length;
-      const acc = Math.round((corrects / qCount) * 100);
+      
+      const acc = Math.round((corrects / totalQuestionsInSimulado) * 100);
       const avgTime = Math.round(simAnswers.reduce((acc, curr) => acc + (curr.tempoGasto || 0), 0) / qCount);
       const difficulty = simAnswers[0].question.simulado.difficulty;
 
@@ -147,6 +156,7 @@ interface RoomState {
   raffleWinnerId: string | null;
   questionEndedData: { correta: number, justificativa: string } | null;
   pendingNotifications: string[];
+  answeredStudentIds: string[];
 }
 const rooms = new Map<string, RoomState>();
 
@@ -191,7 +201,8 @@ app.prepare().then(() => {
           answersReceived: 0,
           raffleWinnerId: null,
           questionEndedData: null,
-          pendingNotifications: []
+          pendingNotifications: [],
+          answeredStudentIds: []
         });
       }
 
@@ -222,7 +233,8 @@ app.prepare().then(() => {
         timeLeft: room.timeLeft,
         isPaused: room.isPaused,
         raffleWinnerId: room.raffleWinnerId,
-        questionEndedData: room.questionEndedData
+        questionEndedData: room.questionEndedData,
+        answeredStudentIds: room.answeredStudentIds || []
       });
       
       // Envia o ranking atual para quem acabou de entrar
@@ -282,6 +294,7 @@ app.prepare().then(() => {
       room.isPaused = false;
       room.raffleWinnerId = null;
       room.questionEndedData = null;
+      room.answeredStudentIds = [];
 
       await prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } });
 
@@ -332,6 +345,7 @@ app.prepare().then(() => {
         currentRoom.answersReceived = 0;
         currentRoom.isPaused = false;
         currentRoom.questionEndedData = null;
+        currentRoom.answeredStudentIds = [];
 
         await prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } });
 
@@ -441,6 +455,7 @@ app.prepare().then(() => {
       if (room && room.currentQuestion) {
         // Se cancelado, emitir para o cliente voltar pra espera
         room.currentQuestion = null;
+        room.answeredStudentIds = [];
         
         io.to(roomCode).emit('question_cancelled');
       }
@@ -515,8 +530,16 @@ app.prepare().then(() => {
         }
       });
 
+      if (!room.answeredStudentIds) room.answeredStudentIds = [];
+      if (!room.answeredStudentIds.includes(studentId)) {
+        room.answeredStudentIds.push(studentId);
+      }
+
       room.answersReceived += 1;
-      io.to(roomCode).emit('instructor_student_answered', { count: room.answersReceived });
+      io.to(roomCode).emit('instructor_student_answered', { 
+        count: room.answersReceived,
+        answeredStudentIds: room.answeredStudentIds
+      });
 
       const targetAnswers = room.raffleWinnerId ? 1 : room.students.length;
       if (room.answersReceived >= targetAnswers && room.timerInterval) {

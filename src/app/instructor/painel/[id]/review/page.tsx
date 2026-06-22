@@ -28,7 +28,7 @@ export default async function SimuladoReviewPage({ params }: { params: { id: str
   if (!simulado) redirect("/instructor");
 
   // Calculate student scores for Podium
-  const studentScores: Record<string, { name: string; score: number; answers: number; avgTime: number; totalTime: number }> = {};
+  const studentScores: Record<string, { name: string; score: number; answers: number; avgTime: number; totalTime: number; corrects: number; incorrects: number; avatarUrl?: string | null }> = {};
   let totalAnswers = 0;
   let correctAnswers = 0;
 
@@ -38,11 +38,16 @@ export default async function SimuladoReviewPage({ params }: { params: { id: str
       if (a.isCorrect) correctAnswers++;
 
       if (!studentScores[a.studentId]) {
-        studentScores[a.studentId] = { name: a.student.name, score: 0, answers: 0, totalTime: 0, avgTime: 0 };
+        studentScores[a.studentId] = { name: a.student.name, score: 0, answers: 0, totalTime: 0, avgTime: 0, corrects: 0, incorrects: 0, avatarUrl: a.student.avatarUrl };
       }
       studentScores[a.studentId].score += a.pontuacao;
       studentScores[a.studentId].answers += 1;
       studentScores[a.studentId].totalTime += a.tempoGasto;
+      if (a.isCorrect) {
+        studentScores[a.studentId].corrects += 1;
+      } else {
+        studentScores[a.studentId].incorrects += 1;
+      }
     });
   });
 

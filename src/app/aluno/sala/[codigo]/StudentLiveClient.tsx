@@ -4,10 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target, BarChart2 } from "lucide-react";
+import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target, BarChart2, Users } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useSearchParams } from "next/navigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function StudentLiveClient({ user, simulado }: { user: any, simulado: any }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -32,6 +33,8 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null}[]>([]);
   const [notifications, setNotifications] = useState<{id: string, text: string}[]>([]);
   const [unlockedBadges, setUnlockedBadges] = useState<any[]>([]);
+  const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
+  const [showParticipants, setShowParticipants] = useState(false);
 
   // Limpa o toast de badge após 6 segundos
   useEffect(() => {
@@ -113,6 +116,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
            }
         }
       }
+      if (data.answeredStudentIds) {
+        setAnsweredStudentIds(data.answeredStudentIds);
+      }
     });
 
     s.on("simulado_started", () => {
@@ -129,9 +135,16 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setIsPaused(false);
       setIsTimeUp(false);
       setHasConfirmed(false);
+      setAnsweredStudentIds([]);
       
       if (!questionData.raffleWinnerId) {
         setRaffleWinner(null);
+      }
+    });
+
+    s.on("instructor_student_answered", (data) => {
+      if (data.answeredStudentIds) {
+        setAnsweredStudentIds(data.answeredStudentIds);
       }
     });
 
@@ -192,6 +205,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setIsTimeUp(false);
       setRaffleWinner(null);
       setIsRaffling(false);
+      setAnsweredStudentIds([]);
       alert("⚠️ A questão atual foi anulada pelo instrutor.");
     });
 
@@ -547,6 +561,16 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               </div>
             )}
 
+            {ranking.length > 0 && (
+              <Button 
+                onClick={() => setShowParticipants(true)} 
+                variant="outline" 
+                className="w-full max-w-sm h-14 mb-4 border-slate-700 text-slate-300 hover:bg-slate-800 font-bold"
+              >
+                <Users className="w-5 h-5 mr-2" /> Ver Ranking Completo
+              </Button>
+            )}
+
             <div className="flex flex-col gap-4 w-full max-w-sm mx-auto">
               <Link href={`/aluno/simulado/${simulado.id}/review`} className="w-full">
                 <Button className="w-full h-14 font-bold text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]">
@@ -562,6 +586,57 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             </div>
           </div>
         )}
+        {/* Modal de Ranking Geral */}
+        <Dialog open={showParticipants} onOpenChange={setShowParticipants}>
+          <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-800 text-slate-200 max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl text-white">
+                <Trophy className="w-5 h-5 text-yellow-500" /> Ranking Completo de Participantes
+              </DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Ordem de pontuação de todos os recrutas neste simulado.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-slate-300">
+                  <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">Posição</th>
+                      <th className="px-4 py-2 font-medium">Aluno</th>
+                      <th className="px-4 py-2 font-medium text-right">Pontuação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                    {ranking.map((aluno, idx) => (
+                      <tr key={idx} className="hover:bg-slate-800/30">
+                        <td className="px-4 py-3 font-bold text-slate-500">
+                          {idx + 1}º
+                        </td>
+                        <td className="px-4 py-3 flex items-center gap-3">
+                          {aluno.avatarUrl ? (
+                            <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-700" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-700">
+                              {aluno.name.substring(0,2).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-bold text-slate-200">{aluno.name}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">{aluno.score} pts</td>
+                      </tr>
+                    ))}
+                    {ranking.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="text-center py-6 text-slate-500">Nenhum participante.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

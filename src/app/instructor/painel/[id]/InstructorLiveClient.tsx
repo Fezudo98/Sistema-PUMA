@@ -29,6 +29,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const [isRaffling, setIsRaffling] = useState(false);
   const [raffleWinner, setRaffleWinner] = useState<any>(null);
   const [displayStudent, setDisplayStudent] = useState<any>(null);
+  const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (isRaffling && students.length > 0) {
@@ -61,6 +62,9 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       setStudents(data.students);
       if (data.status === "ACTIVE") {
         setStatus((prev: string) => prev === "WAITING" ? "ACTIVE" : prev);
+      }
+      if (data.answeredStudentIds) {
+        setAnsweredStudentIds(data.answeredStudentIds);
       }
     });
     
@@ -98,6 +102,9 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
 
     s.on("instructor_student_answered", (data) => {
       setAnswersReceived(data.count);
+      if (data.answeredStudentIds) {
+        setAnsweredStudentIds(data.answeredStudentIds);
+      }
     });
 
     s.on("question_ended", (data) => {
@@ -118,6 +125,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       setIsTimeUp(false);
       setRaffleWinner(null);
       setIsRaffling(false);
+      setAnsweredStudentIds([]);
     });
 
     s.on("raffle_started", ({ winner }) => {
@@ -147,6 +155,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       setIsQuestionActive(true);
       setQuestionEndedData(null);
       setAnswersReceived(0);
+      setAnsweredStudentIds([]);
       setTimeLeft(q.tempoLimite);
       setIsPaused(false);
       setIsTimeUp(false);
@@ -467,6 +476,13 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                             )}
                             <span className="font-medium text-slate-200 truncate flex items-center">
                               {aluno.name}
+                              {isQuestionActive && !questionEndedData && (
+                                answeredStudentIds.includes(aluno.id) ? (
+                                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/30 ml-2 animate-pulse">Respondeu</span>
+                                ) : (
+                                  <span className="text-[10px] bg-slate-800 text-slate-400 font-bold px-2 py-0.5 rounded border border-slate-700 ml-2">Aguardando</span>
+                                )
+                              )}
                               {aluno.streak >= 3 && (
                                 <span className="text-orange-500 font-bold flex items-center text-xs ml-2 animate-pulse" title={`${aluno.streak} acertos seguidos`}>
                                   <Flame className="w-3 h-3 mr-0.5" /> {aluno.streak}

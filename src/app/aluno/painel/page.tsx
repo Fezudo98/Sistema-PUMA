@@ -31,7 +31,13 @@ export default async function AlunoPainel() {
     include: {
       question: {
         include: {
-          simulado: true
+          simulado: {
+            include: {
+              _count: {
+                select: { questions: true }
+              }
+            }
+          }
         }
       }
     },
@@ -40,7 +46,16 @@ export default async function AlunoPainel() {
 
   const totalAnswers = answers.length;
   const correctAnswers = answers.filter(a => a.isCorrect).length;
-  const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+
+  const participatedSimulados = new Map<string, number>();
+  answers.forEach(a => {
+    const simuladoId = a.question.simuladoId;
+    const totalQ = (a.question.simulado as any)._count?.questions || 0;
+    participatedSimulados.set(simuladoId, totalQ);
+  });
+
+  const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
+  const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
   const totalScore = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
   const avgTime = totalAnswers > 0 ? Math.round(answers.reduce((acc, curr) => acc + curr.tempoGasto, 0) / totalAnswers) : 0;
 
@@ -52,13 +67,12 @@ export default async function AlunoPainel() {
       historyMap.set(sId, {
         id: sId,
         codigoSala: a.question.simulado.codigoSala,
-        totalQuestions: 0,
+        totalQuestions: (a.question.simulado as any)._count?.questions || 0,
         correctAnswers: 0,
         score: 0,
       });
     }
     const sStats = historyMap.get(sId);
-    sStats.totalQuestions++;
     if (a.isCorrect) sStats.correctAnswers++;
     sStats.score += a.pontuacao;
   }

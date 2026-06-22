@@ -251,8 +251,10 @@ export default function ReviewClient({
                   <tr>
                     <th className="px-4 py-2 font-medium">Posição</th>
                     <th className="px-4 py-2 font-medium">Aluno</th>
-                    <th className="px-4 py-2 font-medium">Respostas</th>
-                    <th className="px-4 py-2 font-medium">Tempo Médio</th>
+                    <th className="px-4 py-2 font-medium text-center">Respostas</th>
+                    <th className="px-4 py-2 font-medium text-center">Acertos</th>
+                    <th className="px-4 py-2 font-medium text-center">Erros</th>
+                    <th className="px-4 py-2 font-medium text-center">Tempo Médio</th>
                     <th className="px-4 py-2 font-medium text-right">Pontuação</th>
                   </tr>
                 </thead>
@@ -272,8 +274,10 @@ export default function ReviewClient({
                         )}
                         <span className="font-bold text-slate-800">{aluno.name}</span>
                       </td>
-                      <td className="px-4 py-3 text-slate-600">{aluno.answers}</td>
-                      <td className="px-4 py-3 text-slate-600">{aluno.avgTime}s</td>
+                      <td className="px-4 py-3 text-center text-slate-600">{aluno.answers}</td>
+                      <td className="px-4 py-3 text-center text-emerald-600 font-bold">{aluno.corrects || 0}</td>
+                      <td className="px-4 py-3 text-center text-red-500 font-bold">{aluno.incorrects || 0}</td>
+                      <td className="px-4 py-3 text-center text-slate-600">{aluno.avgTime}s</td>
                       <td className="px-4 py-3 text-right font-mono font-bold text-blue-600">{aluno.score} pts</td>
                     </tr>
                   ))}

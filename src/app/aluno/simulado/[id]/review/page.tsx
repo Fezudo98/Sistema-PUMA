@@ -3,7 +3,7 @@ import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 
 const prisma = new PrismaClient();
@@ -44,8 +44,51 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const totalQuestions = simulado.questions.length;
   const answeredQuestions = answers.length;
   const correctAnswers = answers.filter(a => a.isCorrect).length;
-  const accuracy = answeredQuestions > 0 ? Math.round((correctAnswers / answeredQuestions) * 100) : 0;
+  
+  // O divisor da precisão deve ser o total de questões para evitar trapaças/distorções de quem sai mais cedo
+  const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
   const score = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
+
+  // Buscar todas as respostas de todos os participantes para este simulado
+  const allAnswers = await prisma.answer.findMany({
+    where: {
+      question: {
+        simuladoId: id
+      }
+    },
+    include: {
+      student: true
+    }
+  });
+
+  const studentScores: Record<string, { name: string; score: number; answers: number; totalTime: number; corrects: number; incorrects: number; avatarUrl: string | null }> = {};
+
+  allAnswers.forEach(a => {
+    if (!studentScores[a.studentId]) {
+      studentScores[a.studentId] = {
+        name: a.student.name,
+        score: 0,
+        answers: 0,
+        totalTime: 0,
+        corrects: 0,
+        incorrects: 0,
+        avatarUrl: a.student.avatarUrl
+      };
+    }
+    studentScores[a.studentId].score += a.pontuacao;
+    studentScores[a.studentId].answers += 1;
+    studentScores[a.studentId].totalTime += a.tempoGasto;
+    if (a.isCorrect) {
+      studentScores[a.studentId].corrects += 1;
+    } else {
+      studentScores[a.studentId].incorrects += 1;
+    }
+  });
+
+  const ranking = Object.values(studentScores).map(s => ({
+    ...s,
+    avgTime: s.answers > 0 ? Math.round(s.totalTime / s.answers) : 0
+  })).sort((a, b) => b.score - a.score);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
@@ -93,6 +136,62 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
             </CardContent>
           </Card>
         </div>
+
+        {/* Card de Ranking Geral */}
+        <Card className="bg-slate-900/50 border-slate-800 shadow-sm mb-8">
+          <CardHeader className="pb-3 border-b border-slate-800/50 flex flex-row items-center justify-between">
+            <CardTitle className="text-lg text-slate-200 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" /> Ranking Geral de Participantes
+            </CardTitle>
+            <span className="text-xs text-slate-400 font-bold uppercase">{ranking.length} Combatentes</span>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th className="px-4 py-2 font-medium">Posição</th>
+                    <th className="px-4 py-2 font-medium">Aluno</th>
+                    <th className="px-4 py-2 font-medium text-center">Respostas</th>
+                    <th className="px-4 py-2 font-medium text-center">Acertos</th>
+                    <th className="px-4 py-2 font-medium text-center">Erros</th>
+                    <th className="px-4 py-2 font-medium">Tempo Médio</th>
+                    <th className="px-4 py-2 font-medium text-right">Pontuação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {ranking.map((aluno, idx) => (
+                    <tr key={idx} className="hover:bg-slate-900/30">
+                      <td className="px-4 py-3 font-bold text-slate-500">
+                        {idx + 1}º
+                      </td>
+                      <td className="px-4 py-3 flex items-center gap-3">
+                        {aluno.avatarUrl ? (
+                          <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-700" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-700">
+                            {aluno.name.substring(0,2).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="font-bold text-slate-200">{aluno.name}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-slate-400">{aluno.answers}</td>
+                      <td className="px-4 py-3 text-center text-emerald-400 font-bold">{aluno.corrects}</td>
+                      <td className="px-4 py-3 text-center text-red-400 font-bold">{aluno.incorrects}</td>
+                      <td className="px-4 py-3 text-slate-400">{aluno.avgTime}s</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">{aluno.score} pts</td>
+                    </tr>
+                  ))}
+                  {ranking.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-6 text-slate-500">Nenhum participante pontuou neste simulado.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="space-y-6">
           {simulado.questions.map((q, index) => {
