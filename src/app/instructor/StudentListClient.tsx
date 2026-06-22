@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Target, Clock, Trophy, Search, User as UserIcon } from "lucide-react";
+import { Users, Target, Clock, Trophy, Search, User as UserIcon, KeyRound, Eye, EyeOff, Check, AlertTriangle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { resetStudentPassword } from "@/app/actions/user";
 
 type StudentPerformance = {
   id: string;
@@ -24,6 +26,19 @@ interface StudentListClientProps {
 export default function StudentListClient({ studentsPerformance }: StudentListClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<StudentPerformance | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setSelectedStudent(null);
+      setNewPassword("");
+      setShowPassword(false);
+      setResetMessage(null);
+    }
+  };
 
   const filteredStudents = studentsPerformance.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -138,7 +153,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
         )}
       </CardContent>
 
-      <Dialog open={!!selectedStudent} onOpenChange={(open) => !open && setSelectedStudent(null)}>
+      <Dialog open={!!selectedStudent} onOpenChange={handleOpenChange}>
         <DialogContent className="bg-slate-950 border-slate-800 text-slate-200 sm:max-w-[425px]">
           <DialogHeader className="border-b border-slate-800 pb-4">
             <DialogTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
@@ -188,11 +203,105 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                     "Desempenho satisfatório na linha de frente. Recomenda-se mais treinamentos simulados para elevar a taxa crítica de acertos." :
                    selectedStudent && selectedStudent.totalAnswers > 0 ?
                     "Recruta necessita de treinamento intensivo. Desempenho letal comprometido. Encaminhar para reforço teórico." :
-                    "Recruta ainda não entrou em combate."
+                     "Recruta ainda não entrou em combate."
                   }
                </p>
             </div>
+
+            {/* Password Reset Section */}
+            <div className="bg-slate-900/30 border border-slate-800 rounded-lg p-4 space-y-4">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-blue-500" />
+                Acesso & Credenciais
+              </h4>
+
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Nova senha do combatente"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-blue-500 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setNewPassword("PMCE123");
+                      setShowPassword(true);
+                    }}
+                    className="border-slate-800 hover:bg-slate-800 hover:text-white font-bold text-xs shrink-0 cursor-pointer"
+                  >
+                    Padrão (PMCE123)
+                  </Button>
+                </div>
+
+                {resetMessage && (
+                  <div
+                    className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded border ${
+                      resetMessage.type === "success"
+                        ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-400"
+                        : "bg-red-950/30 border-red-500/30 text-red-400"
+                    }`}
+                  >
+                    {resetMessage.type === "success" ? (
+                      <Check className="w-4 h-4 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                    )}
+                    <span>{resetMessage.text}</span>
+                  </div>
+                )}
+
+                <Button
+                  onClick={async () => {
+                    if (!selectedStudent) return;
+                    if (!newPassword.trim()) {
+                      setResetMessage({ type: "error", text: "Digite ou gere uma nova senha." });
+                      return;
+                    }
+                    setIsResetting(true);
+                    setResetMessage(null);
+                    try {
+                      const res = await resetStudentPassword(selectedStudent.id, newPassword);
+                      if (res.success) {
+                        setResetMessage({ type: "success", text: "Senha redefinida com sucesso!" });
+                        setNewPassword("");
+                      } else {
+                        setResetMessage({ type: "error", text: res.error || "Falha ao redefinir." });
+                      }
+                    } catch (error) {
+                      setResetMessage({ type: "error", text: "Erro ao comunicar com o servidor." });
+                    } finally {
+                      setIsResetting(false);
+                    }
+                  }}
+                  disabled={isResetting}
+                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-50 text-white font-bold h-9 uppercase tracking-widest text-xs shadow-[0_0_15px_rgba(37,99,235,0.2)] cursor-pointer"
+                >
+                  {isResetting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                      Alterando Credenciais...
+                    </>
+                  ) : (
+                    "Confirmar Nova Senha"
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
+
         </DialogContent>
       </Dialog>
     </Card>

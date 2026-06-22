@@ -22,7 +22,7 @@ where git >nul 2>nul
 set REBUILD_REQUIRED=0
 if %errorlevel% equ 0 (
     for /f "tokens=*" %%a in ('git rev-parse HEAD 2^>nul') do set BEFORE_PULL=%%a
-    :: call git pull origin main
+    :: :: call git pull origin main
     for /f "tokens=*" %%a in ('git rev-parse HEAD 2^>nul') do set AFTER_PULL=%%a
     if not "%BEFORE_PULL%"=="%AFTER_PULL%" (
         set REBUILD_REQUIRED=1
@@ -32,11 +32,11 @@ if %errorlevel% equ 0 (
 )
 
 echo [2/4] Verificando e instalando bibliotecas pendentes...
-:: call npm install --no-audit --no-fund
+:: :: call npm install --no-audit --no-fund
 
 echo [3/4] Sincronizando Banco de Dados e aplicando alteracoes...
-if not exist node_modules\.prisma\client call npx prisma generate
-:: call npx prisma db push --accept-data-loss
+if not exist node_modules\.prisma\client if not exist node_modules\.prisma\client call npx prisma generate
+:: :: call npx prisma db push --accept-data-loss
 
 echo [4/4] Verificando otimizacoes de producao...
 if "%REBUILD_REQUIRED%"=="1" (
