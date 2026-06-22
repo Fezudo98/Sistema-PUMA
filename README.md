@@ -72,6 +72,8 @@ O sistema foi construído utilizando as melhores práticas do desenvolvimento mo
 - **Login Instrutor Padrão:** Geralmente, os primeiros usuários registrados ganham a role de `INSTRUCTOR`. Use o Painel Inicial para cadastrar alunos com role `STUDENT`.
 - **Limites de Tempo:** Questões geradas pela IA geralmente vêm com 60s padrão, você pode alterar isso no código se necessário.
 - **Reconexão Rápida:** O sistema possui proteção contra recarregamentos de página; o socket é estabilizado pela ID de usuário (evitando amnésia da sala).
+- **Recuperação de Senha (Offline):** Caso um aluno (`STUDENT`) esqueça sua senha, o instrutor pode redefini-la instantaneamente através da aba **Combatentes** do Painel do Instrutor, abrindo o **Dossiê Operacional** do aluno e utilizando a redefinição rápida com a senha padrão (`PMCE123`) ou uma personalizada.
+- **Recuperação de Senha do Instrutor:** Caso o instrutor perca sua credencial, a senha pode ser restaurada localmente no notebook executando o Prisma Studio (`npx prisma studio`) ou rodando um script de atualização direta no banco de dados SQLite (`dev.db`).
 
 ---
 
