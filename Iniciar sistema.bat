@@ -19,8 +19,14 @@ if %errorlevel% neq 0 (
 :: 2. Sincronizacao Remota com GitHub
 echo [1/4] Verificando atualizacoes no GitHub...
 where git >nul 2>nul
+set REBUILD_REQUIRED=0
 if %errorlevel% equ 0 (
+    for /f "tokens=*" %%a in ('git rev-parse HEAD 2^>nul') do set BEFORE_PULL=%%a
     call git pull origin main
+    for /f "tokens=*" %%a in ('git rev-parse HEAD 2^>nul') do set AFTER_PULL=%%a
+    if not "%BEFORE_PULL%"=="%AFTER_PULL%" (
+        set REBUILD_REQUIRED=1
+    )
 ) else (
     echo [AVISO] Git nao encontrado. Pulando sincronizacao remota.
 )
@@ -32,7 +38,24 @@ echo [3/4] Sincronizando Banco de Dados e aplicando alteracoes...
 call npx prisma generate
 call npx prisma db push --accept-data-loss
 
-echo [4/4] Ambiente 100%% atualizado e sincronizado!
+echo [4/4] Verificando otimizacoes de producao...
+if "%REBUILD_REQUIRED%"=="1" (
+    echo [!] Novas atualizacoes baixadas do GitHub. Otimizando sistema...
+    call npm run build:server
+    call npm run build
+) else (
+    if not exist "server.js" (
+        echo [!] Compilando arquivos do servidor...
+        call npm run build:server
+    )
+    if not exist ".next" (
+        echo [!] Otimizando aplicacao para producao (pode demorar alguns minutos)...
+        call npm run build
+    )
+)
+
+echo.
+echo Ambiente 100%% atualizado, sincronizado e otimizado para o Celeron!
 
 echo.
 echo [!] Verificando regras de Firewall para acesso em rede (Pode solicitar permissao de Administrador)...
@@ -40,7 +63,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "if (-not (Get-NetFirewal
 
 echo.
 echo ========================================================
-echo         O SISTEMA ESTA INICIANDO...
+echo         O SISTEMA ESTA INICIANDO EM MODO PRODUCAO (LEVE)...
 echo ========================================================
 echo.
 echo Os alunos devem estar conectados na mesma rede Wi-Fi que este notebook.
@@ -60,8 +83,11 @@ echo.
 :: Dispara o navegador em background após 5 segundos
 start "" cmd /c "timeout /t 5 >nul && start http://localhost:3000"
 
+:: Forca o modo de producao ultraleve
+set NODE_ENV=production
+
 :loop
-call npm run dev:server
+call npm run start:prod
 echo.
 echo ========================================================
 echo [!] O SERVIDOR CAIU OU FOI FECHADO!

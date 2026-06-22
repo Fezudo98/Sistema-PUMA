@@ -58,12 +58,18 @@ call npx prisma generate
 call npx prisma db push
 
 echo.
+echo [6] Compilando e otimizando para Producao (Celeron leve)...
+echo Aguarde, gerando a build otimizada. Isso deixara o sistema extremamente rapido e leve.
+call npm run build:server
+call npm run build
+
+echo.
 color 0A
 echo ========================================================
 echo        INSTALACAO CONCLUIDA COM SUCESSO!
 echo ========================================================
 echo.
-echo O ambiente de desenvolvimento foi totalmente configurado.
+echo O ambiente de producao foi totalmente configurado e otimizado.
 echo O notebook do batalhao esta pronto para combate!
 echo.
 echo Agora voce pode fechar esta janela e dar um duplo clique

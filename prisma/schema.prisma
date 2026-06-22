@@ -27,7 +27,8 @@ model Simulado {
   status       String     @default("WAITING") // WAITING | ACTIVE | FINISHED
   instructorId String
   apostilaName String?
-  difficulty   String     @default("NORMAL") // NORMAL | HARD
+  topics       String?
+  difficulty   String     @default("INTERMEDIARIO") // BASICO | INTERMEDIARIO | AVANCADO
   createdAt    DateTime   @default(now())
   questions    Question[]
 }

@@ -32,7 +32,7 @@ const getBadges = (stats: any) => {
       name: 'Guerreiro',
       icon: ShieldCheck,
       earned: s.simuladosCount >= 5, 
-      desc: 'Completar 5 simulados de nível difícil e ter no mínimo 70% de média de acertos neles.',
+      desc: 'Completar 5 simulados de nível avançado e ter no mínimo 70% de média de acertos neles.',
       color: 'text-slate-300',
       bg: 'bg-slate-700/30',
       border: 'border-slate-400/50'
@@ -42,7 +42,7 @@ const getBadges = (stats: any) => {
       name: 'Veterano',
       icon: ShieldAlert,
       earned: s.simuladosCount >= 10,
-      desc: 'Completar 10 simulados de nível difícil e ter no mínimo 75% de média de acertos neles.',
+      desc: 'Completar 10 simulados de nível avançado e ter no mínimo 75% de média de acertos neles.',
       color: 'text-yellow-500',
       bg: 'bg-yellow-900/20',
       border: 'border-yellow-500/50'
@@ -53,7 +53,7 @@ const getBadges = (stats: any) => {
       icon: Crosshair,
       earned: false, 
       exclusive: true,
-      desc: 'Atingir 100% de acerto em um simulado de nível difícil de no mínimo 15 questões.',
+      desc: 'Atingir 100% de acerto em um simulado de nível avançado de no mínimo 15 questões.',
       color: 'text-emerald-500',
       bg: 'bg-emerald-900/20',
       border: 'border-emerald-500/50'
@@ -64,7 +64,7 @@ const getBadges = (stats: any) => {
       icon: Zap,
       earned: false,
       exclusive: true,
-      desc: 'Concluir um simulado de nível difícil, com tempo médio máximo de 20s e mín 80% de acertos.',
+      desc: 'Concluir um simulado de nível avançado, com tempo médio máximo de 20s e mín 80% de acertos.',
       color: 'text-amber-400',
       bg: 'bg-amber-900/20',
       border: 'border-amber-400/50'
@@ -75,7 +75,7 @@ const getBadges = (stats: any) => {
       icon: Skull,
       earned: false,
       exclusive: true,
-      desc: 'Concluir no mínimo 15 simulados difíceis e ter taxa global de acertos no mínimo 95%.',
+      desc: 'Concluir no mínimo 15 simulados avançados e ter taxa global de acertos no mínimo 95%.',
       color: 'text-purple-500',
       bg: 'bg-purple-900/20',
       border: 'border-purple-500/50'

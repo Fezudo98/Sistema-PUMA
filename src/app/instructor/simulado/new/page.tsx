@@ -27,9 +27,10 @@ export default function NovoSimulado() {
 
   // Settings State
   const [qtd, setQtd] = useState("5");
-  const [dificuldade, setDificuldade] = useState("MEDIO");
+  const [dificuldade, setDificuldade] = useState("INTERMEDIARIO");
   const [tempo, setTempo] = useState("60");
   const [isRaffleMode, setIsRaffleMode] = useState(false);
+  const [topics, setTopics] = useState("");
 
   useEffect(() => {
     fetch("/api/apostilas")
@@ -48,9 +49,11 @@ export default function NovoSimulado() {
 
     setLoading(true);
     const formData = new FormData();
+    let nameOfApostila = "";
     
     if (selectedApostilaId === "upload") {
       formData.append("pdf", file as File);
+      nameOfApostila = file ? file.name : "Upload";
       
       // Se for um novo arquivo e marcou para salvar
       if (saveApostila) {
@@ -64,11 +67,14 @@ export default function NovoSimulado() {
       }
     } else {
       formData.append("apostilaId", selectedApostilaId);
+      const apoObj = apostilas.find(a => a.id === selectedApostilaId);
+      nameOfApostila = apoObj ? apoObj.title : "Apostila";
     }
 
     formData.append("qtd", qtd);
     formData.append("dificuldade", dificuldade);
     formData.append("tempo", tempo);
+    formData.append("topics", topics);
 
     try {
       const response = await fetch("/api/generate", {
@@ -83,7 +89,13 @@ export default function NovoSimulado() {
       }
 
       localStorage.setItem("generated_questions", JSON.stringify(data.questions));
-      localStorage.setItem("simulado_config", JSON.stringify({ tempo: parseInt(tempo), isRaffleMode, dificuldade }));
+      localStorage.setItem("simulado_config", JSON.stringify({ 
+        tempo: parseInt(tempo), 
+        isRaffleMode, 
+        dificuldade, 
+        apostilaName: nameOfApostila, 
+        topics 
+      }));
       
       router.push("/instructor/simulado/review");
       
@@ -207,9 +219,9 @@ export default function NovoSimulado() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FACIL">Fácil</SelectItem>
-                      <SelectItem value="MEDIO">Médio</SelectItem>
-                      <SelectItem value="DIFICIL">Difícil</SelectItem>
+                      <SelectItem value="BASICO">Básico</SelectItem>
+                      <SelectItem value="INTERMEDIARIO">Intermediário</SelectItem>
+                      <SelectItem value="AVANCADO">Avançado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -232,6 +244,23 @@ export default function NovoSimulado() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Tópicos Específicos */}
+              <div className="space-y-3 bg-slate-50 p-6 rounded-lg border border-slate-200">
+                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  Tópicos Específicos (Opcional)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Ex: Tópico 1 ao 4, Tópico 2, ou Tópico 1, 3 e 5"
+                  value={topics}
+                  onChange={(e) => setTopics(e.target.value)}
+                  className="bg-white border-slate-200 focus:border-blue-500 h-12 text-base shadow-sm"
+                />
+                <p className="text-xs text-slate-500">
+                  Especifique tópicos ou seções do material para filtrar a geração das questões (ex: <em>"Tópico 1 ao 4"</em>, <em>"Capítulo 3"</em>). Deixe em branco para considerar todo o PDF.
+                </p>
               </div>
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">

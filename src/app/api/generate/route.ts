@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     const apostilaId = formData.get("apostilaId") as string | null;
     const qtdStr = formData.get("qtd") as string;
     const dificuldade = formData.get("dificuldade") as string;
+    const topics = formData.get("topics") as string | null;
 
     if (!file && !apostilaId) {
       return NextResponse.json({ error: "Nenhum arquivo ou apostila fornecida." }, { status: 400 });
@@ -87,9 +88,14 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    const prompt = `Você é um instrutor especialista elaborando um simulado.
-    Analise o documento PDF em anexo rigorosamente.
-    Crie exatamente ${qtd} questões de múltipla escolha utilizando EXCLUSIVAMENTE o conteúdo DIDÁTICO e TÉCNICO contido no PDF (os assuntos centrais que serão cobrados em prova).
+    let prompt = `Você é um instrutor especialista elaborando um simulado.
+    Analise o documento PDF em anexo rigorosamente.`;
+
+    if (topics && topics.trim()) {
+      prompt += `\n    Foque o simulado EXCLUSIVAMENTE nos seguintes tópicos do material PDF: "${topics}". Ignore conteúdos que não façam parte de tais tópicos.`;
+    }
+
+    prompt += `\n    Crie exatamente ${qtd} questões de múltipla escolha utilizando EXCLUSIVAMENTE o conteúdo DIDÁTICO e TÉCNICO contido no PDF (os assuntos centrais que serão cobrados em prova).
     
     REGRAS CRÍTICAS DE ELABORAÇÃO:
     1. OBJETIVIDADE EXTREMA (Estilo Quiz): O tempo do aluno é curto. Crie enunciados diretos, ágeis e sem enrolação. As alternativas também devem ser o mais curtas e objetivas possíveis.
@@ -97,7 +103,7 @@ export async function POST(req: NextRequest) {
     3. FOCO TÉCNICO: NUNCA elabore questões sobre metadados do documento (ignore nomes de autores, diretores, reitores, ficha catalográfica, histórico de edições ou índices). Foque apenas na matéria/teoria militar e policial.
     4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
     
-    O nível de dificuldade deve ser: ${dificuldade || 'médio'}.
+    O nível de dificuldade deve ser: ${dificuldade || 'intermediário'}.
     Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 
     const generateWithFallback = async (content: any[]) => {

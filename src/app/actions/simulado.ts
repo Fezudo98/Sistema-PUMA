@@ -18,6 +18,7 @@ function generateCode() {
 export async function createSimulado(data: {
   tempoPorQuestao: number;
   apostilaName?: string;
+  topics?: string;
   difficulty?: string;
   questions: {
     enunciado: string;
@@ -47,7 +48,8 @@ export async function createSimulado(data: {
         instructorId: user.userId,
         status: "WAITING",
         apostilaName: data.apostilaName,
-        difficulty: data.difficulty || "NORMAL",
+        topics: data.topics,
+        difficulty: data.difficulty || "INTERMEDIARIO",
         questions: {
           create: data.questions.map((q) => ({
             enunciado: q.enunciado,

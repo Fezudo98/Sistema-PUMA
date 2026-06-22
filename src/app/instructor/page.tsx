@@ -138,8 +138,11 @@ export default async function InstructorDashboard() {
                       <span className="flex items-center"><Target className="w-4 h-4 mr-2 text-blue-500"/> {simulado._count.questions} Alvos (Questões)</span>
                     </div>
                     {simulado.apostilaName && (
-                      <div className="flex items-center text-xs text-slate-400 bg-slate-950 border border-slate-800 rounded px-3 py-2 truncate">
+                      <div className="flex flex-col gap-1 text-xs text-slate-400 bg-slate-950 border border-slate-800 rounded px-3 py-2">
                         <span className="font-bold truncate">Base: {simulado.apostilaName}</span>
+                        {simulado.topics && (
+                          <span className="text-blue-400 font-medium truncate">Tópicos: {simulado.topics}</span>
+                        )}
                       </div>
                     )}
                     

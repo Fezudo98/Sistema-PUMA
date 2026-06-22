@@ -84,9 +84,12 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
             </CardContent>
           </Card>
           <Card className="bg-slate-900/50 border-slate-800 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-slate-500 uppercase tracking-wider mb-2">Apostila Base</p>
-              <p className="text-sm font-semibold text-blue-400 mt-3 truncate px-2">{simulado.apostilaName || "N/A"}</p>
+            <CardContent className="p-6 text-center flex flex-col justify-center min-h-[100px]">
+              <p className="text-sm text-slate-500 uppercase tracking-wider mb-1">Apostila Base</p>
+              <p className="text-sm font-semibold text-blue-400 truncate px-2">{simulado.apostilaName || "N/A"}</p>
+              {simulado.topics && (
+                <p className="text-xs text-slate-500 mt-1 truncate px-2" title={simulado.topics}>Tópicos: {simulado.topics}</p>
+              )}
             </CardContent>
           </Card>
         </div>

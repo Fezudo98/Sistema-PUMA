@@ -61,7 +61,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       // Either all questions, or at least 10 questions to prevent 1-question exploits
       const isCompleteEnough = qCount === totalQuestionsInSimulado || qCount >= 10;
 
-      if (difficulty === "DIFICIL" && isCompleteEnough) {
+      if (difficulty === "AVANCADO" && isCompleteEnough) {
         if (acc >= 70) hardSimuladosWith70Acc++;
         if (acc >= 75) hardSimuladosWith75Acc++;
         
