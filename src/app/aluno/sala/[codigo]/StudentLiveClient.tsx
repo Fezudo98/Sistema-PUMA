@@ -36,6 +36,33 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
   const [showParticipants, setShowParticipants] = useState(false);
 
+  // Refs to avoid stale state in Socket.io event listeners
+  const selectedAltRef = useRef<number>(-1);
+  const hasConfirmedRef = useRef<boolean>(false);
+  const currentQuestionRef = useRef<any>(null);
+  const startTimeRef = useRef<number>(0);
+  const raffleWinnerRef = useRef<any>(null);
+
+  useEffect(() => {
+    selectedAltRef.current = selectedAlt;
+  }, [selectedAlt]);
+
+  useEffect(() => {
+    hasConfirmedRef.current = hasConfirmed;
+  }, [hasConfirmed]);
+
+  useEffect(() => {
+    currentQuestionRef.current = currentQuestion;
+  }, [currentQuestion]);
+
+  useEffect(() => {
+    startTimeRef.current = startTime;
+  }, [startTime]);
+
+  useEffect(() => {
+    raffleWinnerRef.current = raffleWinner;
+  }, [raffleWinner]);
+
   // Limpa o toast de badge após 6 segundos
   useEffect(() => {
     if (unlockedBadges.length > 0) {
@@ -68,7 +95,11 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   }, [isRaffling, students, raffleWinner]);
 
   useEffect(() => {
-    const s = io();
+    const s = io({
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity
+    });
     setSocket(s);
 
     s.emit("join_room", { roomCode: simulado.codigoSala, user });
@@ -118,6 +149,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       }
       if (data.answeredStudentIds) {
         setAnsweredStudentIds(data.answeredStudentIds);
+        if (data.answeredStudentIds.includes(user.userId)) {
+          setHasConfirmed(true);
+        }
       }
     });
 
@@ -189,6 +223,20 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
     s.on("time_up", () => {
       setIsTimeUp(true);
       setIsPaused(false);
+
+      // Auto-confirm option if selected but not confirmed yet
+      const isObserver = raffleWinnerRef.current && raffleWinnerRef.current.id !== user.userId;
+      if (selectedAltRef.current !== -1 && !hasConfirmedRef.current && currentQuestionRef.current && !isObserver) {
+        setHasConfirmed(true);
+        const timeGasto = Math.max(0, Math.floor((Date.now() - startTimeRef.current) / 1000));
+        s.emit("submit_answer", {
+          roomCode: simulado.codigoSala,
+          questionId: currentQuestionRef.current.id,
+          studentId: user.userId,
+          alternativa: selectedAltRef.current,
+          tempoGasto: timeGasto
+        });
+      }
     });
 
     s.on("question_ended", (data) => {
@@ -290,6 +338,19 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white px-2">Sair</Button>
           </Link>
           <span className="font-bold text-slate-300">SALA {simulado.codigoSala}</span>
+          
+          {(() => {
+            const myRankIndex = ranking.findIndex(r => r.id === user.userId);
+            if (myRankIndex === -1) return null;
+            const myRank = myRankIndex + 1;
+            const myData = ranking[myRankIndex];
+            return (
+              <div className="flex items-center gap-1.5 bg-blue-950/40 border border-blue-500/30 px-2.5 py-1 rounded-full text-blue-400 font-bold text-xs shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                <Trophy className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
+                <span>{myRank}º <span className="text-slate-400 text-[10px] sm:text-xs">({myData.score} pts)</span></span>
+              </div>
+            );
+          })()}
         </div>
         {currentQuestion && !questionEndedData && (
           <div className={`flex items-center gap-2 ${isPaused ? 'bg-amber-900/40 border border-amber-500/50' : 'bg-slate-800'} px-3 py-1.5 rounded-full transition-colors`}>

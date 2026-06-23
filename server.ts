@@ -197,6 +197,7 @@ interface RoomState {
   answeredStudentIds: string[];
 }
 const rooms = new Map<string, RoomState>();
+const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 
 // Track socket connection info to handle disconnects
 const socketInfo = new Map<string, { roomCode: string; userId: string; role: string; name: string }>();
@@ -214,7 +215,9 @@ app.prepare().then(() => {
   });
 
   const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: { origin: '*', methods: ['GET', 'POST'] },
+    pingTimeout: 30000,
+    pingInterval: 10000
   });
 
   io.on('connection', (socket) => {
@@ -247,6 +250,14 @@ app.prepare().then(() => {
       const room = rooms.get(roomCode)!;
       if (user.role === 'STUDENT') {
         const uid = user.userId || user.id;
+        
+        // Cancel pending disconnect timeout if any
+        if (disconnectTimeouts.has(uid)) {
+          clearTimeout(disconnectTimeouts.get(uid)!);
+          disconnectTimeouts.delete(uid);
+          console.log(`[Socket] Reconnection detected. Cancelled disconnect timeout for user ${uid}`);
+        }
+
         const existingStudent = room.students.find(s => s.id === uid);
         if (!existingStudent) {
           room.students.push({ id: uid, name: user.name, avatarUrl: user.avatarUrl });
@@ -568,6 +579,18 @@ app.prepare().then(() => {
 
       if (room.raffleWinnerId && room.raffleWinnerId !== studentId) return;
 
+      // Prevent duplicate answers
+      const existingAnswer = await prisma.answer.findFirst({
+        where: {
+          questionId,
+          studentId
+        }
+      });
+      if (existingAnswer) {
+        console.log(`[Socket] Answer already exists for student ${studentId} on question ${questionId}. Ignoring duplicate.`);
+        return;
+      }
+
       const isCorrect = Number(room.currentQuestion.correta) === Number(alternativa);
       
       let pontuacao = 0;
@@ -580,18 +603,7 @@ app.prepare().then(() => {
 
       // Atualiza o Ranking Acumulado e a Sequência (Streak)
       if (room.studentScores[studentId]) {
-        // Rastreia ranking antes e depois para notificações de ultrapassagem
-        const rankingBefore = Object.values(room.studentScores)
-          .sort((a: any, b: any) => b.score - a.score)
-          .map(s => s.id);
-        const positionBefore = rankingBefore.indexOf(studentId);
-
         room.studentScores[studentId].score += pontuacao;
-
-        const rankingAfter = Object.values(room.studentScores)
-          .sort((a: any, b: any) => b.score - a.score)
-          .map(s => s.id);
-        const positionAfter = rankingAfter.indexOf(studentId);
         
         const currentStreak = room.studentScores[studentId].streak;
         const studentName = room.studentScores[studentId].name.split(' ')[0]; // Pega só o primeiro nome
@@ -599,17 +611,6 @@ app.prepare().then(() => {
         
         if (!room.pendingNotifications) {
           room.pendingNotifications = [];
-        }
-
-        // Notificação de ultrapassagem caso tenha acertado e subido de posição
-        if (positionBefore !== -1 && positionAfter < positionBefore && isCorrect) {
-          const diff = positionBefore - positionAfter;
-          if (positionBefore >= 3) {
-            // O aluno estava em 4º ou pior e subiu de posição
-            room.pendingNotifications.push(`⚡ RECUPERAÇÃO! ${studentName} acelerou o passo e ultrapassou ${diff} combatente${diff > 1 ? 's' : ''}!`);
-          } else {
-            room.pendingNotifications.push(`🏃 QRA ${studentName} avançou no ranking e ultrapassou ${diff} combatente${diff > 1 ? 's' : ''}!`);
-          }
         }
 
         if (isCorrect) {
@@ -680,6 +681,9 @@ app.prepare().then(() => {
       const currentSimuladoId = room.currentQuestion.simuladoId;
       checkAndUnlockBadges(studentId, io, currentSimuladoId);
 
+      // Envia o ranking atualizado em tempo real para todos os alunos
+      const currentRanking = Object.values(room.studentScores).sort((a: any, b: any) => b.score - a.score);
+      io.to(roomCode).emit('ranking_update', { ranking: currentRanking });
     });
 
     // Instructor ends simulado
@@ -706,14 +710,30 @@ app.prepare().then(() => {
         socketInfo.delete(socket.id);
         const room = rooms.get(info.roomCode);
         if (room && info.role === 'STUDENT') {
-          // Remove da lista de online
-          room.students = room.students.filter(s => s.id !== info.userId);
-          io.to(info.roomCode).emit('room_update', { 
-            status: room.status, 
-            studentCount: room.students.length,
-            students: room.students,
-            currentQuestion: room.currentQuestion 
-          });
+          const uid = info.userId;
+          
+          if (disconnectTimeouts.has(uid)) {
+            clearTimeout(disconnectTimeouts.get(uid)!);
+          }
+          
+          // Wait 15 seconds before removing from online students to handle transient disconnects
+          const timeout = setTimeout(() => {
+            disconnectTimeouts.delete(uid);
+            const currentRoom = rooms.get(info.roomCode);
+            if (currentRoom) {
+              currentRoom.students = currentRoom.students.filter(s => s.id !== uid);
+              io.to(info.roomCode).emit('room_update', { 
+                status: currentRoom.status, 
+                studentCount: currentRoom.students.length,
+                students: currentRoom.students,
+                currentQuestion: currentRoom.currentQuestion 
+              });
+              console.log(`[Socket] Removed user ${uid} from room ${info.roomCode} after grace period`);
+            }
+          }, 15000);
+          
+          disconnectTimeouts.set(uid, timeout);
+          console.log(`[Socket] User ${uid} disconnected. Started 15s grace period.`);
         }
       }
     });
