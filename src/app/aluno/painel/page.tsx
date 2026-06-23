@@ -138,5 +138,32 @@ export default async function AlunoPainel() {
     };
   }).sort((a, b) => b.totalScore - a.totalScore);
 
-  return <StudentDashboardClient user={clientUser} stats={stats} generalRanking={generalRanking} />;
+  // Buscar simulados ativos (WAITING ou ACTIVE)
+  const activeRooms = await prisma.simulado.findMany({
+    where: {
+      status: {
+        in: ["WAITING", "ACTIVE"]
+      }
+    },
+    select: {
+      id: true,
+      codigoSala: true,
+      status: true,
+      createdAt: true,
+      apostilaName: true,
+      difficulty: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  return (
+    <StudentDashboardClient 
+      user={clientUser} 
+      stats={stats} 
+      generalRanking={generalRanking} 
+      activeRooms={activeRooms} 
+    />
+  );
 }

@@ -134,7 +134,17 @@ const getBadges = (stats: any) => {
   ];
 };
 
-export default function StudentDashboardClient({ user, stats, generalRanking = [] }: { user: any, stats?: any, generalRanking?: any[] }) {
+export default function StudentDashboardClient({ 
+  user, 
+  stats, 
+  generalRanking = [], 
+  activeRooms = [] 
+}: { 
+  user: any; 
+  stats?: any; 
+  generalRanking?: any[]; 
+  activeRooms?: any[]; 
+}) {
   const [codigo, setCodigo] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState("");
   const [loadingAi, setLoadingAi] = useState(false);
@@ -223,33 +233,72 @@ export default function StudentDashboardClient({ user, stats, generalRanking = [
           {/* Left Column: Join Room & Strengths/Weaknesses */}
           <div className="lg:col-span-1 space-y-8">
             
-            {/* Join Room Card */}
-            <Card className="border-blue-900/50 bg-blue-950/20 shadow-2xl overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-              <CardHeader>
-                <CardTitle className="text-xl text-white flex items-center gap-2">
-                  <Play className="w-5 h-5 text-blue-400" />
-                  Entrar em Simulado
-                </CardTitle>
-                <CardDescription className="text-slate-400">
-                  Insira o código do telão para iniciar
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleEntrar} className="space-y-4">
-                  <Input 
-                    placeholder="CÓDIGO DA SALA" 
-                    value={codigo}
-                    onChange={(e) => setCodigo(e.target.value)}
-                    className="bg-slate-900/50 border-slate-700 h-14 text-center text-2xl uppercase tracking-[0.3em] font-bold text-white"
-                    maxLength={6}
-                  />
-                  <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-bold" disabled={!codigo.trim()}>
-                    Participar Agora
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+             {/* Join Room Card */}
+             <Card className="border-blue-900/50 bg-blue-950/20 shadow-2xl overflow-hidden relative">
+               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+               <CardHeader>
+                 <CardTitle className="text-xl text-white flex items-center gap-2">
+                   <Play className="w-5 h-5 text-blue-400" />
+                   Entrar em Simulado
+                 </CardTitle>
+                 <CardDescription className="text-slate-400">
+                   {activeRooms && activeRooms.length > 0 
+                     ? "Insira o código do telão ou acesse um simulado ativo abaixo:" 
+                     : "Insira o código do telão para iniciar"}
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <form onSubmit={handleEntrar} className="space-y-4">
+                   <Input 
+                     placeholder="CÓDIGO DA SALA" 
+                     value={codigo}
+                     onChange={(e) => setCodigo(e.target.value)}
+                     className="bg-slate-900/50 border-slate-700 h-14 text-center text-2xl uppercase tracking-[0.3em] font-bold text-white"
+                     maxLength={6}
+                   />
+                   <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-bold" disabled={!codigo.trim()}>
+                     Participar via Código
+                   </Button>
+                 </form>
+
+                 {activeRooms && activeRooms.length > 0 && (
+                   <div className="pt-4 border-t border-blue-900/40 space-y-3">
+                     <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest block">
+                       🔴 Simulados ao Vivo (Disponíveis)
+                     </label>
+                     <div className="space-y-2">
+                       {activeRooms.map((room: any) => (
+                         <button
+                           key={room.id}
+                           onClick={() => router.push(`/aluno/sala/${room.codigoSala}`)}
+                           className="w-full p-3 rounded-lg border border-emerald-500/30 bg-emerald-950/10 hover:bg-emerald-950/20 transition-all flex items-center justify-between text-left group cursor-pointer"
+                         >
+                           <div className="min-w-0 flex-1 pr-2">
+                             <span className="font-mono text-sm font-black text-emerald-400 group-hover:underline flex items-center gap-1.5">
+                               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                               Sala: {room.codigoSala}
+                             </span>
+                             <span className="text-[10px] font-bold text-slate-500 block uppercase truncate mt-0.5">
+                               {room.apostilaName || "Simulado da IA"}
+                             </span>
+                           </div>
+                           <div className="flex items-center gap-2 shrink-0">
+                             <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${
+                               room.status === "WAITING"
+                                 ? "bg-amber-950/50 border-amber-500/20 text-amber-400"
+                                 : "bg-emerald-950/50 border-emerald-500/20 text-emerald-400"
+                             }`}>
+                               {room.status === "WAITING" ? "Aguardando" : "Ao Vivo"}
+                             </span>
+                             <Play className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+                           </div>
+                         </button>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+               </CardContent>
+             </Card>
 
             {/* Strengths & Weaknesses */}
             <Card className="border-slate-800 bg-slate-900/40 relative overflow-hidden">
