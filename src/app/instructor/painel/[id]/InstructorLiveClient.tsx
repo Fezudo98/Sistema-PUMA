@@ -56,7 +56,9 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
     const s = io();
     setSocket(s);
 
-    s.emit("join_room", { roomCode: simulado.codigoSala, user });
+    s.on("connect", () => {
+      s.emit("join_room", { roomCode: simulado.codigoSala, user });
+    });
 
     s.on("room_update", (data) => {
       setStudents(data.students);

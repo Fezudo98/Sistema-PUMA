@@ -102,7 +102,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
     });
     setSocket(s);
 
-    s.emit("join_room", { roomCode: simulado.codigoSala, user });
+    s.on("connect", () => {
+      s.emit("join_room", { roomCode: simulado.codigoSala, user });
+    });
 
     s.on("room_update", (data) => {
       if (data.students) setStudents(data.students);
