@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -134,7 +134,7 @@ const getBadges = (stats: any) => {
   ];
 };
 
-export default function StudentDashboardClient({ user, stats }: { user: any, stats?: any }) {
+export default function StudentDashboardClient({ user, stats, generalRanking = [] }: { user: any, stats?: any, generalRanking?: any[] }) {
   const [codigo, setCodigo] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState("");
   const [loadingAi, setLoadingAi] = useState(false);
@@ -273,6 +273,60 @@ export default function StudentDashboardClient({ user, stats }: { user: any, sta
                 ) : (
                   <div className="text-slate-300 leading-relaxed text-sm italic border-l-4 border-slate-700 pl-4 py-2 bg-slate-800/30 rounded-r-lg">
                     "{aiAnalysis}"
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Ranking Geral da Sala */}
+            <Card className="border-slate-800 bg-slate-900/40 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-white flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                  Ranking Geral da Sala
+                </CardTitle>
+                <CardDescription className="text-xs">Classificação geral de todos os combatentes ativos.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 max-h-[350px] overflow-y-auto custom-scrollbar">
+                {generalRanking.length === 0 ? (
+                  <div className="p-6 text-center text-slate-500 text-sm">Nenhum combatente ativo.</div>
+                ) : (
+                  <div className="divide-y divide-slate-800/50">
+                    {generalRanking.map((aluno, index) => {
+                      const isMe = aluno.id === user.userId;
+                      return (
+                        <div 
+                          key={aluno.id} 
+                          className={`flex items-center justify-between p-3.5 transition-colors ${
+                            isMe 
+                              ? 'bg-blue-950/20 border-y border-blue-500/20 shadow-[inset_0_0_15px_rgba(59,130,246,0.05)]' 
+                              : 'hover:bg-slate-800/30'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className={`flex items-center justify-center shrink-0 w-6 h-6 rounded-full text-xs font-black ${
+                              index === 0 ? 'bg-yellow-500 text-yellow-950 shadow-[0_0_10px_rgba(234,179,8,0.3)]' : 
+                              index === 1 ? 'bg-slate-300 text-slate-800' :
+                              index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                              {index + 1}
+                            </span>
+                            {aluno.avatarUrl ? (
+                              <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0 border border-slate-700">
+                                {aluno.name.substring(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                            <span className={`font-bold truncate text-sm uppercase ${isMe ? 'text-blue-400' : 'text-slate-200'}`}>
+                              {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
+                            </span>
+                          </div>
+                          <span className="font-mono font-black text-xs text-blue-400 ml-2 shrink-0">{aluno.totalScore} pts</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>

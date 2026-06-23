@@ -115,5 +115,28 @@ export default async function AlunoPainel() {
     history
   };
 
-  return <StudentDashboardClient user={clientUser} stats={stats} />;
+  // Buscar ranking geral da sala (todos os alunos e suas somas de score)
+  const dbStudents = await prisma.user.findMany({
+    where: { role: "STUDENT" },
+    include: {
+      answers: {
+        select: {
+          pontuacao: true
+        }
+      }
+    }
+  });
+
+  const generalRanking = dbStudents.map(student => {
+    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
+    return {
+      id: student.id,
+      name: student.name,
+      numero: (student as any).numero || null,
+      avatarUrl: student.avatarUrl,
+      totalScore
+    };
+  }).sort((a, b) => b.totalScore - a.totalScore);
+
+  return <StudentDashboardClient user={clientUser} stats={stats} generalRanking={generalRanking} />;
 }
