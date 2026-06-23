@@ -104,24 +104,24 @@ export default function NovoSimulado() {
       setLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
       <div className="max-w-3xl mx-auto">
         <Link href="/instructor">
-          <Button variant="ghost" className="mb-6 text-slate-500 hover:text-slate-800">
+          <Button variant="ghost" className="mb-6 text-slate-400 hover:text-white hover:bg-slate-900/50 font-bold">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar ao Painel
           </Button>
         </Link>
 
-        <Card className="border-slate-200 shadow-xl bg-white">
-          <CardHeader className="bg-blue-600 text-white rounded-t-xl">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <FileUp className="w-6 h-6" />
+        <Card className="bg-slate-900/40 border-slate-800 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-emerald-500"></div>
+          <CardHeader className="border-b border-slate-800 bg-slate-900/80 p-6">
+            <CardTitle className="text-2xl font-black text-white uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+              <FileUp className="w-6 h-6 text-blue-500 animate-pulse" />
               Novo Simulado (IA)
             </CardTitle>
-            <CardDescription className="text-blue-100">
+            <CardDescription className="text-slate-400 font-medium">
               Escolha uma apostila salva ou faça upload de um novo PDF para gerar as questões.
             </CardDescription>
           </CardHeader>
@@ -131,21 +131,21 @@ export default function NovoSimulado() {
               
               {/* Material Source Selection */}
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-blue-500" />
                   Fonte do Material Base
                 </label>
                 
                 <Select value={selectedApostilaId} onValueChange={(v) => setSelectedApostilaId(v || "")}>
-                  <SelectTrigger className="h-12 text-lg">
+                  <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
                     <SelectValue placeholder="Selecione a origem do PDF" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="upload" className="font-bold text-blue-600">
+                  <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
+                    <SelectItem value="upload" className="font-bold text-blue-500 focus:bg-blue-950/40 focus:text-blue-400">
                       + Fazer Upload de Novo Arquivo PDF
                     </SelectItem>
                     {apostilas.map(apo => (
-                      <SelectItem key={apo.id} value={apo.id}>
+                      <SelectItem key={apo.id} value={apo.id} className="focus:bg-slate-800 focus:text-white">
                         {apo.title} (Salvo em {new Date(apo.createdAt).toLocaleDateString()})
                       </SelectItem>
                     ))}
@@ -155,11 +155,11 @@ export default function NovoSimulado() {
 
               {/* PDF Upload Area - Only visible if "upload" is selected */}
               {selectedApostilaId === "upload" && (
-                <div className="space-y-3 bg-slate-50 p-6 rounded-lg border border-slate-200">
-                  <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+                <div className="space-y-3 bg-slate-950/40 p-6 rounded-xl border border-slate-800">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">
                     Arquivo PDF
                   </label>
-                  <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center hover:bg-blue-50 transition-colors bg-white">
+                  <div className="border-2 border-dashed border-slate-800 rounded-xl p-8 text-center hover:bg-slate-900/40 hover:border-blue-500/50 transition-all bg-slate-950/60 cursor-pointer">
                     <Input 
                       type="file" 
                       accept="application/pdf"
@@ -168,8 +168,8 @@ export default function NovoSimulado() {
                       id="pdf-upload"
                     />
                     <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
-                      <FileUp className="w-10 h-10 text-blue-500 mb-3" />
-                      <span className="text-base font-medium text-slate-700">
+                      <FileUp className="w-10 h-10 text-blue-500 mb-3 animate-bounce" />
+                      <span className="text-base font-bold text-slate-300">
                         {file ? file.name : "Clique para selecionar ou arraste o PDF aqui"}
                       </span>
                     </label>
@@ -181,10 +181,10 @@ export default function NovoSimulado() {
                       id="save-apostila" 
                       checked={saveApostila} 
                       onChange={e => setSaveApostila(e.target.checked)} 
-                      className="w-4 h-4 text-blue-600 rounded border-slate-300"
+                      className="w-4 h-4 text-blue-600 bg-slate-950 border-slate-800 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="save-apostila" className="text-sm text-slate-600 flex items-center gap-1 cursor-pointer">
-                      <Save className="w-4 h-4" />
+                    <label htmlFor="save-apostila" className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 cursor-pointer">
+                      <Save className="w-4 h-4 text-slate-500" />
                       Salvar este PDF na biblioteca de Apostilas para uso futuro
                     </label>
                   </div>
@@ -194,12 +194,12 @@ export default function NovoSimulado() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Quantidade */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Qtd. de Questões</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Qtd. de Questões</label>
                   <Select value={qtd} onValueChange={(v) => setQtd(v || "")}>
-                    <SelectTrigger className="h-12 text-lg">
+                    <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
                       <SelectItem value="3">3 Questões</SelectItem>
                       <SelectItem value="5">5 Questões</SelectItem>
                       <SelectItem value="10">10 Questões</SelectItem>
@@ -213,12 +213,12 @@ export default function NovoSimulado() {
 
                 {/* Dificuldade */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Dificuldade</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dificuldade</label>
                   <Select value={dificuldade} onValueChange={(v) => setDificuldade(v || "")}>
-                    <SelectTrigger className="h-12 text-lg">
+                    <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
                       <SelectItem value="BASICO">Básico</SelectItem>
                       <SelectItem value="INTERMEDIARIO">Intermediário</SelectItem>
                       <SelectItem value="AVANCADO">Avançado</SelectItem>
@@ -228,12 +228,12 @@ export default function NovoSimulado() {
 
                 {/* Tempo */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Tempo/Questão</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tempo/Questão</label>
                   <Select value={tempo} onValueChange={(v) => setTempo(v || "")}>
-                    <SelectTrigger className="h-12 text-lg">
+                    <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
                       <SelectItem value="15">15 Segundos</SelectItem>
                       <SelectItem value="30">30 Segundos</SelectItem>
                       <SelectItem value="45">45 Segundos</SelectItem>
@@ -247,8 +247,8 @@ export default function NovoSimulado() {
               </div>
 
               {/* Tópicos Específicos */}
-              <div className="space-y-3 bg-slate-50 p-6 rounded-lg border border-slate-200">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <div className="space-y-3 bg-slate-950/40 p-6 rounded-xl border border-slate-800">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   Tópicos Específicos (Opcional)
                 </label>
                 <Input
@@ -256,47 +256,47 @@ export default function NovoSimulado() {
                   placeholder="Ex: Tópico 1 ao 4, Tópico 2, ou Tópico 1, 3 e 5"
                   value={topics}
                   onChange={(e) => setTopics(e.target.value)}
-                  className="bg-white border-slate-200 focus:border-blue-500 h-12 text-base shadow-sm"
+                  className="bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500 h-12 text-base shadow-sm placeholder:text-slate-700"
                 />
-                <p className="text-xs text-slate-500">
-                  Especifique tópicos ou seções do material para filtrar a geração das questões (ex: <em>"Tópico 1 ao 4"</em>, <em>"Capítulo 3"</em>). Deixe em branco para considerar todo o PDF.
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+                  Especifique tópicos ou seções do material para filtrar a geração das questões (ex: <em className="text-blue-500">"Tópico 1 ao 4"</em>, <em className="text-blue-500">"Capítulo 3"</em>). Deixe em branco para considerar todo o PDF.
                 </p>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <label className="text-sm font-bold text-slate-700 flex items-center gap-2 cursor-pointer">
+              <div className="bg-slate-950/40 p-5 rounded-xl border border-slate-800">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-white transition-colors">
                   <input 
                     type="checkbox" 
                     checked={isRaffleMode} 
                     onChange={e => setIsRaffleMode(e.target.checked)} 
-                    className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" 
+                    className="w-5 h-5 rounded border-slate-800 bg-slate-950 text-blue-600 focus:ring-blue-500 cursor-pointer" 
                   />
                   Modo Sorteio (Roleta Tática) 🎲
                 </label>
-                <p className="text-xs text-slate-500 mt-1 ml-7">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 ml-7.5">
                   Se ativado, todas as questões desse simulado sortearão automaticamente um aluno para responder.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
+              <div className="pt-4 border-t border-slate-800/80">
                 <Button 
                   type="submit" 
-                  className="w-full h-14 text-lg font-bold bg-blue-600 hover:bg-blue-700 shadow-lg"
+                  className="w-full h-14 text-base font-bold bg-blue-600 hover:bg-blue-500 shadow-lg uppercase tracking-widest disabled:opacity-50 cursor-pointer"
                   disabled={loading || (selectedApostilaId === "upload" && !file)}
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin text-white" />
                       Analisando Material e Gerando Questões...
                     </>
                   ) : (
                     <>
-                      <Settings className="w-5 h-5 mr-2" />
+                      <Settings className="w-5 h-5 mr-2 text-white animate-spin" />
                       Processar e Gerar Questões
                     </>
                   )}
                 </Button>
-                <p className="text-center text-xs text-slate-500 mt-4">
+                <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-4">
                   O tempo de processamento varia conforme o tamanho do Material (aprox. 10 a 30 segundos).
                 </p>
               </div>
