@@ -1,3 +1,63 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+function setupLogger() {
+  try {
+    const logDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    const logFile = path.join(logDir, 'puma.log');
+    const logStream = fs.createWriteStream(logFile, { flags: 'a', encoding: 'utf8' });
+
+    const formatMessage = (level: string, args: any[]) => {
+      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      const message = args.map(arg => {
+        if (arg instanceof Error) {
+          return arg.stack || arg.message;
+        }
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch {
+            return String(arg);
+          }
+        }
+        return String(arg);
+      }).join(' ');
+      return `[${timestamp}] [${level}] ${message}\n`;
+    };
+
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+
+    console.log = (...args: any[]) => {
+      logStream.write(formatMessage('INFO', args));
+      originalLog.apply(console, args);
+    };
+
+    console.error = (...args: any[]) => {
+      logStream.write(formatMessage('ERROR', args));
+      originalError.apply(console, args);
+    };
+
+    console.warn = (...args: any[]) => {
+      logStream.write(formatMessage('WARN', args));
+      originalWarn.apply(console, args);
+    };
+
+    console.log("==================================================");
+    console.log("PUMA: Registrador de logs ativado em /logs/puma.log");
+    console.log("==================================================");
+  } catch (error) {
+    console.error("Falha ao inicializar o gravador de logs:", error);
+  }
+}
+
+setupLogger();
+
 import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';

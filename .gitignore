@@ -51,3 +51,7 @@ dev.db
 # Uploads
 /public/uploads/
 /uploads/
+
+# Logs
+/logs/
+*.log
