@@ -31,12 +31,33 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
 
     const correctAnswers = student.answers.filter(a => a.isCorrect);
 
+    // Get other students' raffle answers in the participated simulados
+    const simuladoIds = Array.from(new Set(student.answers.map(a => a.question.simuladoId)));
+    const otherRaffleAnswers = await prisma.answer.findMany({
+      where: {
+        question: { simuladoId: { in: simuladoIds } },
+        isRaffle: true,
+        studentId: { not: studentId }
+      },
+      select: {
+        question: { select: { simuladoId: true } }
+      }
+    });
+
+    const otherRaffleCounts = new Map<string, number>();
+    otherRaffleAnswers.forEach(ora => {
+      const sId = ora.question.simuladoId;
+      otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
+    });
+
     // Calculate total questions across all unique simulados the student participated in
     const participatedSimulados = new Map<string, number>();
     student.answers.forEach(a => {
       const simuladoId = a.question.simuladoId;
       const totalQ = a.question.simulado._count.questions;
-      participatedSimulados.set(simuladoId, totalQ);
+      const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
+      const expectedQ = Math.max(0, totalQ - otherRaffleCount);
+      participatedSimulados.set(simuladoId, expectedQ);
     });
 
     const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
@@ -474,7 +495,12 @@ app.prepare().then(() => {
 
         // Registra respostas em branco para os alunos na sala que não responderam
         const answeredIds = room.answeredStudentIds || [];
-        const unansweredStudents = room.students.filter(st => !answeredIds.includes(st.id));
+        let unansweredStudents = room.students.filter(st => !answeredIds.includes(st.id));
+        
+        // Se for modo de sorteio, apenas o aluno sorteado pode ter resposta em branco registrada (caso não tenha respondido)
+        if (room.raffleWinnerId) {
+          unansweredStudents = unansweredStudents.filter(st => st.id === room.raffleWinnerId);
+        }
         
         for (const st of unansweredStudents) {
           try {
@@ -485,7 +511,8 @@ app.prepare().then(() => {
                 alternativa: -1, // -1 indica timeout / sem resposta
                 tempoGasto: question.tempoLimite,
                 isCorrect: false,
-                pontuacao: 0
+                pontuacao: 0,
+                isRaffle: !!room.raffleWinnerId
               }
             });
 
@@ -652,7 +679,8 @@ app.prepare().then(() => {
           alternativa,
           tempoGasto: safeTempoGasto,
           isCorrect,
-          pontuacao
+          pontuacao,
+          isRaffle: !!room.raffleWinnerId
         }
       });
 

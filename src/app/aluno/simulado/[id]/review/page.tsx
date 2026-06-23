@@ -41,7 +41,16 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const answersMap = new Map();
   answers.forEach(a => answersMap.set(a.questionId, a));
 
-  const totalQuestions = simulado.questions.length;
+  // Buscar todas as respostas de sorteio de outros alunos para este simulado
+  const otherRaffleCount = await prisma.answer.count({
+    where: {
+      question: { simuladoId: id },
+      isRaffle: true,
+      studentId: { not: user.userId }
+    }
+  });
+
+  const totalQuestions = Math.max(0, simulado.questions.length - otherRaffleCount);
   const answeredQuestions = answers.length;
   const correctAnswers = answers.filter(a => a.isCorrect).length;
   
@@ -60,6 +69,10 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
       student: true
     }
   });
+
+  const raffleQuestionIds = new Set(
+    allAnswers.filter(a => a.isRaffle).map(a => a.questionId)
+  );
 
   const studentScores: Record<string, { name: string; score: number; answers: number; totalTime: number; corrects: number; incorrects: number; avatarUrl: string | null }> = {};
 
@@ -236,7 +249,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                     )}
                     {!isAnswered && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400">
-                        Não Respondida
+                        {raffleQuestionIds.has(q.id) ? "Apenas Observou" : "Não Respondida"}
                       </span>
                     )}
                   </div>

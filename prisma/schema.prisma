@@ -56,6 +56,7 @@ model Answer {
   tempoGasto  Int
   isCorrect   Boolean
   pontuacao   Int
+  isRaffle    Boolean  @default(false)
 }
 
 model Apostila {

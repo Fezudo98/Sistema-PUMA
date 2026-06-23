@@ -47,11 +47,32 @@ export default async function AlunoPainel() {
   const totalAnswers = answers.length;
   const correctAnswers = answers.filter(a => a.isCorrect).length;
 
+  // Buscar todas as respostas de sorteio vencidas por outros alunos nesses simulados
+  const simuladoIds = Array.from(new Set(answers.map(a => a.question.simuladoId)));
+  const otherRaffleAnswers = await prisma.answer.findMany({
+    where: {
+      question: { simuladoId: { in: simuladoIds } },
+      isRaffle: true,
+      studentId: { not: user.userId }
+    },
+    select: {
+      question: { select: { simuladoId: true } }
+    }
+  });
+
+  const otherRaffleCounts = new Map<string, number>();
+  otherRaffleAnswers.forEach(ora => {
+    const sId = ora.question.simuladoId;
+    otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
+  });
+
   const participatedSimulados = new Map<string, number>();
   answers.forEach(a => {
     const simuladoId = a.question.simuladoId;
     const totalQ = (a.question.simulado as any)._count?.questions || 0;
-    participatedSimulados.set(simuladoId, totalQ);
+    const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
+    const expectedQ = Math.max(0, totalQ - otherRaffleCount);
+    participatedSimulados.set(simuladoId, expectedQ);
   });
 
   const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
@@ -64,10 +85,13 @@ export default async function AlunoPainel() {
   for (const a of answers) {
     const sId = a.question.simuladoId;
     if (!historyMap.has(sId)) {
+      const totalQ = (a.question.simulado as any)._count?.questions || 0;
+      const otherRaffleCount = otherRaffleCounts.get(sId) || 0;
+      const expectedQ = Math.max(0, totalQ - otherRaffleCount);
       historyMap.set(sId, {
         id: sId,
         codigoSala: a.question.simulado.codigoSala,
-        totalQuestions: (a.question.simulado as any)._count?.questions || 0,
+        totalQuestions: expectedQ,
         correctAnswers: 0,
         score: 0,
       });
@@ -79,7 +103,7 @@ export default async function AlunoPainel() {
   
   const history = Array.from(historyMap.values()).map(h => ({
     ...h,
-    accuracy: Math.round((h.correctAnswers / h.totalQuestions) * 100)
+    accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
   }));
 
   const stats = {

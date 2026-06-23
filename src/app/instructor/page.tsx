@@ -52,6 +52,28 @@ export default async function InstructorDashboard() {
       }
     }
   });
+  // Get all raffle answers to compute expected questions accurately
+  const raffleAnswers = await prisma.answer.findMany({
+    where: { isRaffle: true },
+    select: {
+      studentId: true,
+      question: { select: { simuladoId: true } }
+    }
+  });
+
+  // Group raffle answers: total raffle questions per simulado, and raffle questions won per (student, simulado)
+  const totalRaffleInSimulado = new Map<string, number>();
+  const studentRaffleInSimulado = new Map<string, number>();
+
+  raffleAnswers.forEach(ra => {
+    const sId = ra.question.simuladoId;
+    const uId = ra.studentId;
+    
+    totalRaffleInSimulado.set(sId, (totalRaffleInSimulado.get(sId) || 0) + 1);
+    
+    const key = `${uId}_${sId}`;
+    studentRaffleInSimulado.set(key, (studentRaffleInSimulado.get(key) || 0) + 1);
+  });
 
   const studentsPerformance = students.map(student => {
     const totalAnswers = student.answers.length;
@@ -62,7 +84,13 @@ export default async function InstructorDashboard() {
     student.answers.forEach(a => {
       const simuladoId = a.question.simuladoId;
       const totalQ = (a.question.simulado as any)._count?.questions || 0;
-      participatedSimulados.set(simuladoId, totalQ);
+      
+      const totalRaffle = totalRaffleInSimulado.get(simuladoId) || 0;
+      const studentRaffle = studentRaffleInSimulado.get(`${student.id}_${simuladoId}`) || 0;
+      const otherRaffle = totalRaffle - studentRaffle;
+      
+      const expectedQ = Math.max(0, totalQ - otherRaffle);
+      participatedSimulados.set(simuladoId, expectedQ);
     });
 
     const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
