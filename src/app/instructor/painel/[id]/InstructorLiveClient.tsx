@@ -321,25 +321,47 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                           return (
                             <div 
                               key={index} 
-                              className={`flex items-start gap-3 p-4 rounded-lg border ${
+                              className={`flex flex-col gap-2 p-4 rounded-lg border ${
                                 isCorrect 
                                   ? 'bg-emerald-900/20 border-emerald-500/50' 
                                   : 'bg-slate-900 border-slate-800'
                               }`}
                             >
-                              <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
-                                isCorrect
-                                  ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                                  : 'bg-slate-800 text-slate-400'
-                              }`}>
-                                {letter}
-                              </span>
-                              <span className={`flex-1 pt-1 text-base ${isCorrect ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
-                                {cleanAlt}
-                              </span>
+                              <div className="flex items-start gap-3">
+                                <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                                  isCorrect
+                                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                                    : 'bg-slate-800 text-slate-400'
+                                }`}>
+                                  {letter}
+                                </span>
+                                <span className={`flex-1 pt-1 text-base ${isCorrect ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                                  {cleanAlt}
+                                </span>
+                              </div>
+
+                              {isEnded && questionEndedData.percentages && (
+                                <div className="pl-11 flex items-center gap-3 w-full animate-in fade-in slide-in-from-left-2 duration-300">
+                                  <Progress 
+                                    value={questionEndedData.percentages[index]} 
+                                    className={`h-1.5 flex-1 bg-slate-950 ${isCorrect ? '[&>div]:bg-emerald-500' : '[&>div]:bg-blue-500/60'}`} 
+                                  />
+                                  <span className={`text-xs font-black font-mono w-10 text-right ${isCorrect ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                    {questionEndedData.percentages[index]}%
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
+
+                        {/* Percentual sem resposta / timeout */}
+                        {questionEndedData !== null && questionEndedData.unansweredPercentage > 0 && (
+                          <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-xs text-red-400 flex justify-between items-center animate-in fade-in duration-300">
+                            <span className="font-bold uppercase tracking-wider">Combatentes sem resposta (Tempo esgotado):</span>
+                            <span className="font-mono font-black">{questionEndedData.unansweredPercentage}%</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

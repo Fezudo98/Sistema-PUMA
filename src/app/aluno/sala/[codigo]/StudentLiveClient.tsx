@@ -155,6 +155,11 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
           setHasConfirmed(true);
         }
       }
+
+      if (data.restoredAnswer) {
+        setSelectedAlt(data.restoredAnswer.alternativa);
+        setHasConfirmed(true);
+      }
     });
 
     s.on("simulado_started", () => {
@@ -354,7 +359,11 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             );
           })()}
         </div>
-        {currentQuestion && !questionEndedData && (
+        {status === "FINISHED" ? (
+          <span className="bg-red-950/40 text-red-500 border border-red-500/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+            Encerrado
+          </span>
+        ) : currentQuestion && !questionEndedData && (
           <div className={`flex items-center gap-2 ${isPaused ? 'bg-amber-900/40 border border-amber-500/50' : 'bg-slate-800'} px-3 py-1.5 rounded-full transition-colors`}>
             {isPaused ? <Clock className="w-4 h-4 text-amber-500 animate-pulse" /> : <Clock className="w-4 h-4 text-amber-400" />}
             <span className={`font-mono font-bold ${isPaused ? 'text-amber-500' : 'text-amber-400'}`}>
@@ -467,17 +476,31 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                     key={index}
                     onClick={() => handleSelectAlternative(index)}
                     disabled={hasConfirmed || isTimeUp || isEnded || isObserver}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex gap-4 items-start ${btnClass} ${isObserver && !isEnded ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex flex-col gap-2 ${btnClass} ${isObserver && !isEnded ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
                   >
-                    <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold border ${
-                      isEnded && isCorrect ? 'bg-emerald-500 border-emerald-400 text-white' :
-                      isEnded && isWrongSelected ? 'bg-red-500 border-red-400 text-white' :
-                      isSelected && !isEnded ? 'bg-white border-white text-blue-600' :
-                      'bg-slate-800 border-slate-600 text-slate-400'
-                    }`}>
-                      {String.fromCharCode(65 + index)}
-                    </span>
-                    <span className="flex-1 pt-1 text-base leading-snug">{alt.replace(/^[A-E]\)\s*/, '')}</span>
+                    <div className="flex gap-4 items-start w-full">
+                      <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold border ${
+                        isEnded && isCorrect ? 'bg-emerald-500 border-emerald-400 text-white' :
+                        isEnded && isWrongSelected ? 'bg-red-500 border-red-400 text-white' :
+                        isSelected && !isEnded ? 'bg-white border-white text-blue-600' :
+                        'bg-slate-800 border-slate-600 text-slate-400'
+                      }`}>
+                        {String.fromCharCode(65 + index)}
+                      </span>
+                      <span className="flex-1 pt-1 text-base leading-snug">{alt.replace(/^[A-E]\)\s*/, '')}</span>
+                    </div>
+
+                    {isEnded && questionEndedData.percentages && (
+                      <div className="pl-12 flex items-center gap-3 w-full animate-in fade-in slide-in-from-left-2 duration-300">
+                        <Progress 
+                          value={questionEndedData.percentages[index]} 
+                          className={`h-1.5 flex-1 bg-slate-950/40 ${isCorrect ? '[&>div]:bg-emerald-500' : '[&>div]:bg-red-500/50'}`} 
+                        />
+                        <span className="text-[10px] font-black font-mono w-8 text-right text-slate-400">
+                          {questionEndedData.percentages[index]}%
+                        </span>
+                      </div>
+                    )}
                   </button>
                 );
               })}

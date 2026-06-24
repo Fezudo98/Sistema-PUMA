@@ -66,6 +66,46 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+async function getSimuladoRanking(simuladoId: string) {
+  try {
+    const answers = await prisma.answer.findMany({
+      where: {
+        question: { simuladoId }
+      },
+      select: {
+        studentId: true,
+        pontuacao: true,
+        student: {
+          select: {
+            name: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+
+    const scoresMap = new Map<string, { id: string; name: string; score: number; avatarUrl?: string | null; streak: number }>();
+    
+    answers.forEach(a => {
+      if (!scoresMap.has(a.studentId)) {
+        scoresMap.set(a.studentId, {
+          id: a.studentId,
+          name: a.student.name,
+          score: 0,
+          avatarUrl: a.student.avatarUrl,
+          streak: 0
+        });
+      }
+      scoresMap.get(a.studentId)!.score += a.pontuacao || 0;
+    });
+
+    return Array.from(scoresMap.values()).sort((a, b) => b.score - a.score);
+  } catch (err) {
+    console.error("Error calculating ranking from DB:", err);
+    return [];
+  }
+}
+
 async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSimuladoId: string) {
   try {
     const student = await prisma.user.findUnique({
@@ -273,9 +313,15 @@ interface RoomState {
   studentScores: Record<string, { id: string; name: string; score: number; avatarUrl?: string | null; streak: number }>;
   answersReceived: number;
   raffleWinnerId: string | null;
-  questionEndedData: { correta: number, justificativa: string } | null;
+  questionEndedData: { 
+    correta: number; 
+    justificativa: string;
+    percentages?: number[];
+    unansweredPercentage?: number;
+  } | null;
   pendingNotifications: string[];
   answeredStudentIds: string[];
+  maxConnectedCount: number;
 }
 const rooms = new Map<string, RoomState>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
@@ -311,9 +357,13 @@ app.prepare().then(() => {
       socketInfo.set(socket.id, { roomCode, userId: user.userId || user.id, role: user.role, name: user.name });
 
       if (!rooms.has(roomCode)) {
+        const dbSimulado = await prisma.simulado.findUnique({
+          where: { codigoSala: roomCode }
+        });
+
         rooms.set(roomCode, {
-          simuladoId: '',
-          status: 'WAITING',
+          simuladoId: dbSimulado ? dbSimulado.id : '',
+          status: dbSimulado ? (dbSimulado.status as any) : 'WAITING',
           currentQuestion: null,
           timeLeft: 0,
           timerInterval: null,
@@ -324,11 +374,23 @@ app.prepare().then(() => {
           raffleWinnerId: null,
           questionEndedData: null,
           pendingNotifications: [],
-          answeredStudentIds: []
+          answeredStudentIds: [],
+          maxConnectedCount: 0
         });
+
+        if (dbSimulado) {
+          // Restaurar o ranking diretamente do banco de dados para evitar perdas
+          const ranking = await getSimuladoRanking(dbSimulado.id);
+          const room = rooms.get(roomCode)!;
+          ranking.forEach(r => {
+            room.studentScores[r.id] = r;
+          });
+        }
       }
 
       const room = rooms.get(roomCode)!;
+      let studentAnswer = null;
+
       if (user.role === 'STUDENT') {
         const uid = user.userId || user.id;
         
@@ -345,17 +407,45 @@ app.prepare().then(() => {
         } else {
           existingStudent.avatarUrl = user.avatarUrl;
         }
+
+        // Atualizar pico de conexões ativas na sala
+        room.maxConnectedCount = Math.max(room.maxConnectedCount || 0, room.students.length);
         
         if (!room.studentScores[uid]) {
           room.studentScores[uid] = { id: uid, name: user.name, score: 0, avatarUrl: user.avatarUrl, streak: 0 };
         } else {
           room.studentScores[uid].avatarUrl = user.avatarUrl;
         }
+
+        // Se a questão atual está rodando, verifica se o aluno reconectando já tem resposta gravada no DB
+        if (room.currentQuestion) {
+          studentAnswer = await prisma.answer.findFirst({
+            where: {
+              questionId: room.currentQuestion.id,
+              studentId: uid
+            }
+          });
+        }
       } else {
         if (user.simuladoId) room.simuladoId = user.simuladoId;
       }
 
-      io.to(roomCode).emit('room_update', { 
+      // Envia room_update privado para o aluno que acabou de entrar, contendo a resposta restaurada
+      socket.emit('room_update', { 
+        status: room.status, 
+        studentCount: room.students.length,
+        students: room.students,
+        currentQuestion: room.currentQuestion,
+        timeLeft: room.timeLeft,
+        isPaused: room.isPaused,
+        raffleWinnerId: room.raffleWinnerId,
+        questionEndedData: room.questionEndedData,
+        answeredStudentIds: room.answeredStudentIds || [],
+        restoredAnswer: studentAnswer ? { alternativa: studentAnswer.alternativa, isCorrect: studentAnswer.isCorrect } : null
+      });
+
+      // Broadcast padrão para os outros membros da sala
+      socket.to(roomCode).emit('room_update', { 
         status: room.status, 
         studentCount: room.students.length,
         students: room.students,
@@ -549,7 +639,6 @@ app.prepare().then(() => {
       if (room && room.currentQuestion) {
         const question = room.currentQuestion;
         room.isPaused = false;
-        room.questionEndedData = { correta: question.correta, justificativa: question.justificativa };
         
         await prisma.question.update({ where: { id: question.id }, data: { status: 'FINISHED' } });
 
@@ -595,11 +684,43 @@ app.prepare().then(() => {
             console.error("Error saving unanswered record:", e);
           }
         }
+
+        // Buscar todas as respostas da questão para calcular as estatísticas de marcação
+        const questionAnswers = await prisma.answer.findMany({
+          where: { questionId: question.id }
+        });
+
+        const totalAnswers = questionAnswers.length;
+        const distribution = [0, 0, 0, 0, 0];
+        let unansweredCount = 0;
+
+        questionAnswers.forEach(ans => {
+          if (ans.alternativa >= 0 && ans.alternativa < 5) {
+            distribution[ans.alternativa]++;
+          } else {
+            unansweredCount++;
+          }
+        });
+
+        const percentages = distribution.map(count => 
+          totalAnswers > 0 ? Math.round((count / totalAnswers) * 100) : 0
+        );
+        const unansweredPercentage = totalAnswers > 0 ? Math.round((unansweredCount / totalAnswers) * 100) : 0;
+
+        // Armazena no estado em memória para reconectados
+        room.questionEndedData = { 
+          correta: question.correta, 
+          justificativa: question.justificativa,
+          percentages,
+          unansweredPercentage
+        };
         
         io.to(roomCode).emit('question_ended', {
           questionId: question.id,
           correta: question.correta,
-          justificativa: question.justificativa
+          justificativa: question.justificativa,
+          percentages,
+          unansweredPercentage
         });
         
         const ranking = Object.values(room.studentScores).sort((a, b) => b.score - a.score);
@@ -755,7 +876,7 @@ app.prepare().then(() => {
         answeredStudentIds: room.answeredStudentIds
       });
 
-      const targetAnswers = room.raffleWinnerId ? 1 : room.students.length;
+      const targetAnswers = room.raffleWinnerId ? 1 : (room.maxConnectedCount || room.students.length);
       if (room.answersReceived >= targetAnswers && room.timerInterval) {
         room.timeLeft = 0;
         io.to(roomCode).emit('time_tick', { timeLeft: room.timeLeft });
