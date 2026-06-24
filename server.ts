@@ -925,7 +925,6 @@ app.prepare().then(() => {
             clearTimeout(disconnectTimeouts.get(uid)!);
           }
           
-          // Wait 15 seconds before removing from online students to handle transient disconnects
           const timeout = setTimeout(() => {
             disconnectTimeouts.delete(uid);
             const currentRoom = rooms.get(info.roomCode);
@@ -935,7 +934,12 @@ app.prepare().then(() => {
                 status: currentRoom.status, 
                 studentCount: currentRoom.students.length,
                 students: currentRoom.students,
-                currentQuestion: currentRoom.currentQuestion 
+                currentQuestion: currentRoom.currentQuestion,
+                timeLeft: currentRoom.timeLeft,
+                isPaused: currentRoom.isPaused,
+                raffleWinnerId: currentRoom.raffleWinnerId,
+                questionEndedData: currentRoom.questionEndedData,
+                answeredStudentIds: currentRoom.answeredStudentIds || []
               });
               console.log(`[Socket] Removed user ${uid} from room ${info.roomCode} after grace period`);
             }
