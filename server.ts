@@ -675,9 +675,9 @@ app.prepare().then(() => {
               const studentName = room.studentScores[st.id].name.split(' ')[0];
               if (!room.pendingNotifications) room.pendingNotifications = [];
 
-              if (currentStreak >= 3) {
+              if (currentStreak >= 7) {
                 room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
-              } else if (newStreak <= -3 && Math.abs(newStreak) % 3 === 0) {
+              } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
                 room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
               }
             }
@@ -852,21 +852,21 @@ app.prepare().then(() => {
         if (isCorrect) {
           newStreak = currentStreak > 0 ? currentStreak + 1 : 1;
           
-          if (currentStreak <= -3) {
+          if (currentStreak <= -5) {
             room.pendingNotifications.push(`🧊 ${studentName} quebrou o gelo e se recuperou de uma sequência de ${Math.abs(currentStreak)} erros!`);
-          } else if (newStreak === 3) {
-            room.pendingNotifications.push(`🔥 ${studentName} está aquecendo com 3 acertos seguidos!`);
-          } else if (newStreak === 5) {
-            room.pendingNotifications.push(`⚡ IMPARÁVEL! ${studentName} atingiu uma sequência implacável de 5 acertos!`);
-          } else if (newStreak > 5 && newStreak % 3 === 0) {
+          } else if (newStreak === 7) {
+            room.pendingNotifications.push(`🔥 ${studentName} está aquecendo com 7 acertos seguidos!`);
+          } else if (newStreak === 10) {
+            room.pendingNotifications.push(`⚡ IMPARÁVEL! ${studentName} atingiu uma sequência implacável de 10 acertos!`);
+          } else if (newStreak > 10 && newStreak % 5 === 0) {
             room.pendingNotifications.push(`💀 OPERACIONAL HABILITADO! ${studentName} alcançou ${newStreak} acertos seguidos!`);
           }
         } else {
           newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
           
-          if (currentStreak >= 3) {
+          if (currentStreak >= 7) {
             room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
-          } else if (newStreak <= -3 && Math.abs(newStreak) % 3 === 0) {
+          } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
             room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
           }
         }
