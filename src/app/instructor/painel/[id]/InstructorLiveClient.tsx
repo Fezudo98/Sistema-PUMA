@@ -9,6 +9,7 @@ import { Clock, Users, Play, Target, Square, Pause, CheckCircle, Trophy, Flame, 
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { endSimulado } from "@/app/actions/simulado";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function InstructorLiveClient({ user, simulado }: { user: any, simulado: any }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -30,6 +31,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const [raffleWinner, setRaffleWinner] = useState<any>(null);
   const [displayStudent, setDisplayStudent] = useState<any>(null);
   const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
+  const [selectedAltForDetails, setSelectedAltForDetails] = useState<number | null>(null);
 
   useEffect(() => {
     if (isRaffling && students.length > 0) {
@@ -318,14 +320,21 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                           const isEnded = questionEndedData !== null;
                           const isCorrect = isEnded && questionEndedData.correta === index;
                           
+                          const isClickable = isEnded && questionEndedData.answersByAlt;
+                          
                           return (
                             <div 
                               key={index} 
-                              className={`flex flex-col gap-2 p-4 rounded-lg border ${
+                              onClick={() => {
+                                if (isClickable) {
+                                  setSelectedAltForDetails(index);
+                                }
+                              }}
+                              className={`flex flex-col gap-2 p-4 rounded-lg border transition-all ${
                                 isCorrect 
                                   ? 'bg-emerald-900/20 border-emerald-500/50' 
                                   : 'bg-slate-900 border-slate-800'
-                              }`}
+                              } ${isClickable ? 'cursor-pointer hover:bg-slate-800/50 hover:border-blue-500/30' : ''}`}
                             >
                               <div className="flex items-start gap-3">
                                 <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
@@ -357,7 +366,16 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
 
                         {/* Percentual sem resposta / timeout */}
                         {questionEndedData !== null && questionEndedData.unansweredPercentage > 0 && (
-                          <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-xs text-red-400 flex justify-between items-center animate-in fade-in duration-300">
+                          <div 
+                            onClick={() => {
+                              if (questionEndedData.answersByAlt) {
+                                setSelectedAltForDetails(-1);
+                              }
+                            }}
+                            className={`p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-xs text-red-400 flex justify-between items-center animate-in fade-in duration-300 transition-all ${
+                              questionEndedData.answersByAlt ? 'cursor-pointer hover:bg-red-950/40 hover:border-red-500/30' : ''
+                            }`}
+                          >
                             <span className="font-bold uppercase tracking-wider">Combatentes sem resposta (Tempo esgotado):</span>
                             <span className="font-mono font-black">{questionEndedData.unansweredPercentage}%</span>
                           </div>
@@ -607,6 +625,62 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
           </div>
         )}
       </main>
+
+      {/* Modal de Detalhes dos Alunos por Alternativa */}
+      <Dialog 
+        open={selectedAltForDetails !== null} 
+        onOpenChange={(open) => {
+          if (!open) setSelectedAltForDetails(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md bg-slate-900 border-slate-800 text-slate-200">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl text-white">
+              <Users className="w-5 h-5 text-blue-500" /> 
+              {selectedAltForDetails === -1 
+                ? "Combatentes sem Resposta" 
+                : `Combatentes na Alternativa ${String.fromCharCode(65 + (selectedAltForDetails ?? 0))}`}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {selectedAltForDetails === -1
+                ? "Lista de alunos que sofreram timeout ou não enviaram resposta."
+                : "Lista de alunos que selecionaram esta opção."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 max-h-[50vh] overflow-y-auto pr-1">
+            {(() => {
+              if (selectedAltForDetails === null || !questionEndedData?.answersByAlt) return null;
+              const key = String(selectedAltForDetails);
+              const list = questionEndedData.answersByAlt[key] || [];
+              
+              if (list.length === 0) {
+                return (
+                  <p className="text-center py-6 text-slate-500 font-medium">
+                    Nenhum aluno marcou esta alternativa.
+                  </p>
+                );
+              }
+              
+              return (
+                <div className="flex flex-col gap-2">
+                  {list.map((aluno: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-3 p-2 bg-slate-950/40 rounded-lg border border-slate-800/60">
+                      {aluno.avatarUrl ? (
+                        <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700">
+                          {aluno.name.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="font-bold text-slate-200">{aluno.name}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

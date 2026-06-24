@@ -318,6 +318,7 @@ interface RoomState {
     justificativa: string;
     percentages?: number[];
     unansweredPercentage?: number;
+    answersByAlt?: Record<string, Array<{ name: string; avatarUrl: string | null }>>;
   } | null;
   pendingNotifications: string[];
   answeredStudentIds: string[];
@@ -687,18 +688,43 @@ app.prepare().then(() => {
 
         // Buscar todas as respostas da questão para calcular as estatísticas de marcação
         const questionAnswers = await prisma.answer.findMany({
-          where: { questionId: question.id }
+          where: { questionId: question.id },
+          include: {
+            student: {
+              select: {
+                id: true,
+                name: true,
+                avatarUrl: true
+              }
+            }
+          }
         });
 
         const totalAnswers = questionAnswers.length;
         const distribution = [0, 0, 0, 0, 0];
         let unansweredCount = 0;
 
+        const answersByAlt: Record<string, Array<{ name: string; avatarUrl: string | null }>> = {
+          "-1": [],
+          "0": [],
+          "1": [],
+          "2": [],
+          "3": [],
+          "4": []
+        };
+
         questionAnswers.forEach(ans => {
           if (ans.alternativa >= 0 && ans.alternativa < 5) {
             distribution[ans.alternativa]++;
           } else {
             unansweredCount++;
+          }
+          const key = String(ans.alternativa);
+          if (answersByAlt[key]) {
+            answersByAlt[key].push({
+              name: ans.student.name,
+              avatarUrl: ans.student.avatarUrl
+            });
           }
         });
 
@@ -712,7 +738,8 @@ app.prepare().then(() => {
           correta: question.correta, 
           justificativa: question.justificativa,
           percentages,
-          unansweredPercentage
+          unansweredPercentage,
+          answersByAlt
         };
         
         io.to(roomCode).emit('question_ended', {
@@ -720,7 +747,8 @@ app.prepare().then(() => {
           correta: question.correta,
           justificativa: question.justificativa,
           percentages,
-          unansweredPercentage
+          unansweredPercentage,
+          answersByAlt
         });
         
         const ranking = Object.values(room.studentScores).sort((a, b) => b.score - a.score);
