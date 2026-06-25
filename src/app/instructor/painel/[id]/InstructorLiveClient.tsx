@@ -243,34 +243,58 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
 
       <main className="flex-1 p-6 flex items-center justify-center">
         {status === "WAITING" && (
-          <div className="text-center max-w-xl w-full">
-            <div className="w-32 h-32 mx-auto bg-blue-600 rounded-full flex items-center justify-center mb-8 shadow-[0_0_50px_rgba(37,99,235,0.4)] animate-pulse">
-              <Play className="w-12 h-12 text-white ml-2" />
+          <div className="text-center max-w-4xl w-full p-8 bg-slate-900/30 border border-slate-800/80 rounded-3xl backdrop-blur-md shadow-2xl">
+            <div className="w-24 h-24 mx-auto bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(37,99,235,0.4)] animate-pulse">
+              <Play className="w-10 h-10 text-white ml-1.5" />
             </div>
-            <h2 className="text-3xl font-black text-white mb-4">Aguardando Alunos</h2>
-            <p className="text-slate-400 mb-8">
-              Peça para os alunos entrarem no painel usando o código <strong className="text-blue-400 text-lg tracking-widest">{simulado.codigoSala}</strong>.
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-wide">Aguardando Alunos</h2>
+            <p className="text-slate-400 text-lg md:text-xl mb-8">
+              Peça para os alunos entrarem no painel do aluno e ingressarem no simulado, ou insira o código:
             </p>
-            <Button onClick={handleStartSimulado} className="w-full h-16 text-lg font-bold bg-blue-600 hover:bg-blue-500" disabled={students.length === 0}>
+            
+            <div className="bg-slate-950/90 border-2 border-blue-500/30 rounded-2xl p-6 md:p-8 mb-8 text-center shadow-[0_0_50px_rgba(59,130,246,0.15)] select-all cursor-pointer group hover:border-blue-500/50 transition-all">
+              <span className="block text-slate-500 text-xs md:text-sm font-black tracking-widest uppercase mb-3">CÓDIGO DE ACESSO DA SALA</span>
+              <span className="font-mono text-6xl md:text-8xl font-black text-white tracking-widest animate-pulse drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                {simulado.codigoSala}
+              </span>
+            </div>
+
+            <Button onClick={handleStartSimulado} className="w-full h-20 text-xl md:text-2xl font-black uppercase tracking-wider bg-blue-600 hover:bg-blue-500 shadow-[0_0_35px_rgba(37,99,235,0.4)] transition-all" disabled={students.length === 0}>
               INICIAR SIMULADO AGORA
             </Button>
             
-            <div className="mt-8 border-t border-slate-800 pt-6 text-left">
-              <h3 className="text-sm font-bold text-slate-500 mb-4 uppercase">Alunos Conectados ({students.length})</h3>
-              <div className="flex flex-wrap gap-2">
+            <div className="mt-10 border-t border-slate-800 pt-8 text-left">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-slate-400 uppercase tracking-wider">Combatentes Conectados</h3>
+                <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3.5 py-1.5 rounded-full text-sm font-black">
+                  {students.length} Online
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {students.map((s, i) => (
-                  <span key={i} className="px-3 py-1 bg-slate-800 rounded text-sm text-slate-300 border border-slate-700">
-                    {s.name}
-                  </span>
+                  <div key={i} className="px-4 py-3 bg-slate-950/60 border border-slate-800/80 rounded-xl text-base md:text-lg font-bold text-slate-200 flex items-center gap-3 shadow-sm animate-in fade-in zoom-in duration-300">
+                    {s.avatarUrl ? (
+                      <img src={s.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-700 shrink-0">
+                        {s.name.substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="truncate flex-1">{s.name}</span>
+                  </div>
                 ))}
-                {students.length === 0 && <span className="text-slate-600 text-sm">Ninguém entrou ainda...</span>}
+                {students.length === 0 && (
+                  <div className="col-span-full text-center py-6 text-slate-650 font-bold text-lg animate-pulse">
+                    Ninguém entrou ainda. Aguardando conexão dos recrutas...
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
         {status === "ACTIVE" && (
-          <div className="max-w-6xl w-full h-full flex gap-6">
+          <div className="max-w-[95vw] w-full h-full flex flex-col xl:flex-row gap-8">
             {/* Esquerda: Controle da Questão */}
             <div className="flex-1 space-y-6 flex flex-col">
               {currentQuestionIndex === -1 ? (
@@ -307,8 +331,8 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     </div>
                   )}
 
-                  <div className="text-lg text-slate-200 mb-8 flex-1 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
-                    <p className="leading-relaxed font-medium">{currentQuestion?.enunciado}</p>
+                  <div className="mb-8 flex-1 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-normal tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">{currentQuestion?.enunciado}</p>
                     
                     {currentQuestion?.alternativas && (
                       <div className="flex flex-col gap-3">
@@ -330,32 +354,32 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                   setSelectedAltForDetails(index);
                                 }
                               }}
-                              className={`flex flex-col gap-2 p-4 rounded-lg border transition-all ${
+                              className={`flex flex-col gap-3 p-5 md:p-6 rounded-xl border transition-all ${
                                 isCorrect 
-                                  ? 'bg-emerald-900/20 border-emerald-500/50' 
-                                  : 'bg-slate-900 border-slate-800'
-                              } ${isClickable ? 'cursor-pointer hover:bg-slate-800/50 hover:border-blue-500/30' : ''}`}
+                                  ? 'bg-emerald-950/30 border-emerald-500/70 shadow-[0_0_20px_rgba(16,185,129,0.15)]' 
+                                  : 'bg-slate-900 border-slate-850'
+                              } ${isClickable ? 'cursor-pointer hover:bg-slate-850 hover:border-blue-500/40' : ''}`}
                             >
-                              <div className="flex items-start gap-3">
-                                <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                              <div className="flex items-start gap-4">
+                                <span className={`flex shrink-0 items-center justify-center w-10 h-10 rounded-full text-lg font-extrabold border-2 ${
                                   isCorrect
-                                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                                    : 'bg-slate-800 text-slate-400'
+                                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-400'
+                                    : 'bg-slate-850 text-slate-300 border-slate-700'
                                 }`}>
                                   {letter}
                                 </span>
-                                <span className={`flex-1 pt-1 text-base ${isCorrect ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                                <span className={`flex-1 pt-0.5 text-lg md:text-xl lg:text-2xl leading-relaxed ${isCorrect ? 'text-emerald-400 font-black' : 'text-slate-200 font-semibold'}`}>
                                   {cleanAlt}
                                 </span>
                               </div>
 
                               {isEnded && questionEndedData.percentages && (
-                                <div className="pl-11 flex items-center gap-3 w-full animate-in fade-in slide-in-from-left-2 duration-300">
+                                <div className="pl-14 flex items-center gap-4 w-full animate-in fade-in slide-in-from-left-2 duration-300">
                                   <Progress 
                                     value={questionEndedData.percentages[index]} 
-                                    className={`h-1.5 flex-1 bg-slate-950 ${isCorrect ? '[&>div]:bg-emerald-500' : '[&>div]:bg-blue-500/60'}`} 
+                                    className={`h-2.5 flex-1 bg-slate-950 ${isCorrect ? '[&>div]:bg-emerald-500' : '[&>div]:bg-blue-500/80'}`} 
                                   />
-                                  <span className={`text-xs font-black font-mono w-10 text-right ${isCorrect ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                  <span className={`text-sm md:text-lg font-black font-mono w-14 text-right ${isCorrect ? 'text-emerald-400' : 'text-slate-300'}`}>
                                     {questionEndedData.percentages[index]}%
                                   </span>
                                 </div>
@@ -372,12 +396,12 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                 setSelectedAltForDetails(-1);
                               }
                             }}
-                            className={`p-3 bg-red-950/20 border border-red-900/30 rounded-lg text-xs text-red-400 flex justify-between items-center animate-in fade-in duration-300 transition-all ${
-                              questionEndedData.answersByAlt ? 'cursor-pointer hover:bg-red-950/40 hover:border-red-500/30' : ''
+                            className={`p-4 md:p-5 bg-red-950/20 border border-red-900/40 rounded-xl text-sm md:text-base text-red-400 flex justify-between items-center transition-all ${
+                              questionEndedData.answersByAlt ? 'cursor-pointer hover:bg-red-950/40 hover:border-red-500/40' : ''
                             }`}
                           >
                             <span className="font-bold uppercase tracking-wider">Combatentes sem resposta (Tempo esgotado):</span>
-                            <span className="font-mono font-black">{questionEndedData.unansweredPercentage}%</span>
+                            <span className="font-mono font-black text-lg md:text-xl">{questionEndedData.unansweredPercentage}%</span>
                           </div>
                         )}
                       </div>
@@ -442,68 +466,66 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   )}
                 </div>
               )}
-            </div>
-
-            {/* Direita: Status Ao Vivo & Ranking */}
-            <div className="w-96 flex flex-col gap-6">
+             {/* Direita: Status Ao Vivo & Ranking */}
+            <div className="w-full xl:w-96 flex flex-col gap-6">
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-slate-900 border-slate-800">
+                <Card className="bg-slate-900 border-slate-800 shadow-lg">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-slate-400 flex items-center justify-center gap-2 uppercase tracking-wider"><Clock className="w-4 h-4 text-amber-500"/> Tempo</CardTitle>
+                    <CardTitle className="text-xs md:text-sm text-slate-400 flex items-center justify-center gap-2 uppercase tracking-wider font-black"><Clock className="w-4 h-4 text-amber-500"/> Tempo</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-4xl font-black text-center text-white font-mono flex items-center justify-center gap-2">
+                    <div className="text-4xl md:text-5xl font-black text-center text-white font-mono flex items-center justify-center gap-2">
                       {timeLeft}s
                       {isPaused && <Pause className="w-6 h-6 text-amber-500 animate-pulse" />}
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-slate-900 border-slate-800">
+                <Card className="bg-slate-900 border-slate-800 shadow-lg">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-slate-400 flex items-center justify-center gap-2 uppercase tracking-wider"><CheckCircle className="w-4 h-4 text-blue-500"/> Respostas</CardTitle>
+                    <CardTitle className="text-xs md:text-sm text-slate-400 flex items-center justify-center gap-2 uppercase tracking-wider font-black"><CheckCircle className="w-4 h-4 text-blue-500"/> Respostas</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-black text-center text-white mb-2">
-                      {answersReceived}<span className="text-base text-slate-500">/{students.length}</span>
+                    <div className="text-3xl md:text-4xl font-black text-center text-white mb-2">
+                      {answersReceived}<span className="text-sm md:text-base text-slate-500">/{students.length}</span>
                     </div>
-                    <Progress value={students.length > 0 ? (answersReceived / students.length) * 100 : 0} className="h-1.5 bg-slate-800 [&>div]:bg-blue-500" />
+                    <Progress value={students.length > 0 ? (answersReceived / students.length) * 100 : 0} className="h-2 bg-slate-800 [&>div]:bg-blue-500" />
                   </CardContent>
                 </Card>
               </div>
 
               {!isQuestionActive && questionEndedData && (
-                <Card className="bg-slate-900 border-emerald-900/50">
+                <Card className="bg-slate-900 border-emerald-900/50 shadow-xl">
                   <CardHeader className="py-3">
-                    <CardTitle className="text-emerald-400 text-sm uppercase tracking-widest">Gabarito Divulgado</CardTitle>
+                    <CardTitle className="text-emerald-400 text-xs md:text-sm uppercase tracking-widest font-black">Gabarito Divulgado</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-4">
-                    <p className="text-xl font-bold text-white">
-                      Alternativa Correta: <span className="text-emerald-400 text-3xl ml-2">{String.fromCharCode(65 + questionEndedData.correta)}</span>
+                    <p className="text-lg md:text-xl font-bold text-white flex items-center justify-between">
+                      Alternativa Correta: <span className="text-emerald-400 text-4xl md:text-5xl font-black">{String.fromCharCode(65 + questionEndedData.correta)}</span>
                     </p>
                   </CardContent>
                 </Card>
               )}
 
               {/* Ranking Ao Vivo */}
-              <Card className="bg-slate-900 border-slate-800 flex-1 flex flex-col">
+              <Card className="bg-slate-900 border-slate-800 flex-1 flex flex-col shadow-2xl">
                 <CardHeader className="border-b border-slate-800 py-4">
-                  <CardTitle className="text-slate-200 flex items-center gap-2">
+                  <CardTitle className="text-slate-200 flex items-center gap-2 font-bold text-base md:text-lg">
                     <Trophy className="w-5 h-5 text-yellow-500"/> 
                     Ranking Ao Vivo
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 flex-1 overflow-auto max-h-[300px]">
+                <CardContent className="p-0 flex-1 overflow-auto max-h-[400px] xl:max-h-[500px]">
                   {ranking.length === 0 ? (
-                    <div className="p-6 text-center text-slate-500 text-sm">
+                    <div className="p-6 text-center text-slate-500 text-sm font-medium">
                       O ranking aparecerá aqui assim que os alunos pontuarem.
                     </div>
                   ) : (
-                    <ul className="divide-y divide-slate-800/50">
+                    <ul className="divide-y divide-slate-800/40">
                       {ranking.map((aluno, index) => (
-                        <li key={index} className="flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors">
+                        <li key={index} className="flex items-center justify-between p-4 hover:bg-slate-850 transition-colors">
                           <div className="flex items-center gap-3">
-                            <span className={`flex items-center justify-center shrink-0 w-6 h-6 rounded-full text-xs font-bold ${
+                            <span className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-full text-sm font-extrabold ${
                               index === 0 ? 'bg-yellow-500 text-yellow-950' : 
                               index === 1 ? 'bg-slate-300 text-slate-800' :
                               index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-800 text-slate-400'
@@ -511,19 +533,19 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                               {index + 1}
                             </span>
                             {aluno.avatarUrl ? (
-                              <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0" />
+                              <img src={aluno.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0" />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0 border border-slate-700">
+                              <div className="w-9 h-9 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0 border border-slate-700">
                                 {aluno.name.substring(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <span className="font-medium text-slate-200 truncate flex items-center">
+                            <span className="font-bold text-slate-200 text-base md:text-lg truncate flex items-center">
                               {aluno.name}
                               {isQuestionActive && !questionEndedData && (
                                 answeredStudentIds.includes(aluno.id) ? (
-                                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/30 ml-2 animate-pulse">Respondeu</span>
+                                  <span className="text-[10px] md:text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/30 ml-2 animate-pulse">Respondeu</span>
                                 ) : (
-                                  <span className="text-[10px] bg-slate-800 text-slate-400 font-bold px-2 py-0.5 rounded border border-slate-700 ml-2">Aguardando</span>
+                                  <span className="text-[10px] md:text-xs bg-slate-850 text-slate-500 font-bold px-2 py-0.5 rounded border border-slate-750 ml-2">Aguardando</span>
                                 )
                               )}
                               {aluno.streak >= 3 && (
@@ -538,13 +560,14 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                               )}
                             </span>
                           </div>
-                          <span className="font-bold text-blue-400 font-mono ml-2 shrink-0">{aluno.score} pts</span>
+                          <span className="font-black text-blue-400 font-mono text-base md:text-xl ml-2 shrink-0">{aluno.score} pts</span>
                         </li>
                       ))}
                     </ul>
                   )}
                 </CardContent>
               </Card>
+            </div>
 
             </div>
           </div>

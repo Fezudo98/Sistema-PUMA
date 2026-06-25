@@ -112,7 +112,7 @@ export default async function InstructorDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
           <div className="flex items-center gap-4">
             <Target className="w-10 h-10 text-blue-500 animate-pulse" />
