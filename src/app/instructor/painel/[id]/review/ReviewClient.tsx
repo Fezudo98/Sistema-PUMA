@@ -35,8 +35,8 @@ export default function ReviewClient({
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-50 p-6 md:p-12">
+      <div className="w-full">
         <header className="flex justify-between items-center mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -132,44 +132,43 @@ export default function ReviewClient({
               const qAccuracy = qAnswers > 0 ? Math.round((qCorrects / qAnswers) * 100) : 0;
               const isHard = qAnswers > 0 && qAccuracy < 40;
               const isExpanded = expandedQuestion === q.id;
-
               return (
                 <Card key={q.id} className={`bg-white border-l-4 shadow-sm transition-all ${isHard ? 'border-l-red-500' : 'border-l-blue-500'}`}>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row gap-6">
+                  <CardContent className="p-6 md:p-10">
+                    <div className="flex flex-col lg:flex-row gap-8">
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="font-black text-slate-400 text-lg">Q{index + 1}</span>
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="font-black text-slate-400 text-2xl md:text-3xl">Q{index + 1}</span>
                           {isHard && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                              <AlertTriangle className="w-3 h-3" /> Questão Crítica
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs md:text-sm font-bold bg-red-100 text-red-700">
+                              <AlertTriangle className="w-4 h-4" /> Questão Crítica
                             </span>
                           )}
                         </div>
-                        <p className="text-slate-700 font-medium mb-4">{q.enunciado}</p>
+                        <p className="text-slate-950 text-xl md:text-3xl lg:text-4xl font-semibold leading-relaxed mb-8">{q.enunciado}</p>
                         
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                          <p className="text-sm font-bold text-slate-700 mb-1">Gabarito e Justificativa:</p>
-                          <p className="text-sm text-emerald-700 font-medium mb-2">Opção Correta: {String.fromCharCode(65 + q.correta)}</p>
-                          <p className="text-sm text-slate-600 italic">{q.justificativa}</p>
+                        <div className="bg-slate-50 p-6 md:p-8 rounded-lg border border-slate-200 mt-6">
+                          <p className="text-lg md:text-2xl font-black text-slate-800 mb-2">Gabarito e Justificativa:</p>
+                          <p className="text-lg md:text-2xl text-emerald-700 font-extrabold mb-3">Opção Correta: {String.fromCharCode(65 + q.correta)}</p>
+                          <p className="text-base md:text-xl text-slate-800 italic leading-relaxed font-medium">{q.justificativa}</p>
                         </div>
                       </div>
                       
-                      <div className="w-full md:w-64 shrink-0 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-6">
-                        <div className="text-center mb-4">
-                          <span className="block text-4xl font-black text-slate-800 mb-1">{qAccuracy}%</span>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Taxa de Acerto</span>
+                      <div className="w-full lg:w-80 shrink-0 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-slate-200 pt-6 lg:pt-0 lg:pl-8">
+                        <div className="text-center mb-6">
+                          <span className="block text-5xl md:text-7xl font-black text-slate-800 mb-1">{qAccuracy}%</span>
+                          <span className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-widest">Taxa de Acerto</span>
                         </div>
-                        <Progress value={qAccuracy} className={`h-2 mb-4 ${isHard ? '[&>div]:bg-red-500' : '[&>div]:bg-blue-500'}`} />
-                        <div className="flex justify-between text-xs text-slate-500 mb-4">
-                          <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-emerald-500"/> {qCorrects} acertos</span>
-                          <span className="flex items-center gap-1"><Users className="w-3 h-3 text-slate-400"/> {qAnswers} total</span>
+                        <Progress value={qAccuracy} className={`h-3 mb-6 ${isHard ? '[&>div]:bg-red-500' : '[&>div]:bg-blue-500'}`} />
+                        <div className="flex justify-between text-xs md:text-sm text-slate-500 mb-6">
+                          <span className="flex items-center gap-1.5 font-medium"><CheckCircle className="w-4 h-4 text-emerald-500"/> {qCorrects} acertos</span>
+                          <span className="flex items-center gap-1.5 font-medium"><Users className="w-4 h-4 text-slate-400"/> {qAnswers} total</span>
                         </div>
                         
                         <Button 
                           variant="outline" 
                           onClick={() => setExpandedQuestion(isExpanded ? null : q.id)}
-                          className="w-full text-sm font-bold"
+                          className="w-full text-base font-bold py-5 h-auto"
                         >
                           {isExpanded ? "Ocultar Alunos" : "Ver Alunos"}
                         </Button>
