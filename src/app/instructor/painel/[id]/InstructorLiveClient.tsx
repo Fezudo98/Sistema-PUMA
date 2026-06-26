@@ -241,7 +241,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
         </div>
       </header>
 
-      <main className="flex-1 p-6 flex items-center justify-center">
+      <main className="flex-1 p-4 md:p-6 flex items-start justify-center overflow-y-auto">
         {status === "WAITING" && (
           <div className="text-center max-w-4xl w-full p-8 bg-slate-900/30 border border-slate-800/80 rounded-3xl backdrop-blur-md shadow-2xl">
             <div className="w-24 h-24 mx-auto bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(37,99,235,0.4)] animate-pulse">
@@ -294,20 +294,20 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
         )}
 
         {status === "ACTIVE" && (
-          <div className="max-w-[95vw] w-full h-full flex flex-col xl:flex-row gap-8">
+          <div className="max-w-[95vw] w-full flex flex-col lg:flex-row gap-6">
             {/* Esquerda: Controle da Questão */}
             <div className="flex-1 space-y-6 flex flex-col">
               {currentQuestionIndex === -1 ? (
-                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-8">
+                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-6 md:p-8">
                   <Target className="w-16 h-16 text-blue-500 mb-4" />
                   <h2 className="text-2xl font-bold text-white mb-2">Simulado Iniciado!</h2>
                   <p className="text-slate-400 mb-8">Os alunos estão vendo a tela de aguarde. Libere a primeira questão quando estiver pronto.</p>
-                  <Button onClick={handleNextQuestion} className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-500 font-bold">
+                  <Button onClick={handleNextQuestion} className="h-12 md:h-14 px-8 text-base md:text-lg bg-blue-600 hover:bg-blue-500 font-bold">
                     Liberar Questão 1
                   </Button>
                 </div>
               ) : (
-                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col">
+                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-8 flex flex-col">
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-blue-400 font-bold tracking-wider uppercase text-sm">Questão {currentQuestionIndex + 1} de {simulado.questions.length}</span>
                     {isQuestionActive ? (
@@ -331,8 +331,8 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     </div>
                   )}
 
-                  <div className="mb-8 flex-1 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
-                    <p className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-normal tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">{currentQuestion?.enunciado}</p>
+                  <div className="mb-6 flex-1 flex flex-col gap-4 md:gap-6 overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-normal tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">{currentQuestion?.enunciado}</p>
                     
                     {currentQuestion?.alternativas && (
                       <div className="flex flex-col gap-3">
@@ -354,21 +354,21 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                   setSelectedAltForDetails(index);
                                 }
                               }}
-                              className={`flex flex-col gap-3 p-5 md:p-6 rounded-xl border transition-all ${
+                              className={`flex flex-col gap-3 p-4 md:p-5 rounded-xl border transition-all ${
                                 isCorrect 
                                   ? 'bg-emerald-950/30 border-emerald-500/70 shadow-[0_0_20px_rgba(16,185,129,0.15)]' 
                                   : 'bg-slate-900 border-slate-850'
                               } ${isClickable ? 'cursor-pointer hover:bg-slate-850 hover:border-blue-500/40' : ''}`}
                             >
                               <div className="flex items-start gap-4">
-                                <span className={`flex shrink-0 items-center justify-center w-10 h-10 rounded-full text-lg font-extrabold border-2 ${
+                                <span className={`flex shrink-0 items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full text-sm md:text-lg font-extrabold border-2 ${
                                   isCorrect
                                     ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-400'
                                     : 'bg-slate-850 text-slate-300 border-slate-700'
                                 }`}>
                                   {letter}
                                 </span>
-                                <span className={`flex-1 pt-0.5 text-lg md:text-xl lg:text-2xl leading-relaxed ${isCorrect ? 'text-emerald-400 font-black' : 'text-slate-200 font-semibold'}`}>
+                                <span className={`flex-1 pt-0.5 text-base md:text-lg lg:text-xl leading-relaxed ${isCorrect ? 'text-emerald-400 font-black' : 'text-slate-200 font-semibold'}`}>
                                   {cleanAlt}
                                 </span>
                               </div>
@@ -412,31 +412,31 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     <div className="flex flex-col gap-3">
                       <div className="flex gap-3">
                         {isPaused ? (
-                          <Button onClick={handleResumeTime} className="flex-1 h-14 font-bold text-lg bg-emerald-600 hover:bg-emerald-500">
+                          <Button onClick={handleResumeTime} className="flex-1 h-12 md:h-14 font-bold text-base md:text-lg bg-emerald-600 hover:bg-emerald-500">
                             <Play className="w-5 h-5 mr-2" /> Retomar Tempo
                           </Button>
                         ) : (
-                          <Button onClick={handlePauseTime} className="flex-1 h-14 font-bold text-lg bg-amber-600 hover:bg-amber-500">
+                          <Button onClick={handlePauseTime} className="flex-1 h-12 md:h-14 font-bold text-base md:text-lg bg-amber-600 hover:bg-amber-500">
                             <Pause className="w-5 h-5 mr-2" /> Pausar Tempo
                           </Button>
                         )}
-                        <Button onClick={handleCancelQuestion} variant="outline" className="flex-1 h-14 font-bold text-lg border-red-500/50 text-red-400 hover:bg-red-500/10">
+                        <Button onClick={handleCancelQuestion} variant="outline" className="flex-1 h-12 md:h-14 font-bold text-base md:text-lg border-red-500/50 text-red-400 hover:bg-red-500/10">
                           <Ban className="w-5 h-5 mr-2" /> Anular Questão
                         </Button>
                       </div>
-                      <Button onClick={handleEndTimeEarly} variant="destructive" className="w-full h-14 font-bold text-lg">
+                      <Button onClick={handleEndTimeEarly} variant="destructive" className="w-full h-12 md:h-14 font-bold text-base md:text-lg">
                         <Square className="w-5 h-5 mr-2" /> Encerrar Tempo Imediatamente
                       </Button>
                     </div>
                   ) : isQuestionActive && isTimeUp ? (
                     <div className="flex flex-col gap-3">
-                      <Button onClick={() => socket?.emit("reveal_result", { roomCode: simulado.codigoSala })} className="w-full h-16 font-black text-2xl bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-pulse text-white">
+                      <Button onClick={() => socket?.emit("reveal_result", { roomCode: simulado.codigoSala })} className="w-full h-14 md:h-16 font-black text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-pulse text-white">
                         <Trophy className="w-8 h-8 mr-3" /> VER RESULTADO
                       </Button>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3">
-                      <Button onClick={handleNextQuestion} disabled={isRaffling} className="w-full h-14 font-bold text-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50">
+                      <Button onClick={handleNextQuestion} disabled={isRaffling} className="w-full h-12 md:h-14 font-bold text-base md:text-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50">
                         {currentQuestionIndex + 1 < simulado.questions.length ? "Próxima Questão" : "Finalizar Simulado"} <ChevronRight className="w-5 h-5 ml-2" />
                       </Button>
                       <div className="flex items-center justify-center gap-2 mt-2">
@@ -466,30 +466,32 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   )}
                 </div>
               )}
-             {/* Direita: Status Ao Vivo & Ranking */}
-            <div className="w-full xl:w-96 flex flex-col gap-6">
+            </div>
+
+            {/* Direita: Status Ao Vivo & Ranking */}
+            <div className="w-full lg:w-80 xl:w-96 flex flex-col gap-6 shrink-0">
               <div className="grid grid-cols-2 gap-4">
                 <Card className="bg-slate-900 border-slate-800 shadow-lg">
-                  <CardHeader className="pb-2">
+                  <CardHeader className="p-4 pb-2">
                     <CardTitle className="text-xs md:text-sm text-slate-400 flex items-center justify-center gap-2 uppercase tracking-wider font-black"><Clock className="w-4 h-4 text-amber-500"/> Tempo</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-4xl md:text-5xl font-black text-center text-white font-mono flex items-center justify-center gap-2">
+                  <CardContent className="p-4 pt-0">
+                    <div className="text-3xl md:text-5xl font-black text-center text-white font-mono flex items-center justify-center gap-2">
                       {timeLeft}s
-                      {isPaused && <Pause className="w-6 h-6 text-amber-500 animate-pulse" />}
+                      {isPaused && <Pause className="w-5 h-5 md:w-6 md:h-6 text-amber-500 animate-pulse" />}
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-slate-900 border-slate-800 shadow-lg">
-                  <CardHeader className="pb-2">
+                  <CardHeader className="p-4 pb-2">
                     <CardTitle className="text-xs md:text-sm text-slate-400 flex items-center justify-center gap-2 uppercase tracking-wider font-black"><CheckCircle className="w-4 h-4 text-blue-500"/> Respostas</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl md:text-4xl font-black text-center text-white mb-2">
-                      {answersReceived}<span className="text-sm md:text-base text-slate-500">/{students.length}</span>
+                  <CardContent className="p-4 pt-0">
+                    <div className="text-2xl md:text-4xl font-black text-center text-white mb-2">
+                      {answersReceived}<span className="text-xs md:text-base text-slate-500">/{students.length}</span>
                     </div>
-                    <Progress value={students.length > 0 ? (answersReceived / students.length) * 100 : 0} className="h-2 bg-slate-800 [&>div]:bg-blue-500" />
+                    <Progress value={students.length > 0 ? (answersReceived / students.length) * 100 : 0} className="h-1.5 md:h-2 bg-slate-800 [&>div]:bg-blue-500" />
                   </CardContent>
                 </Card>
               </div>
@@ -509,13 +511,13 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
 
               {/* Ranking Ao Vivo */}
               <Card className="bg-slate-900 border-slate-800 flex-1 flex flex-col shadow-2xl">
-                <CardHeader className="border-b border-slate-800 py-4">
-                  <CardTitle className="text-slate-200 flex items-center gap-2 font-bold text-base md:text-lg">
-                    <Trophy className="w-5 h-5 text-yellow-500"/> 
+                <CardHeader className="border-b border-slate-800 py-3 md:py-4">
+                  <CardTitle className="text-slate-200 flex items-center gap-2 font-bold text-sm md:text-base">
+                    <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500"/> 
                     Ranking Ao Vivo
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 flex-1 overflow-auto max-h-[400px] xl:max-h-[500px]">
+                <CardContent className="p-0 flex-1 overflow-auto max-h-[350px] md:max-h-[400px] xl:max-h-[500px]">
                   {ranking.length === 0 ? (
                     <div className="p-6 text-center text-slate-500 text-sm font-medium">
                       O ranking aparecerá aqui assim que os alunos pontuarem.
@@ -523,9 +525,9 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   ) : (
                     <ul className="divide-y divide-slate-800/40">
                       {ranking.map((aluno, index) => (
-                        <li key={index} className="flex items-center justify-between p-4 hover:bg-slate-850 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <span className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-full text-sm font-extrabold ${
+                        <li key={index} className="flex items-center justify-between p-3 md:p-4 hover:bg-slate-850 transition-colors">
+                          <div className="flex items-center gap-2.5">
+                            <span className={`flex items-center justify-center shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full text-xs md:text-sm font-extrabold ${
                               index === 0 ? 'bg-yellow-500 text-yellow-950' : 
                               index === 1 ? 'bg-slate-300 text-slate-800' :
                               index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-slate-800 text-slate-400'
@@ -533,42 +535,40 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                               {index + 1}
                             </span>
                             {aluno.avatarUrl ? (
-                              <img src={aluno.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0" />
+                              <img src={aluno.avatarUrl} alt="Avatar" className="w-7 h-7 md:w-9 md:h-9 rounded-full object-cover border border-slate-700 shrink-0" />
                             ) : (
-                              <div className="w-9 h-9 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0 border border-slate-700">
+                              <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] md:text-xs font-bold shrink-0 border border-slate-700">
                                 {aluno.name.substring(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <span className="font-bold text-slate-200 text-base md:text-lg truncate flex items-center">
+                            <span className="font-bold text-slate-200 text-sm md:text-base lg:text-lg truncate flex items-center">
                               {aluno.name}
                               {isQuestionActive && !questionEndedData && (
                                 answeredStudentIds.includes(aluno.id) ? (
-                                  <span className="text-[10px] md:text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/30 ml-2 animate-pulse">Respondeu</span>
+                                  <span className="text-[9px] md:text-xs bg-emerald-500/20 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 ml-1.5 animate-pulse">Respondeu</span>
                                 ) : (
-                                  <span className="text-[10px] md:text-xs bg-slate-850 text-slate-500 font-bold px-2 py-0.5 rounded border border-slate-750 ml-2">Aguardando</span>
+                                  <span className="text-[9px] md:text-xs bg-slate-850 text-slate-500 font-bold px-1.5 py-0.5 rounded border border-slate-750 ml-1.5">Aguardando</span>
                                 )
                               )}
                               {aluno.streak >= 3 && (
-                                <span className="text-orange-500 font-bold flex items-center text-xs ml-2 animate-pulse" title={`${aluno.streak} acertos seguidos`}>
+                                <span className="text-orange-500 font-bold flex items-center text-xs ml-1.5 animate-pulse" title={`${aluno.streak} acertos seguidos`}>
                                   <Flame className="w-3 h-3 mr-0.5" /> {aluno.streak}
                                 </span>
                               )}
                               {aluno.streak <= -3 && (
-                                <span className="text-cyan-400 font-bold flex items-center text-xs ml-2" title={`${Math.abs(aluno.streak)} erros seguidos`}>
+                                <span className="text-cyan-400 font-bold flex items-center text-xs ml-1.5" title={`${Math.abs(aluno.streak)} erros seguidos`}>
                                   <Snowflake className="w-3 h-3 mr-0.5" /> {Math.abs(aluno.streak)}
                                 </span>
                               )}
                             </span>
                           </div>
-                          <span className="font-black text-blue-400 font-mono text-base md:text-xl ml-2 shrink-0">{aluno.score} pts</span>
+                          <span className="font-black text-blue-400 font-mono text-sm md:text-base lg:text-xl ml-2 shrink-0">{aluno.score} pts</span>
                         </li>
                       ))}
                     </ul>
                   )}
                 </CardContent>
               </Card>
-            </div>
-
             </div>
           </div>
         )}
