@@ -28,6 +28,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const searchParams = useSearchParams();
   const [isRaffling, setIsRaffling] = useState(false);
   const [raffleWinner, setRaffleWinner] = useState<any>(null);
+  const [selectedGuess, setSelectedGuess] = useState<"ACERTAR" | "ERRAR" | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [displayStudent, setDisplayStudent] = useState<any>(null);
   const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null}[]>([]);
@@ -120,6 +121,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             setQuestionEndedData(data.questionEndedData);
             setSelectedAlt(-1);
             setHasConfirmed(false);
+            setSelectedGuess(null);
             setStartTime(Date.now());
             return data.currentQuestion;
           }
@@ -172,6 +174,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setTimeLeft(questionData.tempoLimite);
       setSelectedAlt(-1);
       setQuestionEndedData(null);
+      setSelectedGuess(null);
       setStartTime(Date.now());
       setIsPaused(false);
       setIsTimeUp(false);
@@ -210,7 +213,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setIsRaffling(true);
       setTimeout(() => {
         setIsRaffling(false);
-      }, 4000);
+      }, 6000);
     });
 
     s.on("time_tick", (data) => {
@@ -299,6 +302,15 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       tempoGasto: timeGasto
     });
   };
+
+  const isObserver = !!(raffleWinner && raffleWinner.id !== user.userId);
+  const targetGotItRight = !!(
+    questionEndedData &&
+    raffleWinner &&
+    questionEndedData.answersByAlt &&
+    (questionEndedData.answersByAlt[String(questionEndedData.correta)] || [])
+      .some((st: any) => st.name === raffleWinner.name)
+  );
 
   if (status === "WAITING") {
     return (
@@ -423,31 +435,113 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             </div>
 
             {raffleWinner && raffleWinner.id !== user.userId && !questionEndedData && (
-              <div className="mb-6 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-                <Target className="w-8 h-8 text-red-500 animate-pulse shrink-0" />
-                <div>
-                  <p className="text-red-400 font-black text-sm uppercase tracking-widest">Alvo Sorteado</p>
-                  <p className="text-slate-300 text-sm mt-0.5">Aguardando a resposta de: <strong className="text-white">{raffleWinner.name}</strong></p>
+              <>
+                <div className="mb-4 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.15)] animate-in fade-in zoom-in-95">
+                  <Target className="w-8 h-8 text-red-500 animate-pulse shrink-0" />
+                  <div>
+                    <p className="text-red-400 font-black text-sm uppercase tracking-widest">Alvo Sorteado</p>
+                    <p className="text-slate-300 text-sm mt-0.5">Aguardando a resposta de: <strong className="text-white">{raffleWinner.name}</strong></p>
+                  </div>
                 </div>
-              </div>
+
+                <Card className="bg-slate-900/50 border-slate-800 mb-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <CardHeader className="py-2.5 bg-slate-950/40 border-b border-slate-800/60">
+                    <CardTitle className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      🎲 Palpite Tático
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    {!selectedGuess ? (
+                      <div className="space-y-3">
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wide leading-relaxed">
+                          O alvo vai acertar ou errar a questão? Dê o seu palpite:
+                        </p>
+                        <div className="flex gap-3">
+                          <Button 
+                            onClick={() => setSelectedGuess("ACERTAR")}
+                            className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-500 font-bold text-white uppercase tracking-wider text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                          >
+                            Vai Acertar 👍
+                          </Button>
+                          <Button 
+                            onClick={() => setSelectedGuess("ERRAR")}
+                            className="flex-1 h-11 bg-red-650 hover:bg-red-550 font-bold text-white uppercase tracking-wider text-xs transition-all shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                          >
+                            Vai Errar 👎
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-1">
+                        <p className="text-sm text-slate-300 font-bold">
+                          Seu Palpite:{" "}
+                          <span className={selectedGuess === "ACERTAR" ? "text-emerald-400 font-black" : "text-red-400 font-black"}>
+                            {selectedGuess === "ACERTAR" ? "VAI ACERTAR 👍" : "VAI ERRAR 👎"}
+                          </span>
+                        </p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1 font-bold animate-pulse">
+                          Aguardando a resposta do alvo...
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
             )}
 
             {questionEndedData && (
-              <Card className={`border mb-6 ${selectedAlt === questionEndedData.correta ? 'border-emerald-500 bg-emerald-950/20' : 'border-red-500 bg-red-950/20'}`}>
+              <Card className={`border mb-6 ${
+                isObserver 
+                  ? selectedGuess 
+                    ? ((selectedGuess === "ACERTAR" && targetGotItRight) || (selectedGuess === "ERRAR" && !targetGotItRight))
+                      ? 'border-emerald-500 bg-emerald-950/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
+                      : 'border-red-500 bg-red-950/20'
+                    : 'border-slate-800 bg-slate-900/40'
+                  : selectedAlt === questionEndedData.correta 
+                    ? 'border-emerald-500 bg-emerald-950/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' 
+                    : 'border-red-500 bg-red-950/20'
+              }`}>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    {selectedAlt === questionEndedData.correta ? (
+                    {isObserver ? (
+                      selectedGuess ? (
+                        ((selectedGuess === "ACERTAR" && targetGotItRight) || (selectedGuess === "ERRAR" && !targetGotItRight)) ? (
+                          <><CheckCircle className="w-6 h-6 text-emerald-500" /> <span className="text-emerald-400">Palpite Certeiro! 🎯</span></>
+                        ) : (
+                          <><XCircle className="w-6 h-6 text-red-500" /> <span className="text-red-400">Palpite Incorreto... ❌</span></>
+                        )
+                      ) : (
+                        <><Target className="w-6 h-6 text-blue-500" /> <span className="text-blue-400">Gabarito Revelado</span></>
+                      )
+                    ) : selectedAlt === questionEndedData.correta ? (
                       <><CheckCircle className="w-6 h-6 text-emerald-500" /> <span className="text-emerald-400">Você Acertou!</span></>
                     ) : (
                       <><XCircle className="w-6 h-6 text-red-500" /> <span className="text-red-400">Você Errou.</span></>
                     )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm font-bold text-slate-300 mb-2">Justificativa:</p>
-                  <p className="text-sm text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    {questionEndedData.justificativa}
-                  </p>
+                <CardContent className="space-y-4">
+                  {isObserver && (
+                    <div className="text-sm text-slate-300 font-bold bg-slate-950/50 p-3 rounded-lg border border-slate-850/80 leading-relaxed">
+                      {selectedGuess ? (
+                        <>
+                          Você palpitou que o alvo iria <strong className={selectedGuess === "ACERTAR" ? "text-emerald-400" : "text-red-400"}>{selectedGuess === "ACERTAR" ? "Acertar 👍" : "Errar 👎"}</strong>.<br/>
+                          O alvo (<span className="text-white">{raffleWinner?.name}</span>) de fato <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong>.
+                        </>
+                      ) : (
+                        <>
+                          Você ficou como observador nesta rodada.<br/>
+                          O alvo (<span className="text-white">{raffleWinner?.name}</span>) <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong> a questão.
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-bold text-slate-350 mb-2 uppercase tracking-wide">Justificativa:</p>
+                    <p className="text-sm text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800 leading-relaxed">
+                      {questionEndedData.justificativa}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}

@@ -137,7 +137,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       setIsRaffling(true);
       setTimeout(() => {
         setIsRaffling(false);
-      }, 4000);
+      }, 6000);
     });
 
     return () => {

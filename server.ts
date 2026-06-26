@@ -616,7 +616,7 @@ app.prepare().then(() => {
           }
         }, 1000);
 
-      }, 4000);
+      }, 6000);
     });
 
     // Instructor forcefully ends time
