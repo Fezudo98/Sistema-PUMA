@@ -280,7 +280,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                             <span className="font-bold opacity-70">
                               {["A)", "B)", "C)", "D)", "E)"][aIndex] || `${aIndex})`}
                             </span>
-                            <p>{alt.replace(/^[A-E]\)\s*/, '')}</p>
+                            <p>{alt.replace(/^[A-E]\)\s*/i, '')}</p>
                           </div>
                           
                           <div className="flex gap-2 shrink-0 md:ml-auto pl-7 md:pl-0">

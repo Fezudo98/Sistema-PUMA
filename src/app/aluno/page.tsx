@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
-import { getTakenNumbers, loginUser, registerUser } from "@/app/actions/auth";
+import { getTakenNumbers, loginUser, registerUser, changeDefaultPasswordAction } from "@/app/actions/auth";
 
 export default function StudentAuth() {
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
   const [takenNumbers, setTakenNumbers] = useState<number[]>([]);
   const router = useRouter();
 
@@ -20,6 +22,7 @@ export default function StudentAuth() {
 
   const handleAction = async (formData: FormData, isLogin: boolean) => {
     setError("");
+    setSuccessMsg("");
     formData.append("role", "STUDENT");
     
     // For student registration: name and username are both QRA.
@@ -34,6 +37,20 @@ export default function StudentAuth() {
       setError(res.error);
     } else if (res?.success) {
       router.push("/aluno/painel");
+    }
+  };
+
+  const handleChangePassword = async (formData: FormData) => {
+    setError("");
+    setSuccessMsg("");
+    
+    const res = await changeDefaultPasswordAction(formData);
+    
+    if (res?.error) {
+      setError(res.error);
+    } else if (res?.success) {
+      setSuccessMsg("Senha alterada com sucesso! Entre agora com suas novas credenciais.");
+      setActiveTab("login");
     }
   };
 
@@ -60,13 +77,15 @@ export default function StudentAuth() {
           </CardHeader>
 
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-800 text-slate-400">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-800 text-slate-400">
                 <TabsTrigger value="login" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Entrar</TabsTrigger>
                 <TabsTrigger value="register" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Cadastrar</TabsTrigger>
+                <TabsTrigger value="change-password" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Alt. Senha</TabsTrigger>
               </TabsList>
               
               {error && <div className="mb-4 p-3 bg-red-900/50 border border-red-500 text-red-200 text-sm rounded-md text-center">{error}</div>}
+              {successMsg && <div className="mb-4 p-3 bg-emerald-950/50 border border-emerald-500 text-emerald-200 text-sm rounded-md text-center">{successMsg}</div>}
 
               <TabsContent value="login">
                 <form action={(f) => handleAction(f, true)} className="space-y-4">
@@ -77,6 +96,19 @@ export default function StudentAuth() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-300">Senha</label>
                     <Input name="password" type="password" placeholder="Sua senha" required className="bg-slate-800/50 border-slate-700 h-12" />
+                    <div className="flex justify-end">
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setError("");
+                          setSuccessMsg("");
+                          setActiveTab("change-password");
+                        }}
+                        className="text-xs text-blue-500 hover:text-blue-400 hover:underline font-bold transition-colors"
+                      >
+                        Alterar senha padrão (PMCE123)?
+                      </button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Entrar</Button>
                 </form>
@@ -109,6 +141,24 @@ export default function StudentAuth() {
                     <Input name="password" type="password" placeholder="Crie uma senha" required className="bg-slate-800/50 border-slate-700 h-12" />
                   </div>
                   <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Criar Cadastro</Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="change-password">
+                <form action={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-300">QRA (Nome de Guerra)</label>
+                    <Input name="username" placeholder="Seu QRA" required className="bg-slate-800/50 border-slate-700 h-12 uppercase" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-300">Senha Atual</label>
+                    <Input name="currentPassword" type="password" placeholder="Senha atual padrão (ex: PMCE123)" required className="bg-slate-800/50 border-slate-700 h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-300">Nova Senha</label>
+                    <Input name="newPassword" type="password" placeholder="Crie uma nova senha" required className="bg-slate-800/50 border-slate-700 h-12" />
+                  </div>
+                  <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Alterar Senha</Button>
                 </form>
               </TabsContent>
             </Tabs>

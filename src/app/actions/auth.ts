@@ -123,6 +123,40 @@ export async function logout() {
   cookieStore.delete("token");
 }
 
+export async function changeDefaultPasswordAction(formData: FormData) {
+  const username = sanitizeString(formData.get("username") as string);
+  const currentPassword = formData.get("currentPassword") as string;
+  const newPassword = formData.get("newPassword") as string;
+
+  if (!username || !currentPassword || !newPassword) {
+    return { error: "Todos os campos são obrigatórios." };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { username }
+  });
+
+  if (!user || user.role !== "STUDENT") {
+    return { error: "Combatente não encontrado." };
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.senha);
+  if (!isMatch) {
+    return { error: "Senha atual incorreta." };
+  }
+
+  // Hash new password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { senha: hashedPassword }
+  });
+
+  return { success: true };
+}
+
 import { jwtVerify } from "jose";
 
 export async function getUser() {

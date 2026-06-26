@@ -12,6 +12,19 @@ export async function POST(req: NextRequest) {
     const dificuldade = formData.get("dificuldade") as string;
     const topics = formData.get("topics") as string | null;
 
+    const { PrismaClient } = require("@prisma/client");
+    const prisma = new PrismaClient();
+    let studentNames: string[] = [];
+    try {
+      const students = await prisma.user.findMany({
+        where: { role: "STUDENT" },
+        select: { name: true }
+      });
+      studentNames = Array.from(new Set(students.map((s: any) => s.name.trim()).filter(Boolean)));
+    } catch (dbErr) {
+      console.error("Erro ao buscar alunos para o prompt:", dbErr);
+    }
+
     if (!file && !apostilaId) {
       return NextResponse.json({ error: "Nenhum arquivo ou apostila fornecida." }, { status: 400 });
     }
@@ -103,8 +116,15 @@ export async function POST(req: NextRequest) {
     3. FOCO TÉCNICO: NUNCA elabore questões sobre metadados do documento (ignore nomes de autores, diretores, reitores, ficha catalográfica, histórico de edições ou índices). Foque apenas na matéria/teoria militar e policial.
     4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
     5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
-    6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
+    6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.`;
+
+    if (studentNames.length > 0) {
+      // Misturar e selecionar até 10 nomes aleatórios de alunos para não sobrecarregar
+      const shuffledNames = [...studentNames].sort(() => 0.5 - Math.random()).slice(0, 10);
+      prompt += `\n    7. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 questão deste simulado de ${qtd} questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
+    }
     
+    prompt += `\n    
     O nível de dificuldade deve ser: ${dificuldade || 'intermediário'}.
     Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 

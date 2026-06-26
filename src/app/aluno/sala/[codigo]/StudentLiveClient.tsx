@@ -581,7 +581,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                       }`}>
                         {String.fromCharCode(65 + index)}
                       </span>
-                      <span className="flex-1 pt-1 text-base leading-snug">{alt.replace(/^[A-E]\)\s*/, '')}</span>
+                      <span className="flex-1 pt-1 text-base leading-snug">{alt.replace(/^[A-E]\)\s*/i, '')}</span>
                     </div>
 
                     {isEnded && questionEndedData.percentages && (

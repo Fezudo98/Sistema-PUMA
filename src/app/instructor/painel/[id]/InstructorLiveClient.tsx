@@ -338,7 +338,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       <div className="flex flex-col gap-3">
                         {currentQuestion.alternativas.map((alt: string, index: number) => {
                           const letter = String.fromCharCode(65 + index);
-                          const cleanAlt = alt.replace(/^[A-E]\)\s*/, '');
+                          const cleanAlt = alt.replace(/^[A-E]\)\s*/i, '');
                           
                           // Se a questão já foi encerrada e temos os dados, podemos destacar a correta
                           const isEnded = questionEndedData !== null;

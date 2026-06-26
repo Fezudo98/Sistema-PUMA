@@ -100,7 +100,8 @@ export default function ReviewSimulado() {
     if (!editBuffer) return;
     const newAlts = [...editBuffer.alternativas];
     const prefix = ["A", "B", "C", "D", "E"][altIndex] || "";
-    newAlts[altIndex] = `${prefix}) ${value}`;
+    const cleanValue = value.replace(/^[A-E]\)\s*/i, "");
+    newAlts[altIndex] = `${prefix}) ${cleanValue}`;
     setEditBuffer({
       ...editBuffer,
       alternativas: newAlts
@@ -287,7 +288,7 @@ export default function ReviewSimulado() {
                             {/* Input de Texto da Alternativa */}
                             <Input
                               type="text"
-                              value={alt.replace(/^[A-E]\)\s*/, '')}
+                              value={alt.replace(/^[A-E]\)\s*/i, '')}
                               onChange={(e) => updateBufferAlternative(aIndex, e.target.value)}
                               className="flex-1 bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500 h-10 px-3"
                               placeholder={`Texto da alternativa ${["A", "B", "C", "D", "E"][aIndex]}`}
@@ -398,7 +399,7 @@ export default function ReviewSimulado() {
                           }`}>
                             {["A", "B", "C", "D", "E"][aIndex] || String(aIndex)}
                           </span>
-                          <p className="pt-0.5 text-base leading-snug flex-1">{alt.replace(/^[A-E]\)\s*/, '')}</p>
+                          <p className="pt-0.5 text-base leading-snug flex-1">{alt.replace(/^[A-E]\)\s*/i, '')}</p>
                           
                           {isCorrect && (
                             <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded">
