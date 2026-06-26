@@ -61,3 +61,27 @@ export async function resetStudentPassword(studentId: string, newPassword: strin
   }
 }
 
+export async function updateUserName(name: string) {
+  const user = await getUser();
+  if (!user) return { success: false, error: "Não autenticado." };
+
+  if (!name || name.trim().length < 2) {
+    return { success: false, error: "O nome deve conter pelo menos 2 caracteres." };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: user.userId },
+      data: { name: name.trim() }
+    });
+
+    revalidatePath("/aluno/painel");
+    revalidatePath("/instructor/painel");
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user name:", error);
+    return { success: false, error: "Erro ao atualizar o nome." };
+  }
+}
+

@@ -21,6 +21,7 @@ export default async function AlunoPainel() {
 
   const clientUser = {
     ...user,
+    name: dbUser?.name || user.name,
     avatarUrl: dbUser?.avatarUrl || null,
     unlockedBadges: (dbUser as any)?.unlockedBadges ? (dbUser as any).unlockedBadges.split(',').filter(Boolean) : [],
     numero: (dbUser as any)?.numero || null

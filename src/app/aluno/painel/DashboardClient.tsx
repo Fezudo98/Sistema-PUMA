@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { updateUserAvatar } from "@/app/actions/user";
+import { updateUserAvatar, updateUserName } from "@/app/actions/user";
 
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
@@ -149,7 +149,16 @@ export default function StudentDashboardClient({
   const [aiAnalysis, setAiAnalysis] = useState("");
   const [loadingAi, setLoadingAi] = useState(false);
   const [isArmariaOpen, setIsArmariaOpen] = useState(false);
+  const [newName, setNewName] = useState(user?.name || "");
+  const [updatingName, setUpdatingName] = useState(false);
+  const [nameError, setNameError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (user?.name) {
+      setNewName(user.name);
+    }
+  }, [user?.name]);
 
   useEffect(() => {
     if (stats && stats.simuladosCount > 0) {
@@ -193,6 +202,32 @@ export default function StudentDashboardClient({
     setIsArmariaOpen(false);
   };
 
+  const handleSaveName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) {
+      setNameError("O nome não pode estar vazio.");
+      return;
+    }
+    if (newName.trim().length < 2) {
+      setNameError("O nome deve ter pelo menos 2 caracteres.");
+      return;
+    }
+    setUpdatingName(true);
+    setNameError("");
+    try {
+      const res = await updateUserName(newName.trim());
+      if (res.success) {
+        // Nome atualizado com sucesso
+      } else {
+        setNameError(res.error || "Erro ao atualizar o nome.");
+      }
+    } catch (err) {
+      setNameError("Erro interno ao atualizar o nome.");
+    } finally {
+      setUpdatingName(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
       {/* Top Header */}
@@ -209,9 +244,21 @@ export default function StudentDashboardClient({
           <div className="flex items-center gap-6">
             <div className="text-right hidden sm:block">
               <p className="text-sm text-slate-400">QRA</p>
-              <p className="text-lg font-bold text-white uppercase">
-                {user?.numero ? `${String(user.numero).padStart(2, '0')} - ${user.name}` : user?.name || "Aluno"}
-              </p>
+              <div className="flex items-center justify-end gap-1.5 group">
+                <p className="text-lg font-bold text-white uppercase">
+                  {user?.numero ? `${String(user.numero).padStart(2, '0')} - ${user.name}` : user?.name || "Aluno"}
+                </p>
+                <button 
+                  onClick={() => {
+                    setNameError("");
+                    setIsArmariaOpen(true);
+                  }}
+                  className="text-slate-500 hover:text-blue-400 transition-colors p-1 rounded hover:bg-slate-800"
+                  title="Alterar Identificação (QRA)"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
             <button onClick={() => setIsArmariaOpen(true)} className="hover:scale-105 transition-transform" title="Abrir Armaria de Ícones">
               <HeaderAvatar 
@@ -519,6 +566,38 @@ export default function StudentDashboardClient({
             </DialogDescription>
           </DialogHeader>
           
+          {/* Identificação QRA */}
+          <div className="pt-4 pb-2">
+            <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+              <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest block">
+                Identificação do Combatente (QRA)
+              </label>
+              <form onSubmit={handleSaveName} className="flex gap-2 items-end">
+                <div className="flex-1 space-y-1">
+                  <Input
+                    value={newName}
+                    onChange={(e) => {
+                      setNewName(e.target.value);
+                      setNameError("");
+                    }}
+                    placeholder="Nome de Guerra (QRA)"
+                    className="bg-slate-950 border-slate-800 h-10 font-bold uppercase text-white"
+                    maxLength={30}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  size="sm" 
+                  className="bg-blue-600 hover:bg-blue-500 font-bold h-10 px-4 shrink-0" 
+                  disabled={updatingName || !newName.trim() || newName.trim().toUpperCase() === user?.name?.toUpperCase()}
+                >
+                  {updatingName ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar QRA"}
+                </Button>
+              </form>
+              {nameError && <p className="text-xs text-red-400 font-semibold">{nameError}</p>}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
             {/* Ícone Padrão (Sem Foto) */}
             <button 
