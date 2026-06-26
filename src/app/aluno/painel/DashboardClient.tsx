@@ -86,7 +86,7 @@ const getBadges = (stats: any) => {
       icon: Medal,
       earned: false,
       exclusive: true,
-      desc: 'Alcançar 15.000 pontos totais e ter no mínimo taxa global de acertos em 90%.',
+      desc: 'Alcançar 45.000 pontos totais e ter no mínimo taxa global de acertos em 90%.',
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'

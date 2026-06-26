@@ -246,7 +246,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper, exclusive: true },
       { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio, exclusive: true },
       { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 15 && accuracy >= 95, exclusive: true },
-      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 15000 && accuracy >= 90, exclusive: true },
+      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 45000 && accuracy >= 90, exclusive: true },
       { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
       { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
       { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },

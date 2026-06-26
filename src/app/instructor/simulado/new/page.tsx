@@ -195,20 +195,15 @@ export default function NovoSimulado() {
                 {/* Quantidade */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Qtd. de Questões</label>
-                  <Select value={qtd} onValueChange={(v) => setQtd(v || "")}>
-                    <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
-                      <SelectItem value="3">3 Questões</SelectItem>
-                      <SelectItem value="5">5 Questões</SelectItem>
-                      <SelectItem value="10">10 Questões</SelectItem>
-                      <SelectItem value="15">15 Questões</SelectItem>
-                      <SelectItem value="20">20 Questões</SelectItem>
-                      <SelectItem value="25">25 Questões</SelectItem>
-                      <SelectItem value="30">30 Questões</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input 
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={qtd}
+                    onChange={(e) => setQtd(e.target.value)}
+                    className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500 font-mono font-bold"
+                    placeholder="Ex: 5"
+                  />
                 </div>
 
                 {/* Dificuldade */}
@@ -228,21 +223,16 @@ export default function NovoSimulado() {
 
                 {/* Tempo */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tempo/Questão</label>
-                  <Select value={tempo} onValueChange={(v) => setTempo(v || "")}>
-                    <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
-                      <SelectItem value="15">15 Segundos</SelectItem>
-                      <SelectItem value="30">30 Segundos</SelectItem>
-                      <SelectItem value="45">45 Segundos</SelectItem>
-                      <SelectItem value="60">60 Segundos</SelectItem>
-                      <SelectItem value="90">90 Segundos</SelectItem>
-                      <SelectItem value="120">2 Minutos (120s)</SelectItem>
-                      <SelectItem value="180">3 Minutos (180s)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tempo/Questão (Segundos)</label>
+                  <Input 
+                    type="number"
+                    min="5"
+                    max="600"
+                    value={tempo}
+                    onChange={(e) => setTempo(e.target.value)}
+                    className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500 font-mono font-bold"
+                    placeholder="Ex: 60"
+                  />
                 </div>
               </div>
 
