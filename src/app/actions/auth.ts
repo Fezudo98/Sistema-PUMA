@@ -25,8 +25,8 @@ export async function registerUser(formData: FormData) {
   if (role === "STUDENT") {
     if (!numeroStr) return { error: "O número do combatente é obrigatório." };
     numero = parseInt(numeroStr, 10);
-    if (isNaN(numero) || numero < 1 || numero > 31) {
-      return { error: "O número deve ser entre 1 e 31." };
+    if (isNaN(numero) || numero < 1 || numero > 32) {
+      return { error: "O número deve ser entre 1 e 32." };
     }
 
     // Check if number is taken
