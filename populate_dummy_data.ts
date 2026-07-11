@@ -92,7 +92,7 @@ async function main() {
       codigoSala: roomCode,
       status: "FINISHED",
       instructorId: instructor.id,
-      difficulty: "INTERMEDIARIO",
+      difficulty: "AVANCADO",
       apostilaName: "Manual Tático da PMCE"
     }
   });

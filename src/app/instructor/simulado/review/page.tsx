@@ -23,7 +23,7 @@ export default function ReviewSimulado() {
   const [topics, setTopics] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [isRaffleMode, setIsRaffleMode] = useState(false);
-  const [dificuldade, setDificuldade] = useState("INTERMEDIARIO");
+  const [dificuldade, setDificuldade] = useState("AVANCADO");
 
   // Estados de Edição
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -46,9 +46,7 @@ export default function ReviewSimulado() {
       if (parsed.topics) {
         setTopics(parsed.topics);
       }
-      if (parsed.dificuldade) {
-        setDificuldade(parsed.dificuldade);
-      }
+      setDificuldade("AVANCADO");
       if (parsed.isRaffleMode) {
         setIsRaffleMode(true);
       }
@@ -185,14 +183,8 @@ export default function ReviewSimulado() {
             {/* Dificuldade */}
             <div className="flex flex-col">
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Dificuldade</span>
-              <span className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-                dificuldade === "BASICO" 
-                  ? "bg-sky-950/40 border-sky-500/30 text-sky-400"
-                  : dificuldade === "INTERMEDIARIO"
-                  ? "bg-amber-950/40 border-amber-500/30 text-amber-400"
-                  : "bg-rose-950/40 border-rose-500/30 text-rose-400"
-              }`}>
-                {dificuldade === "BASICO" ? "Básico" : dificuldade === "INTERMEDIARIO" ? "Intermediário" : "Avançado"}
+              <span className="bg-rose-950/40 border-rose-500/30 text-rose-400 text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border">
+                Avançado
               </span>
             </div>
 

@@ -27,7 +27,7 @@ export default function NovoSimulado() {
 
   // Settings State
   const [qtd, setQtd] = useState("5");
-  const [dificuldade, setDificuldade] = useState("INTERMEDIARIO");
+  const [dificuldade, setDificuldade] = useState("AVANCADO");
   const [tempo, setTempo] = useState("60");
   const [isRaffleMode, setIsRaffleMode] = useState(false);
   const [topics, setTopics] = useState("");
@@ -191,7 +191,7 @@ export default function NovoSimulado() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Quantidade */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Qtd. de Questões</label>
@@ -204,21 +204,6 @@ export default function NovoSimulado() {
                     className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500 font-mono font-bold"
                     placeholder="Ex: 5"
                   />
-                </div>
-
-                {/* Dificuldade */}
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dificuldade</label>
-                  <Select value={dificuldade} onValueChange={(v) => setDificuldade(v || "")}>
-                    <SelectTrigger className="h-12 text-base bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
-                      <SelectItem value="BASICO">Básico</SelectItem>
-                      <SelectItem value="INTERMEDIARIO">Intermediário</SelectItem>
-                      <SelectItem value="AVANCADO">Avançado</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {/* Tempo */}

@@ -49,7 +49,7 @@ export async function createSimulado(data: {
         status: "WAITING",
         apostilaName: data.apostilaName,
         topics: data.topics,
-        difficulty: data.difficulty || "INTERMEDIARIO",
+        difficulty: data.difficulty || "AVANCADO",
         questions: {
           create: data.questions.map((q) => ({
             enunciado: q.enunciado,

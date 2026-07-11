@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get("pdf") as File | null;
     const apostilaId = formData.get("apostilaId") as string | null;
     const qtdStr = formData.get("qtd") as string;
-    const dificuldade = formData.get("dificuldade") as string;
+    const dificuldade = "AVANCADO"; // Apenas questões avançadas
     const topics = formData.get("topics") as string | null;
 
     const { PrismaClient } = require("@prisma/client");
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     }
     
     prompt += `\n    
-    O nível de dificuldade deve ser: ${dificuldade || 'intermediário'}.
+    O nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
     Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 
     const generateWithFallback = async (content: any[]) => {

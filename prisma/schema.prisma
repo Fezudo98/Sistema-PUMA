@@ -28,7 +28,7 @@ model Simulado {
   instructorId String
   apostilaName String?
   topics       String?
-  difficulty   String     @default("INTERMEDIARIO") // BASICO | INTERMEDIARIO | AVANCADO
+  difficulty   String     @default("AVANCADO") // Apenas AVANCADO
   createdAt    DateTime   @default(now())
   questions    Question[]
 }
