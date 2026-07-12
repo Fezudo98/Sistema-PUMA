@@ -10,6 +10,7 @@ import HeaderAvatar from "@/components/HeaderAvatar";
 import EndSimuladoButton from "./EndSimuladoButton";
 import DeleteSimuladoButton from "./DeleteSimuladoButton";
 import StudentListClient from "./StudentListClient";
+import ApostilaManagerClient from "./ApostilaManagerClient";
 
 const prisma = new PrismaClient();
 
@@ -24,10 +25,46 @@ export default async function InstructorDashboard() {
     redirect("/api/auth/force-logout");
   }
 
-  // Fetch Simulados for this instructor
+  // Primeiro login do dia do instrutor: se houver apostilas ativas sem simulado gerado hoje, dispara em background
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
+
+  const activeApostilasCount = await prisma.apostila.count({
+    where: { isActive: true }
+  });
+
+  const dailySimuladosCount = await prisma.simulado.count({
+    where: {
+      tipo: "DAILY",
+      createdAt: {
+        gte: todayStart,
+        lte: todayEnd
+      }
+    }
+  });
+
+  if (activeApostilasCount > 0 && dailySimuladosCount < activeApostilasCount) {
+    const { checkAndGenerateDailySimulados } = await import("@/app/actions/dailySimulado");
+    checkAndGenerateDailySimulados().catch((err) => {
+      console.error("[INSTRUCTOR DASHBOARD] Geração em background falhou:", err);
+    });
+  }
+
+  // Fetch Simulados for this instructor (LIVE only)
   const simulados = await prisma.simulado.findMany({
-    where: { instructorId: user.userId },
+    where: { 
+      instructorId: user.userId,
+      tipo: "LIVE"
+    },
     include: { _count: { select: { questions: true } } },
+    orderBy: { createdAt: "desc" }
+  });
+
+  // Fetch Apostilas for this instructor
+  const apostilas = await prisma.apostila.findMany({
+    where: { instructorId: user.userId },
     orderBy: { createdAt: "desc" }
   });
 
@@ -106,7 +143,8 @@ export default async function InstructorDashboard() {
       totalAnswers,
       accuracy,
       totalScore,
-      avgTime
+      avgTime,
+      suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null
     };
   }).sort((a, b) => b.totalScore - a.totalScore); // Sort by highest score
 
@@ -140,6 +178,7 @@ export default async function InstructorDashboard() {
             <TabsList className="h-14 bg-slate-900 border border-slate-800 p-1">
               <TabsTrigger value="simulados" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
               <TabsTrigger value="alunos" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
+              <TabsTrigger value="materiais" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
             </TabsList>
             
             <Link href="/instructor/simulado/new">
@@ -205,7 +244,7 @@ export default async function InstructorDashboard() {
                         </Button>
                       </Link>
                       {simulado.status !== "FINISHED" && (
-                        <EndSimuladoButton simuladoId={simulado.id} roomCode={simulado.codigoSala} />
+                        <EndSimuladoButton simuladoId={simulado.id} roomCode={simulado.codigoSala || ""} />
                       )}
                       {simulado.status === "FINISHED" && (
                         <DeleteSimuladoButton simuladoId={simulado.id} />
@@ -219,6 +258,10 @@ export default async function InstructorDashboard() {
 
           <TabsContent value="alunos" className="mt-0">
             <StudentListClient studentsPerformance={studentsPerformance} />
+          </TabsContent>
+
+          <TabsContent value="materiais" className="mt-0">
+            <ApostilaManagerClient initialApostilas={apostilas as any[]} />
           </TabsContent>
         </Tabs>
       </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info, Trophy, Users } from "lucide-react";
 import Link from "next/link";
+import RefazerReviewButton from "./RefazerReviewButton";
 
 const prisma = new PrismaClient();
 
@@ -106,7 +107,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
       <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Link href="/aluno/painel">
@@ -116,8 +117,20 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
               </Link>
               <h1 className="text-3xl font-black text-white uppercase tracking-tight">Correção do Simulado</h1>
             </div>
-            <p className="text-slate-500 ml-12">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
+            {simulado.tipo === "LIVE" ? (
+              <p className="text-slate-500 ml-12">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
+            ) : (
+              <p className="text-slate-500 ml-12">Treinamento de Estudo Individual: <strong className="text-blue-500">IA Avançado</strong></p>
+            )}
           </div>
+          
+          {simulado.tipo === "DAILY" && (
+            <RefazerReviewButton 
+              simId={simulado.id} 
+              studentId={user.userId} 
+              simName={simulado.apostilaName || "Simulado de Estudo"} 
+            />
+          )}
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

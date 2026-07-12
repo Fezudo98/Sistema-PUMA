@@ -1,8 +1,8 @@
 import { getUser } from "@/app/actions/auth";
 import StudentDashboardClient from "./DashboardClient";
 import { redirect } from "next/navigation";
-
 import { PrismaClient } from "@prisma/client";
+
 
 const prisma = new PrismaClient();
 
@@ -24,7 +24,10 @@ export default async function AlunoPainel() {
     name: dbUser?.name || user.name,
     avatarUrl: dbUser?.avatarUrl || null,
     unlockedBadges: (dbUser as any)?.unlockedBadges ? (dbUser as any).unlockedBadges.split(',').filter(Boolean) : [],
-    numero: (dbUser as any)?.numero || null
+    numero: (dbUser as any)?.numero || null,
+    aiAnalysis: dbUser?.aiAnalysis || null,
+    aiAnalysisSimuladoCount: dbUser?.aiAnalysisSimuladoCount || null,
+    aiAnalysisDate: dbUser?.aiAnalysisDate ? dbUser.aiAnalysisDate.toISOString() : null
   };
 
   const answers = await prisma.answer.findMany({
@@ -139,12 +142,107 @@ export default async function AlunoPainel() {
     };
   }).sort((a, b) => b.totalScore - a.totalScore);
 
-  // Buscar simulados ativos (WAITING ou ACTIVE)
+  // 2. Fetch daily simulados for today
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
+
+  const dailySimulados = await prisma.simulado.findMany({
+    where: {
+      tipo: "DAILY",
+      createdAt: {
+        gte: todayStart,
+        lte: todayEnd
+      }
+    },
+    include: {
+      questions: {
+        select: { id: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  // 3. Primeiro login do dia: se houver apostilas ativas sem simulado gerado hoje, dispara em background
+  const activeApostilasCount = await prisma.apostila.count({
+    where: { isActive: true }
+  });
+  const isGeneratingDaily = activeApostilasCount > 0 && dailySimulados.length < activeApostilasCount;
+
+  if (isGeneratingDaily) {
+    const { checkAndGenerateDailySimulados } = await import("@/app/actions/dailySimulado");
+    checkAndGenerateDailySimulados().catch((err) => {
+      console.error("[BACKGROUND GENERATION] Geração paralela em background falhou:", err);
+    });
+  }
+
+  const dailySimuladosWithStatus = await Promise.all(
+    dailySimulados.map(async (sim) => {
+      const questionIds = sim.questions.map((q: { id: string }) => q.id);
+      const studentAnswersCount = await prisma.answer.count({
+        where: {
+          studentId: user.userId,
+          questionId: { in: questionIds }
+        }
+      });
+      
+      const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
+      
+      return {
+        id: sim.id,
+        apostilaName: sim.apostilaName || "Simulado de Estudo",
+        questionsCount: questionIds.length,
+        isCompleted
+      };
+    })
+  );
+
+  // 3. Fetch past daily simulados (before today)
+  const pastDailySimulados = await prisma.simulado.findMany({
+    where: {
+      tipo: "DAILY",
+      createdAt: {
+        lt: todayStart
+      }
+    },
+    include: {
+      questions: {
+        select: { id: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  const pastDailySimuladosWithStatus = await Promise.all(
+    pastDailySimulados.map(async (sim) => {
+      const questionIds = sim.questions.map((q: { id: string }) => q.id);
+      const studentAnswersCount = await prisma.answer.count({
+        where: {
+          studentId: user.userId,
+          questionId: { in: questionIds }
+        }
+      });
+      
+      const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
+      
+      return {
+        id: sim.id,
+        apostilaName: sim.apostilaName || "Simulado de Estudo",
+        questionsCount: questionIds.length,
+        isCompleted,
+        createdAt: sim.createdAt.toISOString()
+      };
+    })
+  );
+
+  // Buscar simulados ativos (WAITING ou ACTIVE) e apenas do tipo LIVE
   const activeRooms = await prisma.simulado.findMany({
     where: {
       status: {
         in: ["WAITING", "ACTIVE"]
-      }
+      },
+      tipo: "LIVE"
     },
     select: {
       id: true,
@@ -165,6 +263,9 @@ export default async function AlunoPainel() {
       stats={stats} 
       generalRanking={generalRanking} 
       activeRooms={activeRooms} 
+      dailySimulados={dailySimuladosWithStatus}
+      pastDailySimulados={pastDailySimuladosWithStatus}
+      isGeneratingDaily={isGeneratingDaily}
     />
   );
 }

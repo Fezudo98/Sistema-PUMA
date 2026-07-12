@@ -131,7 +131,15 @@ export async function POST(req: NextRequest) {
     const generateWithFallback = async (content: any[]) => {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
-      const modelVersions = ["gemini-pro-latest", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
+      const modelVersions = [
+        "gemini-pro-latest",
+        "gemini-3.5-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-3-flash-preview",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-flash-latest"
+      ];
 
       for (const modelVersion of modelVersions) {
         const dynamicGenConfig = {

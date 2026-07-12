@@ -16,15 +16,18 @@ model User {
   avatarUrl String? // Foto de perfil
   aiAnalysis String?
   aiAnalysisSimuladoCount Int? @default(0)
+  aiAnalysisDate DateTime?
   unlockedBadges String? @default("")
   numero   Int?
   answers  Answer[]
+  suspendedUntil DateTime?
 }
 
 model Simulado {
   id           String     @id @default(uuid())
-  codigoSala   String     @unique
+  codigoSala   String?    @unique
   status       String     @default("WAITING") // WAITING | ACTIVE | FINISHED
+  tipo         String     @default("LIVE") // LIVE | DAILY
   instructorId String
   apostilaName String?
   topics       String?
@@ -64,6 +67,7 @@ model Apostila {
   title        String
   filePath     String
   instructorId String
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 }
 
@@ -73,4 +77,14 @@ model ExclusiveBadge {
   userId      String
   simuladoId  String
   createdAt   DateTime @default(now())
+}
+
+model ChatMessage {
+  id            String   @id @default(uuid())
+  studentId     String
+  role          String   // "user" | "assistant"
+  content       String
+  apostilaId    String?
+  apostilaTitle String?
+  createdAt     DateTime @default(now())
 }

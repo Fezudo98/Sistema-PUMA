@@ -76,6 +76,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Trigger daily simulated exam generation for the new/updated booklet immediately in background
+    try {
+      const { generateDailySimuladoForSingleApostila, queueGenerationTask } = await import("@/app/actions/dailySimulado");
+      queueGenerationTask(async () => {
+        return generateDailySimuladoForSingleApostila(apostila);
+      }).then((res) => {
+        console.log(`[APOSTILA UPLOAD] Geração proativa para "${apostila.title}" concluída:`, res);
+      }).catch((err) => {
+        console.error(`[APOSTILA UPLOAD] Erro na geração proativa para "${apostila.title}":`, err);
+      });
+    } catch (cronErr: any) {
+      console.error("[APOSTILA UPLOAD] Falha ao importar gerador de simulado:", cronErr.message);
+    }
+
     return NextResponse.json({ success: true, apostila });
 
   } catch (error: any) {

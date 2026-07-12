@@ -5,13 +5,15 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
+import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
+import { resetSimuladoAttempt } from "@/app/actions/dailySimulado";
 
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
@@ -138,51 +140,114 @@ export default function StudentDashboardClient({
   user, 
   stats, 
   generalRanking = [], 
-  activeRooms = [] 
+  activeRooms = [],
+  dailySimulados = [],
+  pastDailySimulados = [],
+  isGeneratingDaily = false
 }: { 
   user: any; 
   stats?: any; 
   generalRanking?: any[]; 
   activeRooms?: any[]; 
+  dailySimulados?: any[];
+  pastDailySimulados?: any[];
+  isGeneratingDaily?: boolean;
 }) {
   const [codigo, setCodigo] = useState("");
-  const [aiAnalysis, setAiAnalysis] = useState("");
+  const [aiAnalysis, setAiAnalysis] = useState(user?.aiAnalysis || "");
   const [loadingAi, setLoadingAi] = useState(false);
   const [isArmariaOpen, setIsArmariaOpen] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
   const [updatingName, setUpdatingName] = useState(false);
   const [nameError, setNameError] = useState("");
+  const [selectedDailySimId, setSelectedDailySimId] = useState<string | null>(null);
+  const [selectedDailySimName, setSelectedDailySimName] = useState<string>("");
+  const [useTimer, setUseTimer] = useState<boolean>(true);
+  const [timerSeconds, setTimerSeconds] = useState<string>("60");
+  const [dailyTab, setDailyTab] = useState<"TODAY" | "HISTORY">("TODAY");
+  const [loadingResetId, setLoadingResetId] = useState<string | null>(null);
+  const [generatedToday, setGeneratedToday] = useState<boolean>(false);
   const router = useRouter();
+
+  const isAnalysisDoneToday = generatedToday || Boolean(
+    user?.aiAnalysisDate &&
+    new Date(user.aiAnalysisDate).toDateString() === new Date().toDateString()
+  );
+
+  const handleRefazer = async (simId: string, name: string) => {
+    if (!confirm(`Deseja realmente refazer o simulado de "${name}"? Suas respostas anteriores serão apagadas.`)) {
+      return;
+    }
+    
+    setLoadingResetId(simId);
+    const res = await resetSimuladoAttempt(user.id || user.userId, simId);
+    setLoadingResetId(null);
+    
+    if (res.error) {
+      alert(res.error);
+      return;
+    }
+
+    // Abre o modal de configuração de tempo para reiniciar
+    setSelectedDailySimId(simId);
+    setSelectedDailySimName(name);
+    setUseTimer(true);
+    setTimerSeconds("60");
+  };
 
   useEffect(() => {
     if (user?.name) {
       setNewName(user.name);
     }
-  }, [user?.name]);
+  }, [user]);
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (stats && stats.simuladosCount > 0) {
-      setLoadingAi(true);
-      fetch("/api/aluno/analysis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stats })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.analysis) {
-            setAiAnalysis(data.analysis);
-          } else {
-            setAiAnalysis("Mentor temporariamente indisponível (Alta demanda na rede). Mantenha o foco tático e continue simulando!");
-          }
-        })
-        .catch(err => {
-          console.error("Erro na IA:", err);
-          setAiAnalysis("Mentor temporariamente indisponível na rede. Mantenha o foco e continue simulando!");
-        })
-        .finally(() => setLoadingAi(false));
+    const setupId = searchParams.get("setupId");
+    const setupName = searchParams.get("setupName");
+    if (setupId && setupName) {
+      setSelectedDailySimId(setupId);
+      setSelectedDailySimName(setupName);
+      setUseTimer(true);
+      setTimerSeconds("60");
+      // Limpa os parâmetros de URL para evitar reabertura ao recarregar a página
+      router.replace("/aluno/painel");
     }
-  }, [stats]);
+  }, [searchParams, router]);
+
+  useEffect(() => {
+    if (isGeneratingDaily) {
+      const interval = setInterval(() => {
+        router.refresh();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [isGeneratingDaily, router]);
+
+  const handleGenerateAnalysis = () => {
+    if (!stats || stats.simuladosCount === 0 || isAnalysisDoneToday) return;
+    setLoadingAi(true);
+    fetch("/api/aluno/analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stats })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.analysis) {
+          setAiAnalysis(data.analysis);
+          setGeneratedToday(true);
+        } else {
+          setAiAnalysis("Mentor temporariamente indisponível (Alta demanda na rede). Mantenha o foco tático e continue simulando!");
+        }
+      })
+      .catch(err => {
+        console.error("Erro na IA:", err);
+        setAiAnalysis("Mentor temporariamente indisponível na rede. Mantenha o foco e continue simulando!");
+      })
+      .finally(() => setLoadingAi(false));
+  };
 
   const handleEntrar = (e: React.FormEvent) => {
     e.preventDefault();
@@ -274,7 +339,35 @@ export default function StudentDashboardClient({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* Prominent Banner: Central de Inteligência & Chat com Mentor IA */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-950/90 via-slate-900/95 to-indigo-950/90 border border-blue-500/40 p-6 sm:p-8 shadow-2xl">
+          <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400"></div>
+
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2.5 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-widest">
+                <Bot className="w-3.5 h-3.5 animate-pulse text-blue-400" />
+                PUMA • Acesso Integral às Apostilas
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+                Central de Dúvidas & Mentor IA PUMA
+              </h2>
+              <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                Converse com o Mentor PUMA em tempo real para tirar dúvidas, estudar conceitos ou criar questões. Dúvidas respondidas em conformidade com a apostila.
+              </p>
+            </div>
+
+            <Link href="/aluno/chat" className="w-full md:w-auto shrink-0">
+              <Button className="w-full md:w-auto h-14 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-3">
+                <MessageSquare className="w-5 h-5" />
+                Abrir Chat com o Mentor IA
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Left Column: Join Room & Strengths/Weaknesses */}
@@ -345,7 +438,191 @@ export default function StudentDashboardClient({
                    </div>
                  )}
                </CardContent>
-             </Card>
+              </Card>
+
+              {/* Simulados Diários / Estudo Individual */}
+              <Card className="border-slate-800 bg-slate-900/40 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-500"></div>
+                <CardHeader className="pb-3 border-b border-slate-800/50">
+                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-blue-500" />
+                    Missões do Dia: Estudo Individual
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-400">
+                    Simulados diários avançados gerados por IA para treinar em casa.
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="pt-4 space-y-3">
+                  {/* Tab Selector */}
+                  <div className="flex border-b border-slate-800/80 mb-4 text-[10px] font-black uppercase tracking-wider">
+                    <button
+                      onClick={() => setDailyTab("TODAY")}
+                      className={`flex-1 pb-2 border-b-2 text-center transition-all cursor-pointer ${
+                        dailyTab === "TODAY" 
+                          ? "border-blue-500 text-blue-400 font-black" 
+                          : "border-transparent text-slate-500 hover:text-slate-300"
+                      }`}
+                    >
+                      Hoje ({dailySimulados.length})
+                    </button>
+                    <button
+                      onClick={() => setDailyTab("HISTORY")}
+                      className={`flex-1 pb-2 border-b-2 text-center transition-all cursor-pointer ${
+                        dailyTab === "HISTORY" 
+                          ? "border-blue-500 text-blue-400 font-black" 
+                          : "border-transparent text-slate-500 hover:text-slate-300"
+                      }`}
+                    >
+                      Histórico ({pastDailySimulados.length})
+                    </button>
+                  </div>
+
+                  {dailyTab === "TODAY" ? (
+                    <div className="space-y-3">
+                      {isGeneratingDaily && (
+                        <div className="p-3 bg-blue-950/40 border border-blue-500/30 text-blue-200 rounded-xl flex items-center gap-3 animate-pulse">
+                          <Loader2 className="w-5 h-5 text-blue-400 animate-spin shrink-0" />
+                          <div>
+                            <span className="font-bold text-xs uppercase block tracking-wider">Preparando Missões</span>
+                            <span className="text-[10px] text-slate-400 font-medium">Novos simulados diários estão sendo elaborados pela inteligência artificial. Aguarde alguns instantes...</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {dailySimulados.length === 0 ? (
+                        <div className="text-center text-slate-500 py-6 text-xs uppercase font-black tracking-wider">
+                          {isGeneratingDaily ? "Aguardando geração..." : "Nenhuma missão disponível hoje."}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {dailySimulados.map((sim: any) => (
+                            <div
+                              key={sim.id}
+                              className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/40 flex items-center justify-between gap-3 text-left"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <span className="text-xs font-black text-slate-300 block truncate">
+                                  {sim.apostilaName}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-500 block uppercase mt-0.5">
+                                  {sim.questionsCount} Alvos • Dificuldade Máxima
+                                </span>
+                              </div>
+                              
+                              <div className="flex items-center gap-2 shrink-0">
+                                {sim.isCompleted ? (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      disabled={loadingResetId === sim.id}
+                                      onClick={() => handleRefazer(sim.id, sim.apostilaName || "")}
+                                      className="h-9 px-3 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer"
+                                    >
+                                      {loadingResetId === sim.id ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      ) : (
+                                        "Refazer"
+                                      )}
+                                    </Button>
+                                    <Link href={`/aluno/simulado/${sim.id}/review`}>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-9 px-3 bg-blue-950/30 border border-blue-900/40 text-blue-400 hover:bg-blue-950/50 hover:text-blue-300 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer"
+                                      >
+                                        Revisar
+                                      </Button>
+                                    </Link>
+                                  </>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedDailySimId(sim.id);
+                                      setSelectedDailySimName(sim.apostilaName || "");
+                                      setUseTimer(true);
+                                      setTimerSeconds("60");
+                                    }}
+                                    className="h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg cursor-pointer"
+                                  >
+                                    Iniciar
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    pastDailySimulados.length === 0 ? (
+                      <div className="text-center text-slate-500 py-6 text-xs uppercase font-black tracking-wider">
+                        Nenhum simulado histórico.
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                        {pastDailySimulados.map((sim: any) => (
+                          <div
+                            key={sim.id}
+                            className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/40 flex items-center justify-between gap-3 text-left"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <span className="text-xs font-black text-slate-300 block truncate">
+                                {sim.apostilaName}
+                              </span>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-[9px] font-bold text-slate-500 uppercase">
+                                  {new Date(sim.createdAt).toLocaleDateString("pt-BR")}
+                                </span>
+                                <span className="text-slate-700 text-[9px] font-bold">•</span>
+                                <span className="text-[9px] font-bold text-blue-500 uppercase">
+                                  {sim.questionsCount} Alvos
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="shrink-0 flex items-center gap-1.5">
+                              {sim.isCompleted ? (
+                                <>
+                                  <Link href={`/aluno/simulado/${sim.id}/review`}>
+                                    <Button size="sm" variant="ghost" className="h-9 px-2.5 bg-emerald-950/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-950/30 font-black text-[10px] uppercase tracking-wider cursor-pointer">
+                                      Revisar
+                                    </Button>
+                                  </Link>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    disabled={loadingResetId === sim.id}
+                                    onClick={() => handleRefazer(sim.id, sim.apostilaName)}
+                                    className="h-9 px-2.5 bg-rose-950/20 text-rose-400 border border-rose-500/20 hover:bg-rose-950/30 font-black text-[10px] uppercase tracking-wider cursor-pointer disabled:opacity-50"
+                                  >
+                                    {loadingResetId === sim.id ? <Loader2 className="w-3 h-3 animate-spin text-rose-400" /> : "Refazer"}
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setSelectedDailySimId(sim.id);
+                                    setSelectedDailySimName(sim.apostilaName);
+                                    setUseTimer(true);
+                                    setTimerSeconds("60");
+                                  }}
+                                  className="h-9 px-3 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-wider shadow-md cursor-pointer"
+                                >
+                                  Iniciar
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </CardContent>
+              </Card>
 
             {/* Strengths & Weaknesses */}
             <Card className="border-slate-800 bg-slate-900/40 relative overflow-hidden">
@@ -358,17 +635,71 @@ export default function StudentDashboardClient({
               </CardHeader>
               <CardContent>
                 {stats?.simuladosCount === 0 ? (
-                  <div className="text-center text-slate-500 py-4">
+                  <div className="text-center text-slate-500 py-4 space-y-3">
                     <p>Responda simulados para gerar o seu perfil de desempenho tático.</p>
+                    <Link href="/aluno/chat" className="inline-block mt-2">
+                      <Button 
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg cursor-pointer transition-colors"
+                      >
+                        Tirar Dúvidas das Apostilas
+                      </Button>
+                    </Link>
                   </div>
                 ) : loadingAi ? (
                   <div className="flex flex-col items-center justify-center py-6 text-slate-400 space-y-3">
                     <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
                     <p className="text-sm font-medium animate-pulse">A IA está analisando seu combate...</p>
                   </div>
+                ) : aiAnalysis ? (
+                  <div className="space-y-4">
+                    <div className="text-slate-300 leading-relaxed text-sm italic border-l-4 border-slate-700 pl-4 py-2 bg-slate-800/30 rounded-r-lg">
+                      "{aiAnalysis}"
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/60">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        Uso diário: 1 vez por dia
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {isAnalysisDoneToday ? (
+                          <Button 
+                            disabled
+                            className="bg-slate-800/80 border border-slate-700 text-slate-400 font-bold text-[10px] uppercase tracking-wider h-8 px-3 cursor-not-allowed flex items-center gap-1.5"
+                          >
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            Análise de Hoje Concluída
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={handleGenerateAnalysis}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider h-8 px-3 cursor-pointer"
+                          >
+                            Atualizar Análise do Dia
+                          </Button>
+                        )}
+                        <Link href="/aluno/chat">
+                          <Button 
+                            variant="outline"
+                            className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 text-[10px] font-bold uppercase tracking-wider h-8 px-3 cursor-pointer flex items-center gap-1.5"
+                          >
+                            <MessageSquare className="w-3 h-3 text-blue-400" />
+                            Ir para o Chat
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <div className="text-slate-300 leading-relaxed text-sm italic border-l-4 border-slate-700 pl-4 py-2 bg-slate-800/30 rounded-r-lg">
-                    "{aiAnalysis}"
+                  <div className="flex flex-col items-center justify-center py-4 space-y-3">
+                    <p className="text-slate-400 text-sm text-center">Você possui dados de simulados disponíveis para análise.</p>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full justify-center">
+                      <Button 
+                        onClick={handleGenerateAnalysis}
+                        disabled={isAnalysisDoneToday}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg cursor-pointer transition-colors flex-1"
+                      >
+                        {isAnalysisDoneToday ? "Análise Diária Concluída" : "Solicitar Análise do Dia (1x/dia)"}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -653,6 +984,88 @@ export default function StudentDashboardClient({
             <p className="text-sm text-blue-400">
               <strong>Nota do Comando:</strong> Continue cumprindo missões e se destacando nas operações para desbloquear novos avatares. Os brevês não conquistados ainda não aparecem no seu arsenal.
             </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Daily Simulado Configuration Modal */}
+      <Dialog open={selectedDailySimId !== null} onOpenChange={(open) => { if (!open) setSelectedDailySimId(null); }}>
+        <DialogContent className="bg-slate-950 border-slate-800 text-slate-200 w-[92vw] max-w-md sm:max-w-md rounded-xl">
+          <DialogHeader className="border-b border-slate-800 pb-4">
+            <DialogTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-blue-500" />
+              Configurar Simulado
+            </DialogTitle>
+            <DialogDescription className="text-slate-500 font-bold uppercase tracking-widest text-xs pt-1">
+              Escolha as configurações para iniciar seus estudos.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-6">
+            {/* Informações da apostila */}
+            <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Material Base</span>
+              <span className="text-sm font-bold text-white block mt-0.5 break-words whitespace-normal">{selectedDailySimName}</span>
+              <span className="text-[9px] font-bold text-blue-400 block uppercase mt-1">25 Alvos (Questões Avançadas)</span>
+            </div>
+
+            {/* Opção de Timer */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-800 bg-slate-900/40">
+                <div>
+                  <label htmlFor="use-timer-toggle" className="text-sm font-bold text-white block cursor-pointer">
+                    Limite de Tempo por Questão
+                  </label>
+                  <span className="text-[10px] text-slate-500 uppercase font-medium">Ativa um timer regressivo para cada alvo</span>
+                </div>
+                <input
+                  type="checkbox"
+                  id="use-timer-toggle"
+                  checked={useTimer}
+                  onChange={(e) => setUseTimer(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 bg-slate-950 border-slate-800 rounded focus:ring-blue-500 cursor-pointer"
+                />
+              </div>
+
+              {useTimer && (
+                <div className="space-y-2 bg-slate-900/20 border border-slate-800 p-4 rounded-xl">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                    Tempo Limite (Segundos)
+                  </label>
+                  <select
+                    value={timerSeconds}
+                    onChange={(e) => setTimerSeconds(e.target.value)}
+                    className="flex h-11 w-full rounded-lg bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-600 font-bold"
+                  >
+                    <option value="30">30 Segundos</option>
+                    <option value="45">45 Segundos</option>
+                    <option value="60">60 Segundos (Padrão)</option>
+                    <option value="90">90 Segundos</option>
+                    <option value="120">120 Segundos</option>
+                    <option value="180">180 Segundos</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 border-t border-slate-800 pt-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => setSelectedDailySimId(null)}
+              className="w-full sm:flex-1 h-12 font-bold uppercase tracking-wider text-xs border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                router.push(`/aluno/simulado/${selectedDailySimId}?timer=${useTimer}&seconds=${timerSeconds}`);
+                setSelectedDailySimId(null);
+              }}
+              className="w-full sm:flex-1 h-12 bg-blue-600 hover:bg-blue-500 font-bold uppercase tracking-wider text-xs text-white cursor-pointer"
+            >
+              Iniciar Combate
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

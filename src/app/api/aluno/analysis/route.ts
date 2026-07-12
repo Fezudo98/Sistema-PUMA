@@ -18,9 +18,18 @@ export async function POST(req: NextRequest) {
 
     const userDb = await prisma.user.findUnique({ where: { id: user.userId } });
     
-    // Se o aluno já tem uma análise salva para essa mesma quantidade de respostas, retorna do cache
-    if (userDb && userDb.aiAnalysis && userDb.aiAnalysisSimuladoCount === stats.totalAnswers) {
-      return NextResponse.json({ analysis: userDb.aiAnalysis });
+    // Verificação de uso diário único (1x ao dia) ou cache de respostas
+    const now = new Date();
+    const isSameDay = userDb && userDb.aiAnalysisDate && 
+      userDb.aiAnalysisDate.getFullYear() === now.getFullYear() &&
+      userDb.aiAnalysisDate.getMonth() === now.getMonth() &&
+      userDb.aiAnalysisDate.getDate() === now.getDate();
+
+    if (userDb && userDb.aiAnalysis && (isSameDay || userDb.aiAnalysisSimuladoCount === stats.totalAnswers)) {
+      return NextResponse.json({ 
+        analysis: userDb.aiAnalysis,
+        alreadyDaily: isSameDay 
+      });
     }
 
     // Buscar as últimas respostas do aluno para dar contexto real para a IA
@@ -67,7 +76,15 @@ export async function POST(req: NextRequest) {
     const generateWithFallback = async (promptText: string) => {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
-      const modelVersions = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
+      const modelVersions = [
+        "gemini-3.5-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-flash-latest",
+        "gemini-3-flash-preview",
+        "gemini-pro-latest"
+      ];
 
       for (const modelVersion of modelVersions) {
         try {
@@ -107,12 +124,13 @@ export async function POST(req: NextRequest) {
     const result = await generateWithFallback(prompt);
     const text = result.response.text();
 
-    // Salva a nova análise no banco de dados vinculada à quantidade de respostas atual
+    // Salva a nova análise no banco de dados vinculada à quantidade de respostas atual e data
     await prisma.user.update({
       where: { id: user.userId },
       data: {
         aiAnalysis: text,
-        aiAnalysisSimuladoCount: stats.totalAnswers
+        aiAnalysisSimuladoCount: stats.totalAnswers,
+        aiAnalysisDate: new Date()
       }
     });
 
