@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookOpen, FileUp, Loader2, Power, PowerOff, Trash2, Calendar, FileText, CheckCircle2, Sparkles } from "lucide-react";
 import { toggleApostilaStatus, deleteApostila } from "@/app/actions/apostila";
 import { forceGenerateDailySimuladoForApostila, forceGenerateAllDailySimuladosAction } from "@/app/actions/dailySimulado";
+import { generateVadeMecumAction } from "@/app/actions/vadeMecum";
 
 interface Apostila {
   id: string;
   title: string;
   filePath: string;
   isActive: boolean;
+  vadeMecum?: string | null;
   createdAt: Date;
 }
 
@@ -28,6 +30,22 @@ export default function ApostilaManagerClient({
   const [errorMsg, setErrorMsg] = useState("");
   const [generatingAll, setGeneratingAll] = useState(false);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [generatingVadeMecumId, setGeneratingVadeMecumId] = useState<string | null>(null);
+
+  const handleGenerateVadeMecum = async (id: string, title: string) => {
+    if (!confirm(`Deseja gerar/regerar o Vade Mecum (resumo didático completo) para a apostila "${title}"?`)) {
+      return;
+    }
+    setGeneratingVadeMecumId(id);
+    const res = await generateVadeMecumAction(id);
+    setGeneratingVadeMecumId(null);
+    if (res.success && res.vadeMecum) {
+      alert(`Vade Mecum para "${title}" gerado com sucesso pelo Gemini!`);
+      setApostilas(prev => prev.map(a => a.id === id ? { ...a, vadeMecum: res.vadeMecum } : a));
+    } else {
+      alert("Erro ao gerar Vade Mecum: " + res.error);
+    }
+  };
 
   const handleGenerateSingleDaily = async (id: string, title: string) => {
     if (!confirm(`Deseja gerar/regerar um simulado diário de 25 questões para a apostila "${title}"?`)) {
@@ -321,6 +339,31 @@ export default function ApostilaManagerClient({
                             <>
                               <Sparkles className="w-3.5 h-3.5 mr-1" />
                               IA
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {/* Gerar Vade Mecum da Apostila */}
+                      {apo.isActive && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={generatingVadeMecumId === apo.id}
+                          onClick={() => handleGenerateVadeMecum(apo.id, apo.title)}
+                          className={`h-10 px-3 font-bold text-xs uppercase tracking-wider border transition-all cursor-pointer rounded-lg ${
+                            apo.vadeMecum
+                              ? "bg-blue-950/20 border-blue-500/30 text-blue-400 hover:bg-blue-950/40 hover:text-blue-300"
+                              : "bg-slate-950 border-slate-800 text-slate-500 hover:bg-slate-900 hover:text-white"
+                          }`}
+                          title={apo.vadeMecum ? "Atualizar Vade Mecum (Resumo)" : "Gerar Vade Mecum com IA"}
+                        >
+                          {generatingVadeMecumId === apo.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
+                          ) : (
+                            <>
+                              <FileText className="w-3.5 h-3.5 mr-1" />
+                              {apo.vadeMecum ? "Vade Mecum ✓" : "Criar Vade"}
                             </>
                           )}
                         </Button>

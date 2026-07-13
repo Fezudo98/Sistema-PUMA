@@ -68,6 +68,7 @@ model Apostila {
   filePath     String
   instructorId String
   isActive     Boolean  @default(true)
+  vadeMecum    String?
   createdAt    DateTime @default(now())
 }
 

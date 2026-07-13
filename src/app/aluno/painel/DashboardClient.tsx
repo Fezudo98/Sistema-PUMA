@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, FileText } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import Link from "next/link";
@@ -359,12 +359,20 @@ export default function StudentDashboardClient({
               </p>
             </div>
 
-            <Link href="/aluno/chat" className="w-full md:w-auto shrink-0">
-              <Button className="w-full md:w-auto h-14 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-3">
-                <MessageSquare className="w-5 h-5" />
-                Abrir Chat com o Mentor IA
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full md:w-auto shrink-0">
+              <Link href="/aluno/vademecum" className="w-full sm:w-auto">
+                <Button className="w-full h-14 px-6 bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4 text-blue-400" />
+                  Vade Mecum
+                </Button>
+              </Link>
+              <Link href="/aluno/chat" className="w-full sm:w-auto">
+                <Button className="w-full h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Abrir Chat IA
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
