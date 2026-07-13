@@ -139,8 +139,10 @@ Foque exclusivamente nas informações fornecidas no documento abaixo:`;
         data: { vadeMecum: resultText }
       });
 
-      revalidatePath("/aluno/vademecum");
-      revalidatePath("/instructor");
+      if (!bypassAuth) {
+        revalidatePath("/aluno/vademecum");
+        revalidatePath("/instructor");
+      }
 
       return { success: true, vadeMecum: updated.vadeMecum };
     } catch (innerError: any) {
