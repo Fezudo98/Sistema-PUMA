@@ -52,6 +52,12 @@ export default async function InstructorDashboard() {
     });
   }
 
+  // Trigger missing Vade Mecum generation in the background
+  const { checkAndGenerateMissingVadeMecums } = await import("@/app/actions/vadeMecum");
+  checkAndGenerateMissingVadeMecums().catch((err) => {
+    console.error("[INSTRUCTOR DASHBOARD] Geração de Vade Mecum em background falhou:", err);
+  });
+
   // Fetch Simulados for this instructor (LIVE only)
   const simulados = await prisma.simulado.findMany({
     where: { 

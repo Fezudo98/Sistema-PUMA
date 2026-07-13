@@ -65,11 +65,13 @@ async function generateWithFallback(content: any[]) {
 }
 
 // Generate the Vade Mecum summary using Gemini
-export async function generateVadeMecumAction(apostilaId: string) {
+export async function generateVadeMecumAction(apostilaId: string, bypassAuth = false) {
   try {
-    const user = await getUser();
-    if (!user || user.role !== "INSTRUCTOR") {
-      throw new Error("Não autorizado. Apenas instrutores podem gerar resumos.");
+    if (!bypassAuth) {
+      const user = await getUser();
+      if (!user || user.role !== "INSTRUCTOR") {
+        throw new Error("Não autorizado. Apenas instrutores podem gerar resumos.");
+      }
     }
 
     const apostila = await prisma.apostila.findUnique({
@@ -80,15 +82,28 @@ export async function generateVadeMecumAction(apostilaId: string) {
       throw new Error("Apostila não encontrada.");
     }
 
-    // 1. Extract raw booklet PDF text (safely using cache and node canvas polyfills)
-    const rawText = await getCachedApostilaText(apostila);
-
-    if (!rawText || rawText.startsWith("Conteúdo textual indisponível")) {
-      throw new Error("Não foi possível extrair o texto desta apostila.");
+    // Prevents duplicate processes running in parallel for the same booklet
+    if (apostila.vadeMecum === "GERANDO...") {
+      console.log(`[VADE MECUM AI] Geração já em andamento para "${apostila.title}". Ignorando chamada.`);
+      return { success: true, message: "Geração já está em andamento" };
     }
 
-    // 2. Prepare the prompt
-    const systemPrompt = `Você é um Professor e Instrutor Policial especialista, encarregado de criar um VADE MECUM didático, prático e completo (resumo estruturado de estudo) baseado EXCLUSIVAMENTE no texto da apostila fornecida.
+    // Set lock value to prevent parallel runs
+    await prisma.apostila.update({
+      where: { id: apostilaId },
+      data: { vadeMecum: "GERANDO..." }
+    });
+
+    try {
+      // 1. Extract raw booklet PDF text (safely using cache and node canvas polyfills)
+      const rawText = await getCachedApostilaText(apostila);
+
+      if (!rawText || rawText.startsWith("Conteúdo textual indisponível")) {
+        throw new Error("Não foi possível extrair o texto desta apostila.");
+      }
+
+      // 2. Prepare the prompt
+      const systemPrompt = `Você é um Professor e Instrutor Policial especialista, encarregado de criar um VADE MECUM didático, prático e completo (resumo estruturado de estudo) baseado EXCLUSIVAMENTE no texto da apostila fornecida.
 
 Seu objetivo é condensar a matéria em um formato Markdown de alta utilidade para memorização e revisão dos alunos.
 Rigorosamente inclua as seguintes seções estruturadas utilizando markdown limpo e elegante (títulos h2/h3, negritos, tabelas e marcadores):
@@ -107,27 +122,35 @@ Rigorosamente inclua as seguintes seções estruturadas utilizando markdown limp
 
 Foque exclusivamente nas informações fornecidas no documento abaixo:`;
 
-    const response = await generateWithFallback([
-      { text: systemPrompt },
-      { text: `--- TEXTO DA APOSTILA: "${apostila.title}" ---\n${rawText}` }
-    ]);
+      const response = await generateWithFallback([
+        { text: systemPrompt },
+        { text: `--- TEXTO DA APOSTILA: "${apostila.title}" ---\n${rawText}` }
+      ]);
 
-    const resultText = response.response.text();
+      const resultText = response.response.text();
 
-    if (!resultText) {
-      throw new Error("Falha ao receber resposta do modelo de IA.");
+      if (!resultText) {
+        throw new Error("Falha ao receber resposta do modelo de IA.");
+      }
+
+      // 3. Save to database
+      const updated = await prisma.apostila.update({
+        where: { id: apostilaId },
+        data: { vadeMecum: resultText }
+      });
+
+      revalidatePath("/aluno/vademecum");
+      revalidatePath("/instructor");
+
+      return { success: true, vadeMecum: updated.vadeMecum };
+    } catch (innerError: any) {
+      // Revert lock back to null on failure so it can be retried later
+      await prisma.apostila.update({
+        where: { id: apostilaId },
+        data: { vadeMecum: null }
+      });
+      throw innerError;
     }
-
-    // 3. Save to database
-    const updated = await prisma.apostila.update({
-      where: { id: apostilaId },
-      data: { vadeMecum: resultText }
-    });
-
-    revalidatePath("/aluno/vademecum");
-    revalidatePath("/instructor");
-
-    return { success: true, vadeMecum: updated.vadeMecum };
   } catch (error: any) {
     console.error(`[VADE MECUM ERROR] Erro ao gerar Vade Mecum da apostila ${apostilaId}:`, error);
     return { success: false, error: error.message };
@@ -151,5 +174,39 @@ export async function getVadeMecumAction(apostilaId: string) {
   } catch (error: any) {
     console.error(`[VADE MECUM ERROR] Erro ao buscar Vade Mecum da apostila ${apostilaId}:`, error);
     return { success: false, error: error.message };
+  }
+}
+
+// Background checker that detects active booklets without a generated Vade Mecum
+export async function checkAndGenerateMissingVadeMecums() {
+  try {
+    const missingVades = await prisma.apostila.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { vadeMecum: null },
+          { vadeMecum: "" }
+        ]
+      }
+    });
+
+    if (missingVades.length === 0) {
+      return;
+    }
+
+    console.log(`[VADE MECUM CHECK] Encontradas ${missingVades.length} apostilas ativas sem Vade Mecum. Gerando em background...`);
+
+    for (const apostila of missingVades) {
+      // Run each generation sequentially in the background
+      generateVadeMecumAction(apostila.id, true)
+        .then((res) => {
+          console.log(`[VADE MECUM CHECK] Geração automática para "${apostila.title}" concluída:`, res.success);
+        })
+        .catch((err) => {
+          console.error(`[VADE MECUM CHECK] Falha ao gerar Vade Mecum automático para "${apostila.title}":`, err.message);
+        });
+    }
+  } catch (error: any) {
+    console.error("[VADE MECUM CHECK] Erro na rotina de verificação:", error.message);
   }
 }

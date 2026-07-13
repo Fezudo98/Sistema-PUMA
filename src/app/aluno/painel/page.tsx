@@ -257,6 +257,12 @@ export default async function AlunoPainel() {
     }
   });
 
+  // Trigger missing Vade Mecum generation in the background
+  const { checkAndGenerateMissingVadeMecums } = await import("@/app/actions/vadeMecum");
+  checkAndGenerateMissingVadeMecums().catch((err) => {
+    console.error("[STUDENT DASHBOARD] Geração de Vade Mecum em background falhou:", err);
+  });
+
   return (
     <StudentDashboardClient 
       user={clientUser} 
