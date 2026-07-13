@@ -434,14 +434,12 @@ export async function completeSelfPacedSimulado(studentId: string, currentSimula
         if (acc >= 70) hardSimuladosWith70Acc++;
         if (acc >= 75) hardSimuladosWith75Acc++;
         
-        if (qCount >= 15 && acc === 100) hasSniper = true;
-        if (acc >= 80 && avgTime <= 20) hasRaio = true;
+        if (qCount >= 20 && acc === 100) hasSniper = true;
+        if (acc >= 85 && avgTime <= 15) hasRaio = true;
       }
     });
 
-    const hasRecruta = Object.values(simuladoGroups).some(simAnswers => {
-      return simAnswers.length >= 3 || simAnswers.length === simAnswers[0].question.simulado._count.questions;
-    });
+    const hasRecruta = simuladosCount >= 3 && totalScore >= 3000;
 
     let maxConsecutiveErrors = 0;
     let currentConsecutiveErrors = 0;
@@ -476,12 +474,12 @@ export async function completeSelfPacedSimulado(studentId: string, currentSimula
 
     let badges = [
       { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
-      { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 5, exclusive: false },
-      { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 10, exclusive: false },
-      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper, exclusive: true },
-      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio, exclusive: true },
-      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 15 && accuracy >= 95, exclusive: true },
-      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 45000 && accuracy >= 90, exclusive: true },
+      { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
+      { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 25 && totalScore >= 60000, exclusive: false },
+      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: true },
+      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: true },
+      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: true },
+      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: true },
       { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
       { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
       { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },

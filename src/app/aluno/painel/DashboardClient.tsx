@@ -23,8 +23,8 @@ const getBadges = (stats: any) => {
       id: 'recruta',
       name: 'Recruta',
       icon: Shield,
-      earned: s.simuladosCount >= 1, // Only for preview, actual logic is on server
-      desc: 'Concluir por completo um simulado, seja qual for.',
+      earned: s.simuladosCount >= 3 && s.totalScore >= 3000,
+      desc: 'Concluir no mínimo 3 simulados e alcançar no mínimo 3.000 pontos totais.',
       color: 'text-amber-600',
       bg: 'bg-amber-900/20',
       border: 'border-amber-700/50'
@@ -33,8 +33,8 @@ const getBadges = (stats: any) => {
       id: 'guerreiro',
       name: 'Guerreiro',
       icon: ShieldCheck,
-      earned: s.simuladosCount >= 5, 
-      desc: 'Completar 5 simulados de nível avançado e ter no mínimo 70% de média de acertos neles.',
+      earned: s.simuladosCount >= 10 && s.totalScore >= 25000, 
+      desc: 'Completar 10 simulados avançados com no mínimo 70% de acertos e alcançar 25.000 pontos.',
       color: 'text-slate-300',
       bg: 'bg-slate-700/30',
       border: 'border-slate-400/50'
@@ -43,8 +43,8 @@ const getBadges = (stats: any) => {
       id: 'veterano',
       name: 'Veterano',
       icon: ShieldAlert,
-      earned: s.simuladosCount >= 10,
-      desc: 'Completar 10 simulados de nível avançado e ter no mínimo 75% de média de acertos neles.',
+      earned: s.simuladosCount >= 25 && s.totalScore >= 60000,
+      desc: 'Completar 25 simulados avançados com no mínimo 75% de acertos e alcançar 60.000 pontos.',
       color: 'text-yellow-500',
       bg: 'bg-yellow-900/20',
       border: 'border-yellow-500/50'
@@ -55,7 +55,7 @@ const getBadges = (stats: any) => {
       icon: Crosshair,
       earned: false, 
       exclusive: true,
-      desc: 'Atingir 100% de acerto em um simulado de nível avançado de no mínimo 15 questões.',
+      desc: 'Atingir 100% de acerto em um simulado avançado de no mínimo 20 questões e ter 80.000 pontos totais.',
       color: 'text-emerald-500',
       bg: 'bg-emerald-900/20',
       border: 'border-emerald-500/50'
@@ -66,7 +66,7 @@ const getBadges = (stats: any) => {
       icon: Zap,
       earned: false,
       exclusive: true,
-      desc: 'Concluir um simulado de nível avançado, com tempo médio máximo de 20s e mín 80% de acertos.',
+      desc: 'Concluir um simulado avançado com tempo médio máx de 15s, acertos mín 85% e ter 50.000 pontos.',
       color: 'text-amber-400',
       bg: 'bg-amber-900/20',
       border: 'border-amber-400/50'
@@ -77,7 +77,7 @@ const getBadges = (stats: any) => {
       icon: Skull,
       earned: false,
       exclusive: true,
-      desc: 'Concluir no mínimo 15 simulados avançados e ter taxa global de acertos no mínimo 95%.',
+      desc: 'Concluir no mínimo 40 simulados avançados, taxa global de acertos mín 97% e ter 100.000 pontos.',
       color: 'text-purple-500',
       bg: 'bg-purple-900/20',
       border: 'border-purple-500/50'
@@ -88,7 +88,7 @@ const getBadges = (stats: any) => {
       icon: Medal,
       earned: false,
       exclusive: true,
-      desc: 'Alcançar 45.000 pontos totais e ter no mínimo taxa global de acertos em 90%.',
+      desc: 'Alcançar 150.000 pontos totais e ter no mínimo taxa global de acertos em 92%.',
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'

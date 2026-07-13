@@ -59,6 +59,10 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
   const score = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
 
+  // Garantir que as medalhas/brevês do aluno sejam re-avaliadas e desbloqueadas ao ver o resultado
+  const { completeSelfPacedSimulado } = await import("@/app/actions/dailySimulado");
+  await completeSelfPacedSimulado(user.userId, id);
+
   // Buscar todas as respostas de todos os participantes para este simulado
   const allAnswers = await prisma.answer.findMany({
     where: {
