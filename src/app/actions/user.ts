@@ -163,3 +163,82 @@ export async function toggleStudentChatSuspensionAction(studentId: string, suspe
   }
 }
 
+export async function getStudentSimuladosAction(studentId: string) {
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { success: false, error: "Acesso negado. Apenas instrutores autorizados." };
+  }
+
+  try {
+    const answers = await prisma.answer.findMany({
+      where: { studentId },
+      include: {
+        question: {
+          include: {
+            simulado: {
+              include: {
+                _count: {
+                  select: { questions: true }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { id: "desc" }
+    });
+
+    const simuladosMap = new Map<string, any>();
+
+    for (const ans of answers) {
+      const sim = ans.question.simulado;
+      const sId = sim.id;
+
+      if (!simuladosMap.has(sId)) {
+        simuladosMap.set(sId, {
+          id: sId,
+          codigoSala: sim.codigoSala,
+          tipo: sim.tipo,
+          status: sim.status,
+          apostilaName: sim.apostilaName || "Simulado de Estudo",
+          difficulty: sim.difficulty || "AVANCADO",
+          createdAt: sim.createdAt.toISOString(),
+          questionsCount: sim._count.questions,
+          correctAnswersCount: 0,
+          totalScore: 0,
+          answeredCount: 0,
+          questionsList: []
+        });
+      }
+
+      const sData = simuladosMap.get(sId);
+      sData.answeredCount++;
+      sData.totalScore += ans.pontuacao;
+      if (ans.isCorrect) {
+        sData.correctAnswersCount++;
+      }
+
+      sData.questionsList.push({
+        id: ans.question.id,
+        enunciado: ans.question.enunciado,
+        alternativas: JSON.parse(ans.question.alternativas),
+        correta: ans.question.correta,
+        justificativa: ans.question.justificativa,
+        alunoEscolha: ans.alternativa,
+        isCorrect: ans.isCorrect,
+        tempoGasto: ans.tempoGasto,
+        pontuacao: ans.pontuacao
+      });
+    }
+
+    const simuladosList = Array.from(simuladosMap.values());
+
+    return {
+      success: true,
+      simulados: simuladosList
+    };
+  } catch (error: any) {
+    console.error("Error fetching student simulados:", error);
+    return { success: false, error: "Falha ao carregar histórico de simulados do combatente." };
+  }
+}

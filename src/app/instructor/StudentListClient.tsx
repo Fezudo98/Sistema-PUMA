@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction } from "@/app/actions/user";
+import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction } from "@/app/actions/user";
 
 type StudentPerformance = {
   id: string;
@@ -30,7 +30,7 @@ interface StudentListClientProps {
 export default function StudentListClient({ studentsPerformance }: StudentListClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<StudentPerformance | null>(null);
-  const [activeModalTab, setActiveModalTab] = useState<"dossier" | "chat">("dossier");
+  const [activeModalTab, setActiveModalTab] = useState<"dossier" | "simulados" | "chat">("dossier");
 
   // Password reset state
   const [newPassword, setNewPassword] = useState("");
@@ -44,6 +44,11 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
   const [currentSuspendedUntil, setCurrentSuspendedUntil] = useState<string | null>(null);
   const [togglingSuspension, setTogglingSuspension] = useState(false);
 
+  // Student simulados states
+  const [loadingSimulados, setLoadingSimulados] = useState(false);
+  const [studentSimulados, setStudentSimulados] = useState<any[]>([]);
+  const [expandedSimuladoId, setExpandedSimuladoId] = useState<string | null>(null);
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedStudent(null);
@@ -52,12 +57,16 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setResetMessage(null);
       setActiveModalTab("dossier");
       setAuditMessages([]);
+      setStudentSimulados([]);
+      setExpandedSimuladoId(null);
     }
   };
 
   useEffect(() => {
     if (selectedStudent) {
       setCurrentSuspendedUntil(selectedStudent.suspendedUntil || null);
+      
+      // Fetch Chat Audit
       setLoadingAudit(true);
       getStudentChatAuditAction(selectedStudent.id)
         .then((res) => {
@@ -70,6 +79,19 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
           }
         })
         .catch(() => setLoadingAudit(false));
+
+      // Fetch Simulated Exams
+      setLoadingSimulados(true);
+      getStudentSimuladosAction(selectedStudent.id)
+        .then((res) => {
+          setLoadingSimulados(false);
+          if (res.success) {
+            setStudentSimulados(res.simulados || []);
+          }
+        })
+        .catch(() => setLoadingSimulados(false));
+
+      setExpandedSimuladoId(null);
     }
   }, [selectedStudent]);
 
@@ -266,18 +288,29 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       : "text-slate-400 hover:text-white"
                   }`}
                 >
-                  Dossiê & Credencial
+                  Dossiê
+                </button>
+                <button
+                  onClick={() => setActiveModalTab("simulados")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
+                    activeModalTab === "simulados" 
+                      ? "bg-blue-600 text-white shadow-md" 
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  Simulados
                 </button>
                 <button
                   onClick={() => setActiveModalTab("chat")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
                     activeModalTab === "chat" 
                       ? "bg-blue-600 text-white shadow-md" 
                       : "text-slate-400 hover:text-white"
                   }`}
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  Auditoria IA & Suspensão
+                  Auditoria
                 </button>
               </div>
             </DialogTitle>
@@ -386,6 +419,149 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                     </Button>
                   </div>
                 </div>
+              </div>
+            ) : activeModalTab === "simulados" ? (
+              /* TAB 3: Student Simulated Exams and details */
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-300 flex items-center gap-2">
+                    <Target className="w-4 h-4 text-blue-400" />
+                    Histórico de Simulados
+                  </h4>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    Fiscalização de Respostas
+                  </span>
+                </div>
+
+                {loadingSimulados ? (
+                  <div className="py-12 flex flex-col items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mt-2">Carregando relatórios...</span>
+                  </div>
+                ) : studentSimulados.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-slate-500 font-bold uppercase tracking-wider">
+                    Nenhum simulado registrado para este combatente.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {studentSimulados.map((sim) => {
+                      const isExpanded = expandedSimuladoId === sim.id;
+                      const inProgress = sim.tipo === "DAILY" && sim.answeredCount < sim.questionsCount;
+                      const accuracy = sim.questionsCount > 0 ? Math.round((sim.correctAnswersCount / sim.questionsCount) * 100) : 0;
+                      
+                      return (
+                        <div key={sim.id} className="border border-slate-850 bg-slate-900/30 rounded-xl overflow-hidden">
+                          {/* Row Header */}
+                          <div 
+                            onClick={() => setExpandedSimuladoId(isExpanded ? null : sim.id)}
+                            className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 cursor-pointer hover:bg-slate-900/50 transition-colors"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                                  inProgress 
+                                    ? "bg-amber-950/40 text-amber-400 border-amber-500/20" 
+                                    : "bg-emerald-950/40 text-emerald-400 border-emerald-500/20"
+                                }`}>
+                                  {inProgress ? "Em Andamento" : "Concluído"}
+                                </span>
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                  {sim.codigoSala} • {sim.tipo}
+                                </span>
+                              </div>
+                              <h5 className="text-xs font-bold text-white max-w-sm truncate">{sim.apostilaName}</h5>
+                              <p className="text-[10px] font-medium text-slate-500">Realizado em {new Date(sim.createdAt).toLocaleDateString("pt-BR")}</p>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <div className="text-sm font-black text-white">{sim.correctAnswersCount}/{sim.questionsCount}</div>
+                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Acertos ({accuracy}%)</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-black text-emerald-400">{sim.totalScore} pts</div>
+                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pontuação</div>
+                              </div>
+                              <div className="text-slate-500">
+                                {isExpanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Expanded Details */}
+                          {isExpanded && (
+                            <div className="border-t border-slate-850 bg-slate-950/40 p-4 space-y-4 max-h-[450px] overflow-y-auto custom-scrollbar">
+                              {sim.questionsList.map((q: any, idx: number) => {
+                                return (
+                                  <div key={q.id} className="space-y-3 pb-4 border-b border-slate-900 last:border-b-0 last:pb-0">
+                                    <div className="flex justify-between items-start gap-3">
+                                      <h6 className="text-xs font-bold text-white">
+                                        Q{idx + 1}. {q.enunciado}
+                                      </h6>
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="text-[9px] font-mono text-slate-500 font-bold uppercase">{q.tempoGasto}s</span>
+                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                          q.isCorrect 
+                                            ? "bg-emerald-950/40 text-emerald-400 border border-emerald-500/20" 
+                                            : "bg-red-950/40 text-red-400 border border-red-500/20"
+                                        }`}>
+                                          {q.isCorrect ? `+${q.pontuacao} pts` : "Errou"}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* Alternatives List */}
+                                    <div className="space-y-2 pl-3">
+                                      {q.alternativas.map((alt: string, altIdx: number) => {
+                                        const isSelected = q.alunoEscolha === altIdx;
+                                        const isCorrectAlt = q.correta === altIdx;
+                                        
+                                        let borderClass = "border-slate-900 bg-slate-900/10";
+                                        let textClass = "text-slate-400";
+                                        let badge = null;
+
+                                        if (isCorrectAlt) {
+                                          borderClass = "border-emerald-500/20 bg-emerald-950/10";
+                                          textClass = "text-emerald-400 font-bold";
+                                          badge = <span className="text-[8px] font-black bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">Gabarito</span>;
+                                        }
+                                        if (isSelected && !isCorrectAlt) {
+                                          borderClass = "border-red-500/20 bg-red-950/10";
+                                          textClass = "text-red-400 font-bold";
+                                          badge = <span className="text-[8px] font-black bg-red-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">Marcou</span>;
+                                        } else if (isSelected && isCorrectAlt) {
+                                          badge = (
+                                            <div className="flex gap-1 shrink-0">
+                                              <span className="text-[8px] font-black bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider">Marcou</span>
+                                              <span className="text-[8px] font-black bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider">Gabarito</span>
+                                            </div>
+                                          );
+                                        }
+
+                                        return (
+                                          <div key={altIdx} className={`flex justify-between items-center p-2.5 rounded-lg border text-xs leading-normal ${borderClass} ${textClass}`}>
+                                            <span>{alt}</span>
+                                            {badge}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {/* Justification */}
+                                    <div className="p-3 bg-slate-900/30 border border-slate-900 rounded-lg text-[11px] text-slate-400 leading-normal flex items-start gap-2 pl-3">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+                                      <p><strong className="text-slate-300">Justificativa:</strong> {q.justificativa}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ) : (
               /* TAB 2: AI Chat Audit & Disciplinary Suspension Controls */
