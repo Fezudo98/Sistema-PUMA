@@ -78,12 +78,11 @@ export async function POST(req: NextRequest) {
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
       const modelVersions = [
         "gemini-3.5-flash",
+        "gemini-pro-latest",
         "gemini-3.1-flash-lite",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
-        "gemini-flash-latest",
-        "gemini-3-flash-preview",
-        "gemini-pro-latest"
+        "gemini-flash-latest"
       ];
 
       for (const modelVersion of modelVersions) {
@@ -94,11 +93,7 @@ export async function POST(req: NextRequest) {
         } catch (error: any) {
           console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
           
-          const isQuotaError = error.status === 429 || error.status === 503 || error.message?.includes("429") || error.message?.includes("503") || error.message?.includes("quota") || error.message?.includes("exhausted");
-          const isNotFoundError = error.status === 404 || error.message?.includes("404") || error.message?.includes("not found");
-          
-          // Se for erro de cota e tivermos chave reserva, tenta com a chave reserva E com o mesmo modelo
-          if (isQuotaError && fallbackKey) {
+          if (fallbackKey) {
             console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
             try {
               const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
@@ -106,15 +101,8 @@ export async function POST(req: NextRequest) {
               return await fallbackModel.generateContent(promptText);
             } catch (fallbackError: any) {
               console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
-              // Se falhar a fallback por cota ou not found, deixa o loop continuar pro próximo modelo
             }
           }
-          
-          // Se não for erro de cota nem not found, throw error crítico (ex: auth error)
-          if (!isQuotaError && !isNotFoundError && !error.message?.includes("403")) {
-             throw error;
-          }
-          // Caso seja 404 ou 403 (modelo inexistente ou não registrado), o loop continua e tenta a próxima versão
         }
       }
       

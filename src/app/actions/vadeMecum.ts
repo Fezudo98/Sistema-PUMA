@@ -9,13 +9,12 @@ import { getCachedApostilaText } from "./chat";
 const prisma = new PrismaClient();
 
 const modelVersions = [
+  "gemini-pro-latest",
   "gemini-3.5-flash",
   "gemini-3.1-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-flash-latest",
-  "gemini-3-flash-preview",
-  "gemini-pro-latest"
+  "gemini-flash-latest"
 ];
 
 // Helper to generate content with fallback keys and models
@@ -35,16 +34,7 @@ async function generateWithFallback(content: any[]) {
     } catch (error: any) {
       console.warn(`[VADE MECUM AI] Chave principal falhou com modelo ${modelVersion}:`, error.message);
 
-      const isQuotaError =
-        error.status === 429 ||
-        error.status === 503 ||
-        error.message?.includes("429") ||
-        error.message?.includes("503") ||
-        error.message?.includes("quota") ||
-        error.message?.includes("exhausted");
-      const isNotFoundError = error.status === 404 || error.message?.includes("404") || error.message?.includes("not found");
-
-      if (isQuotaError && fallbackKey) {
+      if (fallbackKey) {
         console.log(`[VADE MECUM AI] Tentando chave fallback com modelo ${modelVersion}...`);
         try {
           const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
@@ -53,10 +43,6 @@ async function generateWithFallback(content: any[]) {
         } catch (fallbackError: any) {
           console.warn(`[VADE MECUM AI] Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
         }
-      }
-
-      if (!isQuotaError && !isNotFoundError && !error.message?.includes("403")) {
-        throw error;
       }
     }
   }
