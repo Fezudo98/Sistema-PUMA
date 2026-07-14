@@ -55,6 +55,15 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const answeredQuestions = answers.length;
   const correctAnswers = answers.filter(a => a.isCorrect).length;
   
+  // Verificar se o aluno concluiu o simulado
+  const isLive = simulado.tipo === "LIVE";
+  const isLiveFinished = isLive && simulado.status === "FINISHED";
+  const isDailyCompleted = simulado.tipo === "DAILY" && answeredQuestions >= totalQuestions;
+
+  if (!isLiveFinished && !isDailyCompleted) {
+    redirect(`/aluno/simulado/${id}`);
+  }
+
   // O divisor da precisão deve ser o total de questões para evitar trapaças/distorções de quem sai mais cedo
   const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
   const score = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);

@@ -95,20 +95,36 @@ export default async function AlunoPainel() {
       historyMap.set(sId, {
         id: sId,
         codigoSala: a.question.simulado.codigoSala,
+        tipo: a.question.simulado.tipo,
+        status: a.question.simulado.status,
         totalQuestions: expectedQ,
         correctAnswers: 0,
         score: 0,
+        answeredCount: 0
       });
     }
     const sStats = historyMap.get(sId);
     if (a.isCorrect) sStats.correctAnswers++;
     sStats.score += a.pontuacao;
+    sStats.answeredCount++;
   }
   
-  const history = Array.from(historyMap.values()).map(h => ({
-    ...h,
-    accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
-  }));
+  const history = Array.from(historyMap.values())
+    .filter(h => {
+      if (h.tipo === "LIVE") {
+        return h.status === "FINISHED";
+      } else {
+        return h.answeredCount >= h.totalQuestions;
+      }
+    })
+    .map(h => ({
+      id: h.id,
+      codigoSala: h.codigoSala,
+      totalQuestions: h.totalQuestions,
+      correctAnswers: h.correctAnswers,
+      score: h.score,
+      accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
+    }));
 
   const stats = {
     simuladosCount: history.length,
