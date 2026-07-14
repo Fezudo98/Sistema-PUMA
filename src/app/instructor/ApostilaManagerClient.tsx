@@ -303,9 +303,8 @@ export default function ApostilaManagerClient({
                       }`}>
                         <FileText className="w-6 h-6" />
                       </div>
-                      
                       <div className="min-w-0">
-                        <h4 className={`text-base font-bold truncate ${apo.isActive ? "text-white" : "text-slate-400 line-through"}`}>
+                        <h4 className={`text-base font-bold break-words ${apo.isActive ? "text-white" : "text-slate-400 line-through"}`}>
                           {apo.title}
                         </h4>
                         
