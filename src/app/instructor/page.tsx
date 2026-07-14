@@ -161,23 +161,26 @@ export default async function InstructorDashboard() {
   }).sort((a, b) => b.totalScore - a.totalScore); // Sort by highest score
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10 border-b border-slate-800 pb-6">
           <div className="flex items-center gap-4">
-            <Target className="w-10 h-10 text-blue-500 animate-pulse" />
+            <Target className="w-10 h-10 text-blue-500 animate-pulse shrink-0" />
             <div>
-              <h1 className="text-3xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">CENTRO DE COMANDO</h1>
-              <p className="text-blue-400 font-bold uppercase tracking-widest text-xs mt-1">Painel do Instrutor • Sistema PUMA</p>
+              <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">CENTRO DE COMANDO</h1>
+              <p className="text-blue-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs mt-1">Painel do Instrutor • Sistema PUMA</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <HeaderAvatar 
-              initials={user.name.substring(0, 2).toUpperCase()} 
-              avatarUrl={dbUser?.avatarUrl || null} 
-            />
+          <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-slate-900 pt-4 sm:border-0 sm:pt-0">
+            <div className="flex items-center gap-3">
+              <HeaderAvatar 
+                initials={user.name.substring(0, 2).toUpperCase()} 
+                avatarUrl={dbUser?.avatarUrl || null} 
+              />
+              <span className="text-xs font-bold text-slate-300 sm:hidden">{user.name}</span>
+            </div>
             <form action={logout}>
-              <Button variant="ghost" type="submit" size="sm" className="text-slate-400 hover:text-red-500 hover:bg-red-950/30 font-bold">
+              <Button variant="ghost" type="submit" size="sm" className="text-slate-400 hover:text-red-500 hover:bg-red-950/30 font-bold text-xs uppercase tracking-wider h-10 px-4">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </Button>
@@ -186,16 +189,16 @@ export default async function InstructorDashboard() {
         </header>
 
         <Tabs defaultValue="simulados" className="w-full">
-          <div className="flex justify-between items-center mb-6">
-            <TabsList className="h-14 bg-slate-900 border border-slate-800 p-1">
-              <TabsTrigger value="simulados" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
-              <TabsTrigger value="alunos" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
-              <TabsTrigger value="materiais" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
-              <TabsTrigger value="config" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Configurações</TabsTrigger>
+          <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6">
+            <TabsList className="grid grid-cols-2 sm:flex sm:h-14 bg-slate-900 border border-slate-800 p-1 h-auto gap-1 rounded-xl">
+              <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
+              <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
+              <TabsTrigger value="materiais" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
+              <TabsTrigger value="config" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Configurações</TabsTrigger>
             </TabsList>
             
-            <Link href="/instructor/simulado/new">
-              <Button className="bg-blue-600 hover:bg-blue-500 h-14 font-bold text-base shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+            <Link href="/instructor/simulado/new" className="w-full lg:w-auto">
+              <Button className="w-full lg:w-auto bg-blue-600 hover:bg-blue-500 h-12 lg:h-14 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(37,99,235,0.4)]">
                 <PlusCircle className="w-5 h-5 mr-2" />
                 Novo Simulado com IA
               </Button>
