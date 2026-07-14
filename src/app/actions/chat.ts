@@ -183,6 +183,14 @@ export async function sendChatMessageAction(content: string, apostilaId: string)
     return { error: "Não autorizado." };
   }
 
+  // Verificar se o chat geral está desabilitado
+  const chatSetting = await prisma.systemSetting.findUnique({
+    where: { key: "chatEnabled" }
+  });
+  if (chatSetting?.value === "false") {
+    return { error: "O chat com o mentor de IA está temporariamente desativado pelo instrutor." };
+  }
+
   if (!content.trim()) {
     return { error: "A pergunta não pode estar vazia." };
   }
@@ -335,6 +343,38 @@ export async function clearChatHistoryAction(apostilaId: string) {
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Falha ao limpar histórico." };
+  }
+}
+
+export async function toggleChatEnabledAction(enabled: boolean) {
+  const { getUser } = await import("./auth");
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { error: "Não autorizado." };
+  }
+
+  try {
+    await prisma.systemSetting.upsert({
+      where: { key: "chatEnabled" },
+      update: { value: enabled ? "true" : "false" },
+      create: { key: "chatEnabled", value: enabled ? "true" : "false" }
+    });
+    revalidatePath("/aluno/chat");
+    revalidatePath("/instructor");
+    return { success: true, enabled };
+  } catch (error: any) {
+    return { error: error.message || "Erro ao atualizar configuração." };
+  }
+}
+
+export async function getChatEnabledAction() {
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: "chatEnabled" }
+    });
+    return setting?.value !== "false";
+  } catch {
+    return true;
   }
 }
 

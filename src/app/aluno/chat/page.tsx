@@ -107,6 +107,12 @@ export default async function AlunoChatPage() {
   const isSuspended = dbUser.suspendedUntil && dbUser.suspendedUntil > new Date();
   const suspendedUntilStr = isSuspended ? dbUser.suspendedUntil!.toISOString() : null;
 
+  // Check if general chat is enabled by the instructor
+  const chatSetting = await prisma.systemSetting.findUnique({
+    where: { key: "chatEnabled" }
+  });
+  const isChatEnabled = chatSetting?.value !== "false";
+
   return (
     <ChatClient 
       user={dbUser} 
@@ -117,6 +123,7 @@ export default async function AlunoChatPage() {
       initialApostilaActive={isDefaultActive}
       isSuspended={!!isSuspended}
       suspendedUntil={suspendedUntilStr}
+      isChatEnabled={isChatEnabled}
     />
   );
 }

@@ -11,6 +11,7 @@ import EndSimuladoButton from "./EndSimuladoButton";
 import DeleteSimuladoButton from "./DeleteSimuladoButton";
 import StudentListClient from "./StudentListClient";
 import ApostilaManagerClient from "./ApostilaManagerClient";
+import SettingsClient from "./SettingsClient";
 
 const prisma = new PrismaClient();
 
@@ -24,6 +25,12 @@ export default async function InstructorDashboard() {
   if (!dbUser) {
     redirect("/api/auth/force-logout");
   }
+
+  // Fetch if AI chat is enabled globally
+  const chatSetting = await prisma.systemSetting.findUnique({
+    where: { key: "chatEnabled" }
+  });
+  const isChatEnabled = chatSetting?.value !== "false";
 
   // Primeiro login do dia do instrutor: se houver apostilas ativas sem simulado gerado hoje, dispara em background
   const todayStart = new Date();
@@ -185,6 +192,7 @@ export default async function InstructorDashboard() {
               <TabsTrigger value="simulados" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
               <TabsTrigger value="alunos" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
               <TabsTrigger value="materiais" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
+              <TabsTrigger value="config" className="text-base px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Configurações</TabsTrigger>
             </TabsList>
             
             <Link href="/instructor/simulado/new">
@@ -268,6 +276,10 @@ export default async function InstructorDashboard() {
 
           <TabsContent value="materiais" className="mt-0">
             <ApostilaManagerClient initialApostilas={apostilas as any[]} />
+          </TabsContent>
+
+          <TabsContent value="config" className="mt-0">
+            <SettingsClient initialChatEnabled={isChatEnabled} />
           </TabsContent>
         </Tabs>
       </div>

@@ -48,6 +48,7 @@ interface ChatClientProps {
   initialApostilaActive: boolean;
   isSuspended?: boolean;
   suspendedUntil?: string | null;
+  isChatEnabled?: boolean;
 }
 
 export default function ChatClient({ 
@@ -58,7 +59,8 @@ export default function ChatClient({
   initialApostilaId,
   initialApostilaActive,
   isSuspended = false,
-  suspendedUntil = null
+  suspendedUntil = null,
+  isChatEnabled = true
 }: ChatClientProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -563,7 +565,13 @@ export default function ChatClient({
           {/* Bottom Send Input Form */}
           <div className="p-6 border-t border-slate-900 bg-slate-950/60 shrink-0">
             <div className="max-w-3xl mx-auto relative">
-              {selectedApostilaId && !isApostilaActive ? (
+              {!isChatEnabled ? (
+                /* Warn banner for globally disabled AI chat */
+                <div className="flex items-center gap-3 p-4 bg-slate-900/60 border border-amber-900/40 text-slate-400 rounded-xl text-xs font-semibold select-none leading-relaxed">
+                  <Lock className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>O chat com o mentor de IA está temporariamente desativado pelo instrutor.</span>
+                </div>
+              ) : selectedApostilaId && !isApostilaActive ? (
                 /* Warn banner for disabled chats */
                 <div className="flex items-center gap-3 p-4 bg-slate-900/60 border border-red-900/40 text-slate-400 rounded-xl text-xs font-semibold select-none leading-relaxed">
                   <Lock className="w-4 h-4 text-red-500 shrink-0" />
