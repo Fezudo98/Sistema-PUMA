@@ -40,6 +40,23 @@ function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
   };
 }
 
+function cleanLatexSyntax(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\\\$/g, "$")
+    .replace(/\$\$/g, "")
+    .replace(/\$/g, "")
+    .replace(/\\rightarrow/g, "→")
+    .replace(/\\leftarrow/g, "←")
+    .replace(/\\leftrightarrow/g, "↔")
+    .replace(/\\to/g, "→")
+    .replace(/\\mathbf\{([^}]+)\}/g, "**$1**")
+    .replace(/\\text\{([^}]+)\}/g, "$1")
+    .replace(/\\mathrm\{([^}]+)\}/g, "$1")
+    .replace(/\\vec\{([^}]+)\}/g, "$1")
+    .replace(/\\([a-zA-Z]+)/g, " ");
+}
+
 // Configuração do esquema JSON rigoroso para o Gemini
 const responseSchema = {
   type: SchemaType.ARRAY,
@@ -276,12 +293,15 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
                 difficulty: "AVANCADO",
                 questions: {
                   create: questions.map((q: any) => {
-                    const shuffled = shuffleAlternatives(q.alternativas, q.correta);
+                    const cleanEnunciado = cleanLatexSyntax(q.enunciado);
+                    const cleanJustificativa = cleanLatexSyntax(q.justificativa);
+                    const cleanAlts = (q.alternativas || []).map((alt: string) => cleanLatexSyntax(alt));
+                    const shuffled = shuffleAlternatives(cleanAlts, q.correta);
                     return {
-                      enunciado: q.enunciado,
+                      enunciado: cleanEnunciado,
                       alternativas: JSON.stringify(shuffled.alternativas),
                       correta: shuffled.correta,
-                      justificativa: q.justificativa,
+                      justificativa: cleanJustificativa,
                       tempoLimite: 60, // Padrão de 60 segundos por questão nos simulados diários
                       status: "PENDING"
                     };
@@ -642,12 +662,15 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
         difficulty: "AVANCADO",
         questions: {
           create: questions.map((q: any) => {
-            const shuffled = shuffleAlternatives(q.alternativas, q.correta);
+            const cleanEnunciado = cleanLatexSyntax(q.enunciado);
+            const cleanJustificativa = cleanLatexSyntax(q.justificativa);
+            const cleanAlts = (q.alternativas || []).map((alt: string) => cleanLatexSyntax(alt));
+            const shuffled = shuffleAlternatives(cleanAlts, q.correta);
             return {
-              enunciado: q.enunciado,
+              enunciado: cleanEnunciado,
               alternativas: JSON.stringify(shuffled.alternativas),
               correta: shuffled.correta,
-              justificativa: q.justificativa,
+              justificativa: cleanJustificativa,
               tempoLimite: 60,
               status: "PENDING"
             };

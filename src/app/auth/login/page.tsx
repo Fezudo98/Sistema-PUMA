@@ -50,46 +50,19 @@ export default function InstructorAuth() {
           </CardHeader>
 
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-800 text-slate-400">
-                <TabsTrigger value="login" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Entrar</TabsTrigger>
-                <TabsTrigger value="register" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Cadastrar</TabsTrigger>
-              </TabsList>
-              
-              {error && <div className="mb-4 p-3 bg-red-900/50 border border-red-500 text-red-200 text-sm rounded-md text-center">{error}</div>}
+            {error && <div className="mb-4 p-3 bg-red-900/50 border border-red-500 text-red-200 text-sm rounded-md text-center">{error}</div>}
 
-              <TabsContent value="login">
-                <form action={(f) => handleAction(f, true)} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Nome de Usuário</label>
-                    <Input name="username" placeholder="Seu nome de usuário" required className="bg-slate-800/50 border-slate-700 h-12" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Senha</label>
-                    <Input name="password" type="password" placeholder="Sua senha" required className="bg-slate-800/50 border-slate-700 h-12" />
-                  </div>
-                  <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Entrar no Painel</Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="register">
-                <form action={(f) => handleAction(f, false)} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Nome Completo</label>
-                    <Input name="name" placeholder="Seu nome" required className="bg-slate-800/50 border-slate-700 h-12" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Nome de Usuário</label>
-                    <Input name="username" placeholder="Como fará login" required className="bg-slate-800/50 border-slate-700 h-12" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">Senha</label>
-                    <Input name="password" type="password" placeholder="Crie uma senha" required className="bg-slate-800/50 border-slate-700 h-12" />
-                  </div>
-                  <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Criar Conta</Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <form action={(f) => handleAction(f, true)} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Nome de Usuário</label>
+                <Input name="username" placeholder="Seu nome de usuário" required className="bg-slate-800/50 border-slate-700 h-12" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Senha</label>
+                <Input name="password" type="password" placeholder="Sua senha" required className="bg-slate-800/50 border-slate-700 h-12" />
+              </div>
+              <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Entrar no Painel</Button>
+            </form>
           </CardContent>
         </Card>
       </div>

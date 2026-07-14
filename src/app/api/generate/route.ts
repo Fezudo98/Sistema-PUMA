@@ -181,7 +181,31 @@ export async function POST(req: NextRequest) {
     const responseText = result.response.text();
     const questions = JSON.parse(responseText);
 
-    return NextResponse.json({ questions });
+    const cleanLatex = (str: string) => {
+      if (!str) return "";
+      return str
+        .replace(/\\\$/g, "$")
+        .replace(/\$\$/g, "")
+        .replace(/\$/g, "")
+        .replace(/\\rightarrow/g, "→")
+        .replace(/\\leftarrow/g, "←")
+        .replace(/\\leftrightarrow/g, "↔")
+        .replace(/\\to/g, "→")
+        .replace(/\\mathbf\{([^}]+)\}/g, "**$1**")
+        .replace(/\\text\{([^}]+)\}/g, "$1")
+        .replace(/\\mathrm\{([^}]+)\}/g, "$1")
+        .replace(/\\vec\{([^}]+)\}/g, "$1")
+        .replace(/\\([a-zA-Z]+)/g, " ");
+    };
+
+    const cleanedQuestions = questions.map((q: any) => ({
+      enunciado: cleanLatex(q.enunciado),
+      alternativas: (q.alternativas || []).map((alt: string) => cleanLatex(alt)),
+      correta: q.correta,
+      justificativa: cleanLatex(q.justificativa)
+    }));
+
+    return NextResponse.json({ questions: cleanedQuestions });
 
   } catch (error: any) {
     console.error("Erro na rota /api/generate:", error);

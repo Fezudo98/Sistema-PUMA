@@ -19,6 +19,10 @@ export async function registerUser(formData: FormData) {
   const password = formData.get("password") as string;
   const role = formData.get("role") as string; // 'INSTRUCTOR' | 'STUDENT'
 
+  if (role === "INSTRUCTOR") {
+    return { error: "O cadastro público de instrutores está desativado. Novos instrutores devem ser cadastrados por um instrutor existente dentro do painel administrativo." };
+  }
+
   const numeroStr = formData.get("numero") as string;
   let numero = null;
 
@@ -169,5 +173,48 @@ export async function getUser() {
     return verified.payload as { userId: string, role: string, name: string };
   } catch (err) {
     return null;
+  }
+}
+
+export async function createInstructorAction(formData: FormData) {
+  const currentUser = await getUser();
+  if (!currentUser || currentUser.role !== "INSTRUCTOR") {
+    return { error: "Não autorizado." };
+  }
+
+  const name = sanitizeString(formData.get("name") as string);
+  const username = sanitizeString(formData.get("username") as string);
+  const password = formData.get("password") as string;
+
+  if (!name || !username || !password) {
+    return { error: "Todos os campos são obrigatórios." };
+  }
+
+  // Check if exists
+  const existingUser = await prisma.user.findUnique({
+    where: { username }
+  });
+
+  if (existingUser) {
+    return { error: "Este nome de usuário já está em uso." };
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Create user
+  try {
+    await prisma.user.create({
+      data: {
+        name,
+        username,
+        senha: hashedPassword,
+        role: "INSTRUCTOR"
+      }
+    });
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || "Erro ao salvar instrutor no banco de dados." };
   }
 }

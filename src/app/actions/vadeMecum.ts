@@ -134,9 +134,10 @@ Foque exclusivamente nas informações fornecidas no documento abaixo:`;
       }
 
       // 3. Save to database
+      const cleanedVadeMecum = cleanLatexSyntax(resultText);
       const updated = await prisma.apostila.update({
         where: { id: apostilaId },
-        data: { vadeMecum: resultText }
+        data: { vadeMecum: cleanedVadeMecum }
       });
 
       if (!bypassAuth) {
@@ -211,4 +212,23 @@ export async function checkAndGenerateMissingVadeMecums() {
   } catch (error: any) {
     console.error("[VADE MECUM CHECK] Erro na rotina de verificação:", error.message);
   }
+}
+
+function cleanLatexSyntax(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\\\$/g, "$")
+    .replace(/\$\$/g, "")
+    .replace(/\$/g, "")
+    .replace(/\\rightarrow/g, "→")
+    .replace(/\\left/g, " ")
+    .replace(/\\right/g, " ")
+    .replace(/\\leftarrow/g, "←")
+    .replace(/\\leftrightarrow/g, "↔")
+    .replace(/\\to/g, "→")
+    .replace(/\\mathbf\{([^}]+)\}/g, "**$1**")
+    .replace(/\\text\{([^}]+)\}/g, "$1")
+    .replace(/\\mathrm\{([^}]+)\}/g, "$1")
+    .replace(/\\vec\{([^}]+)\}/g, "$1")
+    .replace(/\\([a-zA-Z]+)/g, " ");
 }
