@@ -15,6 +15,38 @@ function generateCode() {
   return result;
 }
 
+function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
+  if (!alternativas || alternativas.length === 0) {
+    return { alternativas: [], correta: 0 };
+  }
+
+  const idx = Math.max(0, Math.min(corretaIdx, alternativas.length - 1));
+  const correctText = alternativas[idx];
+  
+  const prefixRegex = /^[A-E][\s\)\-\.\:]+\s*/i;
+  const cleanedAlts = alternativas.map(alt => alt.replace(prefixRegex, ""));
+  const cleanedCorrectText = correctText.replace(prefixRegex, "");
+
+  const shuffled = [...cleanedAlts];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  let newCorreta = shuffled.indexOf(cleanedCorrectText);
+  if (newCorreta === -1) {
+    newCorreta = 0;
+  }
+
+  const prefixes = ["A) ", "B) ", "C) ", "D) ", "E) "];
+  const finalAlts = shuffled.map((alt, index) => `${prefixes[index]}${alt}`);
+
+  return {
+    alternativas: finalAlts,
+    correta: newCorreta
+  };
+}
+
 export async function createSimulado(data: {
   tempoPorQuestao: number;
   apostilaName?: string;
@@ -51,14 +83,17 @@ export async function createSimulado(data: {
         topics: data.topics,
         difficulty: data.difficulty || "AVANCADO",
         questions: {
-          create: data.questions.map((q) => ({
-            enunciado: q.enunciado,
-            alternativas: JSON.stringify(q.alternativas),
-            correta: q.correta,
-            justificativa: q.justificativa,
-            tempoLimite: data.tempoPorQuestao,
-            status: "PENDING"
-          }))
+          create: data.questions.map((q) => {
+            const shuffled = shuffleAlternatives(q.alternativas, q.correta);
+            return {
+              enunciado: q.enunciado,
+              alternativas: JSON.stringify(shuffled.alternativas),
+              correta: shuffled.correta,
+              justificativa: q.justificativa,
+              tempoLimite: data.tempoPorQuestao,
+              status: "PENDING"
+            };
+          })
         }
       }
     });

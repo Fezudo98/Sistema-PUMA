@@ -8,6 +8,38 @@ import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient();
 
+function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
+  if (!alternativas || alternativas.length === 0) {
+    return { alternativas: [], correta: 0 };
+  }
+
+  const idx = Math.max(0, Math.min(corretaIdx, alternativas.length - 1));
+  const correctText = alternativas[idx];
+  
+  const prefixRegex = /^[A-E][\s\)\-\.\:]+\s*/i;
+  const cleanedAlts = alternativas.map(alt => alt.replace(prefixRegex, ""));
+  const cleanedCorrectText = correctText.replace(prefixRegex, "");
+
+  const shuffled = [...cleanedAlts];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  let newCorreta = shuffled.indexOf(cleanedCorrectText);
+  if (newCorreta === -1) {
+    newCorreta = 0;
+  }
+
+  const prefixes = ["A) ", "B) ", "C) ", "D) ", "E) "];
+  const finalAlts = shuffled.map((alt, index) => `${prefixes[index]}${alt}`);
+
+  return {
+    alternativas: finalAlts,
+    correta: newCorreta
+  };
+}
+
 // Configuração do esquema JSON rigoroso para o Gemini
 const responseSchema = {
   type: SchemaType.ARRAY,
@@ -243,14 +275,17 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
                 apostilaName: apostila.title,
                 difficulty: "AVANCADO",
                 questions: {
-                  create: questions.map((q: any) => ({
-                    enunciado: q.enunciado,
-                    alternativas: JSON.stringify(q.alternativas),
-                    correta: q.correta,
-                    justificativa: q.justificativa,
-                    tempoLimite: 60, // Padrão de 60 segundos por questão nos simulados diários
-                    status: "PENDING"
-                  }))
+                  create: questions.map((q: any) => {
+                    const shuffled = shuffleAlternatives(q.alternativas, q.correta);
+                    return {
+                      enunciado: q.enunciado,
+                      alternativas: JSON.stringify(shuffled.alternativas),
+                      correta: shuffled.correta,
+                      justificativa: q.justificativa,
+                      tempoLimite: 60, // Padrão de 60 segundos por questão nos simulados diários
+                      status: "PENDING"
+                    };
+                  })
                 }
               }
             });
@@ -606,14 +641,17 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
         apostilaName: apostila.title,
         difficulty: "AVANCADO",
         questions: {
-          create: questions.map((q: any) => ({
-            enunciado: q.enunciado,
-            alternativas: JSON.stringify(q.alternativas),
-            correta: q.correta,
-            justificativa: q.justificativa,
-            tempoLimite: 60,
-            status: "PENDING"
-          }))
+          create: questions.map((q: any) => {
+            const shuffled = shuffleAlternatives(q.alternativas, q.correta);
+            return {
+              enunciado: q.enunciado,
+              alternativas: JSON.stringify(shuffled.alternativas),
+              correta: shuffled.correta,
+              justificativa: q.justificativa,
+              tempoLimite: 60,
+              status: "PENDING"
+            };
+          })
         }
       }
     });
