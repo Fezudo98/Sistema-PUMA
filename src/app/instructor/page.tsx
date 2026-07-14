@@ -190,11 +190,11 @@ export default async function InstructorDashboard() {
 
         <Tabs defaultValue="simulados" className="w-full">
           <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6">
-            <TabsList className="grid grid-cols-2 sm:flex sm:h-14 bg-slate-900 border border-slate-800 p-1 h-auto gap-1 rounded-xl">
-              <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
-              <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
-              <TabsTrigger value="materiais" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
-              <TabsTrigger value="config" className="text-xs sm:text-base px-3 sm:px-6 h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Configurações</TabsTrigger>
+            <TabsList className="grid grid-cols-2 sm:flex sm:!h-14 bg-slate-900 border border-slate-800 p-1 !h-auto gap-1 rounded-xl">
+              <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
+              <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
+              <TabsTrigger value="materiais" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
+              <TabsTrigger value="config" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Configurações</TabsTrigger>
             </TabsList>
             
             <Link href="/instructor/simulado/new" className="w-full lg:w-auto">
