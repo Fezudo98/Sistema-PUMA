@@ -39,11 +39,10 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
     await fs.writeFile(filePath, buffer);
 
-    // Check if an apostila with the same name already exists for this instructor
+    // Check if an apostila with the same name already exists globally
     const existingApostila = await prisma.apostila.findFirst({
       where: {
-        title: file.name,
-        instructorId: user.userId
+        title: file.name
       }
     });
 
@@ -120,7 +119,6 @@ export async function GET(req: NextRequest) {
     }
 
     const apostilas = await prisma.apostila.findMany({
-      where: { instructorId: user.userId },
       orderBy: { createdAt: "desc" },
       distinct: ['title']
     });

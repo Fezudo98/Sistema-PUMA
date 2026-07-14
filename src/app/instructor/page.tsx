@@ -75,9 +75,8 @@ export default async function InstructorDashboard() {
     orderBy: { createdAt: "desc" }
   });
 
-  // Fetch Apostilas for this instructor
+  // Fetch All Apostilas (shared among all instructors)
   const apostilas = await prisma.apostila.findMany({
-    where: { instructorId: user.userId },
     orderBy: { createdAt: "desc" }
   });
 
