@@ -242,3 +242,57 @@ export async function getStudentSimuladosAction(studentId: string) {
     return { success: false, error: "Falha ao carregar histórico de simulados do combatente." };
   }
 }
+
+export async function updateStudentNumber(studentId: string, newNumero: number) {
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { success: false, error: "Acesso negado. Apenas instrutores autorizados." };
+  }
+
+  if (isNaN(newNumero) || newNumero < 1 || newNumero > 32) {
+    return { success: false, error: "O número do combatente deve ser entre 1 e 32." };
+  }
+
+  try {
+    // Check if the student exists
+    const student = await prisma.user.findFirst({
+      where: { id: studentId, role: "STUDENT" }
+    });
+
+    if (!student) {
+      return { success: false, error: "Combatente não encontrado." };
+    }
+
+    // If the number is already theirs, just return success
+    if (student.numero === newNumero) {
+      return { success: true };
+    }
+
+    // Check if the new number is taken by another student
+    const numberTaken = await prisma.user.findFirst({
+      where: { 
+        role: "STUDENT", 
+        numero: newNumero,
+        id: { not: studentId }
+      }
+    });
+
+    if (numberTaken) {
+      return { success: false, error: `O número ${String(newNumero).padStart(2, '0')} já está sendo utilizado pelo combatente ${numberTaken.name}.` };
+    }
+
+    // Update
+    await prisma.user.update({
+      where: { id: studentId },
+      data: { numero: newNumero }
+    });
+
+    // Revalidate paths to refresh the dashboard lists
+    revalidatePath("/instructor");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating student number:", error);
+    return { success: false, error: "Erro interno ao atualizar o número do combatente." };
+  }
+}

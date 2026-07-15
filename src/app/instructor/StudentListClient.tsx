@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Users, Target, Clock, Trophy, Search, User as UserIcon, KeyRound, Eye, EyeOff, Check, 
-  AlertTriangle, Loader2, MessageSquare, ShieldAlert, ShieldCheck, Lock, Unlock, Bot 
+  AlertTriangle, Loader2, MessageSquare, ShieldAlert, ShieldCheck, Lock, Unlock, Bot, Hash
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction } from "@/app/actions/user";
+import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber } from "@/app/actions/user";
 
 type StudentPerformance = {
   id: string;
@@ -49,12 +49,19 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
   const [studentSimulados, setStudentSimulados] = useState<any[]>([]);
   const [expandedSimuladoId, setExpandedSimuladoId] = useState<string | null>(null);
 
+  // Number edit state
+  const [newStudentNumber, setNewStudentNumber] = useState<string>("");
+  const [isUpdatingNumber, setIsUpdatingNumber] = useState(false);
+  const [numberUpdateMessage, setNumberUpdateMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedStudent(null);
       setNewPassword("");
       setShowPassword(false);
       setResetMessage(null);
+      setNewStudentNumber("");
+      setNumberUpdateMessage(null);
       setActiveModalTab("dossier");
       setAuditMessages([]);
       setStudentSimulados([]);
@@ -65,6 +72,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
   useEffect(() => {
     if (selectedStudent) {
       setCurrentSuspendedUntil(selectedStudent.suspendedUntil || null);
+      setNewStudentNumber(selectedStudent.numero ? String(selectedStudent.numero) : "");
+      setNumberUpdateMessage(null);
       
       // Fetch Chat Audit
       setLoadingAudit(true);
@@ -94,6 +103,28 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setExpandedSimuladoId(null);
     }
   }, [selectedStudent]);
+
+  const handleUpdateNumber = async () => {
+    if (!selectedStudent || !newStudentNumber) return;
+    const num = parseInt(newStudentNumber, 10);
+    if (isNaN(num) || num < 1 || num > 32) {
+      setNumberUpdateMessage({ type: "error", text: "O número deve ser entre 1 e 32." });
+      return;
+    }
+
+    setIsUpdatingNumber(true);
+    setNumberUpdateMessage(null);
+
+    const res = await updateStudentNumber(selectedStudent.id, num);
+    setIsUpdatingNumber(false);
+
+    if (res.success) {
+      setNumberUpdateMessage({ type: "success", text: "Número do combatente atualizado com sucesso!" });
+      setSelectedStudent((prev) => prev ? { ...prev, numero: num } : null);
+    } else {
+      setNumberUpdateMessage({ type: "error", text: res.error || "Erro ao atualizar número." });
+    }
+  };
 
   const handleToggleSuspension = async (suspend: boolean) => {
     if (!selectedStudent || togglingSuspension) return;
@@ -417,6 +448,54 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                     >
                       {isResetting ? "Redefinindo..." : "Atualizar Senha Agora"}
                     </Button>
+                  </div>
+                </div>
+
+                {/* Alterar Número de Combate */}
+                <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-4 space-y-4">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-blue-500" />
+                    Alterar Identificação (Número de Combate)
+                  </h4>
+
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          type="number"
+                          min={1}
+                          max={32}
+                          placeholder="Número do combatente (1 a 32)"
+                          value={newStudentNumber}
+                          onChange={(e) => {
+                            setNewStudentNumber(e.target.value);
+                            setNumberUpdateMessage(null);
+                          }}
+                          className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-blue-500"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleUpdateNumber}
+                        disabled={isUpdatingNumber || !newStudentNumber || String(selectedStudent?.numero) === newStudentNumber}
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shrink-0 cursor-pointer h-10 px-4"
+                      >
+                        {isUpdatingNumber ? <Loader2 className="w-4 h-4 animate-spin" /> : "Atualizar Número"}
+                      </Button>
+                    </div>
+
+                    {numberUpdateMessage && (
+                      <div
+                        className={`p-3 rounded-lg border text-xs font-bold flex items-center gap-2 ${
+                          numberUpdateMessage.type === "success"
+                            ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                            : "bg-red-950/40 border-red-500/30 text-red-400"
+                        }`}
+                      >
+                        {numberUpdateMessage.type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                        {numberUpdateMessage.text}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
