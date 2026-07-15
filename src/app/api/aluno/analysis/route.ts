@@ -77,12 +77,10 @@ export async function POST(req: NextRequest) {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
       const modelVersions = [
-        "gemini-3.5-flash",
-        "gemini-pro-latest",
-        "gemini-3.1-flash-lite",
-        "gemini-2.5-flash",
+        "gemini-1.5-flash",
         "gemini-2.0-flash",
-        "gemini-flash-latest"
+        "gemini-pro-latest",
+        "gemini-1.5-pro"
       ];
 
       for (const modelVersion of modelVersions) {

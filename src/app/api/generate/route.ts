@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { PrismaClient } from "@prisma/client";
+import { promises as fs } from "fs";
+import path from "path";
 
-// O SDK do Gemini será instanciado dentro da rota para suportar a chave de fallback
+const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,8 +15,6 @@ export async function POST(req: NextRequest) {
     const dificuldade = "AVANCADO"; // Apenas questões avançadas
     const topics = formData.get("topics") as string | null;
 
-    const { PrismaClient } = require("@prisma/client");
-    const prisma = new PrismaClient();
     let studentNames: string[] = [];
     try {
       const students = await prisma.user.findMany({
@@ -39,11 +40,6 @@ export async function POST(req: NextRequest) {
 
     if (apostilaId) {
       // Read from saved Apostila
-      const fs = require("fs").promises;
-      const path = require("path");
-      const { PrismaClient } = require("@prisma/client");
-      const prisma = new PrismaClient();
-      
       const apostila = await prisma.apostila.findUnique({ where: { id: apostilaId } });
       if (!apostila) {
          return NextResponse.json({ error: "Apostila não encontrada." }, { status: 404 });
@@ -132,12 +128,9 @@ export async function POST(req: NextRequest) {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
       const modelVersions = [
-        "gemini-pro-latest",
-        "gemini-3.5-flash",
-        "gemini-3.1-flash-lite",
-        "gemini-2.5-flash",
+        "gemini-1.5-flash",
         "gemini-2.0-flash",
-        "gemini-flash-latest"
+        "gemini-1.5-pro"
       ];
 
       for (const modelVersion of modelVersions) {
