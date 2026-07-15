@@ -10,10 +10,12 @@ import { queueGenerationTask } from "./dailySimulado";
 const prisma = new PrismaClient();
 
 const modelVersions = [
-  "gemini-1.5-flash",
-  "gemini-2.0-flash",
+  "gemini-3.5-flash",
   "gemini-pro-latest",
-  "gemini-1.5-pro"
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-flash-latest"
 ];
 
 // Helper to polyfill DOMMatrix, ImageData, Path2D required by pdfjs-dist in Node environment
