@@ -24,16 +24,19 @@ model User {
 }
 
 model Simulado {
-  id           String     @id @default(uuid())
-  codigoSala   String?    @unique
-  status       String     @default("WAITING") // WAITING | ACTIVE | FINISHED
-  tipo         String     @default("LIVE") // LIVE | DAILY
-  instructorId String
-  apostilaName String?
-  topics       String?
-  difficulty   String     @default("AVANCADO") // Apenas AVANCADO
-  createdAt    DateTime   @default(now())
-  questions    Question[]
+  id                String     @id @default(uuid())
+  codigoSala        String?    @unique
+  status            String     @default("WAITING") // WAITING | ACTIVE | FINISHED
+  tipo              String     @default("LIVE") // LIVE | DAILY
+  instructorId      String
+  apostilaName      String?
+  topics            String?
+  difficulty        String     @default("AVANCADO") // Apenas AVANCADO
+  isTeamCompetition Boolean    @default(false)
+  teamNames         String?    // JSON array com nomes das equipes
+  studentTeams      String?    // JSON map { studentId: teamId }
+  createdAt         DateTime   @default(now())
+  questions         Question[]
 }
 
 model Question {

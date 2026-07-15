@@ -24,6 +24,8 @@ export default function ReviewSimulado() {
   const [loading, setLoading] = useState(false);
   const [isRaffleMode, setIsRaffleMode] = useState(false);
   const [dificuldade, setDificuldade] = useState("AVANCADO");
+  const [isTeamCompetition, setIsTeamCompetition] = useState(false);
+  const [teamNames, setTeamNames] = useState<string[] | undefined>();
 
   // Estados de Edição
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -49,6 +51,10 @@ export default function ReviewSimulado() {
       setDificuldade("AVANCADO");
       if (parsed.isRaffleMode) {
         setIsRaffleMode(true);
+      }
+      if (parsed.isTeamCompetition) {
+        setIsTeamCompetition(true);
+        setTeamNames(parsed.teamNames);
       }
     }
   }, [router]);
@@ -113,6 +119,8 @@ export default function ReviewSimulado() {
       apostilaName,
       topics,
       difficulty: dificuldade,
+      isTeamCompetition,
+      teamNames,
       questions
     });
 

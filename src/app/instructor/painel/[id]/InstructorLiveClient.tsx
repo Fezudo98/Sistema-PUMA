@@ -32,6 +32,9 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const [displayStudent, setDisplayStudent] = useState<any>(null);
   const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
   const [selectedAltForDetails, setSelectedAltForDetails] = useState<number | null>(null);
+  const [isTeamCompetition, setIsTeamCompetition] = useState<boolean>(false);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [studentTeams, setStudentTeams] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (isRaffling && students.length > 0) {
@@ -70,10 +73,19 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       if (data.answeredStudentIds) {
         setAnsweredStudentIds(data.answeredStudentIds);
       }
+      if (data.isTeamCompetition !== undefined) setIsTeamCompetition(data.isTeamCompetition);
+      if (data.teams) setTeams(data.teams);
+      if (data.studentTeams) setStudentTeams(data.studentTeams);
     });
     
     s.on("ranking_update", (data) => {
       setRanking(data.ranking);
+    });
+
+    s.on("teams_update", (data) => {
+      setIsTeamCompetition(data.isTeamCompetition);
+      setTeams(data.teams || []);
+      setStudentTeams(data.studentTeams || {});
     });
 
     s.on("streak_notifications", (data) => {
@@ -509,6 +521,108 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                 </Card>
               )}
 
+              {/* Painel das Equipes (Modo Competição) */}
+              {isTeamCompetition && teams.length > 0 && (
+                <Card className="bg-slate-900 border-emerald-500/40 shadow-2xl overflow-hidden mb-4">
+                  <div className="bg-gradient-to-r from-emerald-600/20 to-blue-600/20 px-4 py-3 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 font-black text-sm md:text-base text-white uppercase tracking-wider">
+                      <Trophy className="w-5 h-5 text-emerald-400 animate-bounce" />
+                      Disputa por Equipes ({teams.length})
+                    </div>
+                    <Button
+                      onClick={() => socket?.emit("shuffle_teams", { roomCode: simulado.codigoSala })}
+                      size="sm"
+                      className="bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-wider shadow-lg text-white cursor-pointer"
+                    >
+                      🎲 Embaralhar / Rebalancear Alunos
+                    </Button>
+                  </div>
+                  <CardContent className="p-4 space-y-3 max-h-[350px] md:max-h-[400px] overflow-y-auto custom-scrollbar">
+                    {teams.map((team: any, tIdx: number) => {
+                      const members = team.members || [];
+                      return (
+                        <div
+                          key={tIdx}
+                          style={{ borderColor: team.border || "#3b82f6", backgroundColor: team.bg || "rgba(59, 130, 246, 0.1)" }}
+                          className="rounded-xl border p-3.5 space-y-2.5 transition-all shadow-sm"
+                        >
+                          <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                            <div className="flex items-center gap-2">
+                              <span
+                                style={{ backgroundColor: team.color }}
+                                className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+                              ></span>
+                              <span className="font-black text-base md:text-lg text-white tracking-wide">
+                                {team.name}
+                              </span>
+                              <span className="text-xs bg-slate-950/60 text-slate-300 font-bold px-2 py-0.5 rounded-full border border-slate-800">
+                                {members.length} {members.length === 1 ? 'aluno' : 'alunos'}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-mono font-black text-lg text-emerald-400">
+                                {team.totalScore || 0} <span className="text-xs font-bold text-slate-400">pts</span>
+                              </div>
+                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                Média: {team.averageScore || 0} pts/aluno
+                              </div>
+                            </div>
+                          </div>
+
+                          {members.length === 0 ? (
+                            <div className="text-xs text-slate-500 italic py-1 text-center font-medium">
+                              Nenhum aluno alocado nesta equipe ainda.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 gap-1.5 pt-1">
+                              {members.map((member: any) => (
+                                <div
+                                  key={member.id}
+                                  className="flex items-center justify-between bg-slate-950/50 hover:bg-slate-950/80 rounded-lg p-2 text-xs font-semibold border border-slate-800/50 transition-colors"
+                                >
+                                  <div className="flex items-center gap-2 overflow-hidden">
+                                    {member.avatarUrl ? (
+                                      <img src={member.avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover shrink-0" />
+                                    ) : (
+                                      <div className="w-5 h-5 rounded-full bg-slate-800 text-[9px] font-bold text-slate-300 flex items-center justify-center shrink-0">
+                                        {member.name?.substring(0, 2).toUpperCase()}
+                                      </div>
+                                    )}
+                                    <span className="text-slate-200 font-bold truncate">{member.name}</span>
+                                    <span className="text-blue-400 font-mono font-bold shrink-0">({member.score || 0})</span>
+                                  </div>
+
+                                  <select
+                                    value={team.id}
+                                    onChange={(e) => {
+                                      const targetId = e.target.value;
+                                      if (targetId && targetId !== team.id) {
+                                        socket?.emit("reassign_student_team", {
+                                          roomCode: simulado.codigoSala,
+                                          studentId: member.id,
+                                          targetTeamId: targetId
+                                        });
+                                      }
+                                    }}
+                                    className="bg-slate-900 text-[10px] font-bold text-slate-300 border border-slate-700 rounded px-1.5 py-0.5 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                                  >
+                                    {teams.map((t: any) => (
+                                      <option key={t.id} value={t.id}>
+                                        Mover p/ {t.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Ranking Ao Vivo */}
               <Card className="bg-slate-900 border-slate-800 flex-1 flex flex-col shadow-2xl">
                 <CardHeader className="border-b border-slate-800 py-3 md:py-4">
@@ -580,6 +694,43 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
             <p className="text-slate-400 mb-8">
               Obrigado por utilizar o sistema. As pontuações já foram processadas.
             </p>
+
+            {/* Podium Equipes (Se Modo Competição) */}
+            {isTeamCompetition && teams.length > 0 && (
+              <div className="w-full bg-slate-900/60 border border-emerald-500/50 rounded-2xl p-6 mb-8 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                <h3 className="text-sm font-black text-emerald-400 uppercase tracking-widest mb-6 flex items-center justify-center gap-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" /> Classificação Final das Equipes
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teams.map((team: any, idx: number) => (
+                    <div
+                      key={team.id}
+                      style={{ borderColor: team.border || "#3b82f6", backgroundColor: team.bg || "rgba(59, 130, 246, 0.1)" }}
+                      className={`rounded-xl p-5 border relative flex flex-col justify-between ${
+                        idx === 0 ? "ring-2 ring-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.2)]" : ""
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`flex items-center justify-center w-7 h-7 rounded-full font-black text-sm ${
+                            idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-700 text-amber-100"
+                          }`}>
+                            {idx + 1}º
+                          </span>
+                          <span className="font-black text-xl text-white tracking-wide">{team.name}</span>
+                        </div>
+                        <span style={{ backgroundColor: team.color }} className="w-3.5 h-3.5 rounded-full"></span>
+                      </div>
+                      <div className="text-left mt-2 border-t border-slate-800/60 pt-3">
+                        <div className="text-2xl font-black font-mono text-emerald-400">{team.totalScore || 0} <span className="text-sm font-bold text-slate-400">pts totais</span></div>
+                        <div className="text-xs font-bold text-slate-300 uppercase mt-1">Média: <span className="text-white font-mono">{team.averageScore || 0}</span> pts/aluno</div>
+                        <div className="text-[10px] text-slate-400 mt-1 font-semibold">{team.memberCount || 0} combatentes na equipe</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Podium Top 3 */}
             {ranking.length > 0 && (

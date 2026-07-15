@@ -36,6 +36,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [unlockedBadges, setUnlockedBadges] = useState<any[]>([]);
   const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
   const [showParticipants, setShowParticipants] = useState(false);
+  const [isTeamCompetition, setIsTeamCompetition] = useState<boolean>(false);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [studentTeams, setStudentTeams] = useState<Record<string, string>>({});
 
   // Refs to avoid stale state in Socket.io event listeners
   const selectedAltRef = useRef<number>(-1);
@@ -115,6 +118,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       if (data.status === "FINISHED" && status !== "FINISHED") {
         setStatus("FINISHED");
       }
+      if (data.isTeamCompetition !== undefined) setIsTeamCompetition(data.isTeamCompetition);
+      if (data.teams) setTeams(data.teams);
+      if (data.studentTeams) setStudentTeams(data.studentTeams);
       if (data.status === "ACTIVE" && data.currentQuestion) {
         setCurrentQuestion((prev: any) => {
           if (!prev || prev.id !== data.currentQuestion.id) {
@@ -194,6 +200,12 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
     s.on("ranking_update", (data) => {
       setRanking(data.ranking);
+    });
+
+    s.on("teams_update", (data) => {
+      setIsTeamCompetition(data.isTeamCompetition);
+      setTeams(data.teams || []);
+      setStudentTeams(data.studentTeams || {});
     });
 
     s.on("streak_notifications", (data) => {
@@ -330,8 +342,27 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
           <ShieldAlert className="w-10 h-10 text-blue-500 animate-pulse" />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">Sala {simulado.codigoSala}</h1>
-        <p className="text-slate-400 max-w-sm mb-12">Você entrou com sucesso. Aguarde o instrutor iniciar o simulado na tela principal.</p>
+        <p className="text-slate-400 max-w-sm mb-6">Você entrou com sucesso. Aguarde o instrutor iniciar o simulado na tela principal.</p>
         
+        {(() => {
+          const myTeamId = studentTeams[user.userId || user.id];
+          const myTeam = teams.find(t => t.id === myTeamId);
+          if (isTeamCompetition && myTeam) {
+            return (
+              <div
+                style={{ borderColor: myTeam.border || "#10b981", backgroundColor: myTeam.bg || "rgba(16,185,129,0.15)" }}
+                className="flex items-center gap-2.5 px-6 py-3 rounded-full border mb-8 shadow-lg animate-bounce"
+              >
+                <span style={{ backgroundColor: myTeam.color }} className="w-4 h-4 rounded-full shadow-sm"></span>
+                <span className="font-black text-white uppercase tracking-wider text-sm sm:text-base">
+                  Sua Equipe: {myTeam.name}
+                </span>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         <div className="flex gap-2 items-center">
           <div className="w-3 h-3 rounded-full bg-blue-500 animate-ping"></div>
           <span className="text-sm font-bold text-blue-400 tracking-widest uppercase">Conectado ao Telão</span>
@@ -364,12 +395,45 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             const myRank = myRankIndex + 1;
             const myData = ranking[myRankIndex];
             return (
-              <div className="flex items-center gap-1.5 bg-blue-950/40 border border-blue-500/30 px-2.5 py-1 rounded-full text-blue-400 font-bold text-xs shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+              <div 
+                onClick={() => setShowParticipants(true)}
+                className="flex items-center gap-1.5 bg-blue-950/40 border border-blue-500/30 px-2.5 py-1 rounded-full text-blue-400 font-bold text-xs shadow-[0_0_15px_rgba(59,130,246,0.1)] cursor-pointer hover:bg-blue-950/80 transition-colors"
+                title="Clique para ver o ranking geral"
+              >
                 <Trophy className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
                 <span>{myRank}º <span className="text-slate-400 text-[10px] sm:text-xs">({myData.score} pts)</span></span>
               </div>
             );
           })()}
+
+          {(() => {
+            const myTeamId = studentTeams[user.userId || user.id];
+            const myTeam = teams.find(t => t.id === myTeamId);
+            if (isTeamCompetition && myTeam) {
+              return (
+                <div
+                  onClick={() => setShowParticipants(true)}
+                  style={{ borderColor: myTeam.border || "#10b981", backgroundColor: myTeam.bg || "rgba(16,185,129,0.15)" }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full border font-black text-xs shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                  title="Clique para ver a classificação das equipes"
+                >
+                  <span style={{ backgroundColor: myTeam.color }} className="w-2.5 h-2.5 rounded-full"></span>
+                  <span className="text-white truncate max-w-[110px]">{myTeam.name}</span>
+                  <span className="text-emerald-400 font-mono ml-0.5">({myTeam.totalScore || 0} pts)</span>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowParticipants(true)}
+            className="text-yellow-500 hover:text-yellow-400 hover:bg-slate-800 text-xs font-bold flex items-center gap-1.5 px-2"
+          >
+            <Trophy className="w-3.5 h-3.5" /> Ranking
+          </Button>
         </div>
         {status === "FINISHED" ? (
           <span className="bg-red-950/40 text-red-500 border border-red-500/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
@@ -665,6 +729,46 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               );
             })()}
 
+            {/* Classificação de Equipes na Tela Final */}
+            {isTeamCompetition && teams.length > 0 && (
+              <div className="w-full max-w-md bg-slate-900/70 border border-emerald-500/50 rounded-xl p-5 mb-8 shadow-xl">
+                <h3 className="text-xs font-black text-emerald-400 uppercase tracking-widest mb-4 flex items-center justify-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-500" /> Classificação Final por Equipes
+                </h3>
+                <div className="space-y-2.5">
+                  {teams.map((team: any, idx: number) => {
+                    const myTeamId = studentTeams[user.userId || user.id];
+                    const isMyTeam = team.id === myTeamId;
+                    return (
+                      <div
+                        key={team.id}
+                        style={{ borderColor: team.border || "#3b82f6", backgroundColor: team.bg || "rgba(59, 130, 246, 0.1)" }}
+                        className={`rounded-lg p-3 border flex items-center justify-between ${
+                          isMyTeam ? "ring-2 ring-white shadow-md" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-xs ${
+                            idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-700 text-amber-100"
+                          }`}>
+                            {idx + 1}º
+                          </span>
+                          <span className="font-bold text-white text-sm">{team.name}</span>
+                          {isMyTeam && (
+                            <span className="text-[10px] bg-white text-slate-950 font-black px-1.5 py-0.5 rounded uppercase">Sua Equipe</span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <span className="font-mono font-black text-emerald-400 text-sm">{team.totalScore || 0} pts</span>
+                          <span className="text-[10px] text-slate-400 block">Média: {team.averageScore || 0}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Podium Top 3 */}
             {ranking.length > 0 && (
               <div className="w-full max-w-md bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-8">
@@ -756,8 +860,51 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                 Ordem de pontuação de todos os recrutas neste simulado.
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-4">
-              <div className="overflow-x-auto">
+            <div className="mt-4 space-y-6">
+              {isTeamCompetition && teams.length > 0 && (
+                <div className="bg-slate-950/60 rounded-xl p-4 border border-emerald-500/30 space-y-3">
+                  <h4 className="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-yellow-500" /> Classificação das Equipes
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {teams.map((team: any, idx: number) => {
+                      const myTeamId = studentTeams[user.userId || user.id];
+                      const isMyTeam = team.id === myTeamId;
+                      return (
+                        <div
+                          key={team.id}
+                          style={{ borderColor: team.border || "#3b82f6", backgroundColor: team.bg || "rgba(59, 130, 246, 0.1)" }}
+                          className={`rounded-lg p-3 border flex items-center justify-between ${
+                            isMyTeam ? "ring-2 ring-white shadow" : ""
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-xs ${
+                              idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-700 text-amber-100"
+                            }`}>
+                              {idx + 1}º
+                            </span>
+                            <span className="font-bold text-white text-xs truncate max-w-[110px]">{team.name}</span>
+                            {isMyTeam && (
+                              <span className="text-[9px] bg-white text-slate-950 font-black px-1 rounded uppercase shrink-0">Sua</span>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="font-mono font-black text-emerald-400 text-xs">{team.totalScore || 0} pts</div>
+                            <div className="text-[9px] text-slate-400 font-bold">Média: {team.averageScore || 0}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5">
+                  Ranking Individual dos Alunos
+                </h4>
+                <div className="overflow-x-auto rounded-lg border border-slate-800">
                 <table className="w-full text-left text-sm text-slate-300">
                   <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
                     <tr>
@@ -793,6 +940,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   </tbody>
                 </table>
               </div>
+            </div>
             </div>
           </DialogContent>
         </Dialog>

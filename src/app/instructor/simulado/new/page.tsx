@@ -32,6 +32,21 @@ export default function NovoSimulado() {
   const [isRaffleMode, setIsRaffleMode] = useState(false);
   const [topics, setTopics] = useState("");
 
+  // Team Competition State
+  const [isTeamCompetition, setIsTeamCompetition] = useState(false);
+  const [teamCount, setTeamCount] = useState(2);
+  const [teamNames, setTeamNames] = useState<string[]>(["Equipe Alpha", "Equipe Bravo"]);
+
+  const handleTeamCountChange = (count: number) => {
+    setTeamCount(count);
+    const newNames = [...teamNames];
+    while (newNames.length < count) {
+      const defaultNames = ["Equipe Alpha", "Equipe Bravo", "Equipe Charlie", "Equipe Delta", "Equipe Echo", "Equipe Foxtrot"];
+      newNames.push(defaultNames[newNames.length] || `Equipe ${newNames.length + 1}`);
+    }
+    setTeamNames(newNames.slice(0, count));
+  };
+
   useEffect(() => {
     fetch("/api/apostilas")
       .then(res => res.json())
@@ -94,11 +109,12 @@ export default function NovoSimulado() {
         isRaffleMode, 
         dificuldade, 
         apostilaName: nameOfApostila, 
-        topics 
+        topics,
+        isTeamCompetition,
+        teamNames: isTeamCompetition ? teamNames.slice(0, teamCount) : undefined
       }));
       
       router.push("/instructor/simulado/review");
-      
     } catch (err: any) {
       alert("Erro: " + err.message);
       setLoading(false);
@@ -251,6 +267,64 @@ export default function NovoSimulado() {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 ml-7.5">
                   Se ativado, todas as questões desse simulado sortearão automaticamente um aluno para responder.
                 </p>
+              </div>
+
+              {/* Modo Competição em Equipes */}
+              <div className="bg-slate-950/40 p-5 rounded-xl border border-slate-800 space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-white transition-colors">
+                  <input 
+                    type="checkbox" 
+                    checked={isTeamCompetition} 
+                    onChange={e => setIsTeamCompetition(e.target.checked)} 
+                    className="w-5 h-5 rounded border-slate-800 bg-slate-950 text-emerald-600 focus:ring-emerald-500 cursor-pointer" 
+                  />
+                  Modo Competição em Equipes 🛡️
+                </label>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-7.5">
+                  Se ativado, os alunos que entrarem na sala serão distribuídos aleatória e proporcionalmente em equipes para disputar o ranking coletivo.
+                </p>
+
+                {isTeamCompetition && (
+                  <div className="pt-3 border-t border-slate-800/80 space-y-4 ml-7.5 animate-in fade-in slide-in-from-top-2">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Quantidade de Equipes</label>
+                      <Select value={teamCount.toString()} onValueChange={(v) => handleTeamCountChange(parseInt(v || "2"))}>
+                        <SelectTrigger className="h-11 bg-slate-950 border-slate-800 text-white font-bold w-full md:w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-950 border-slate-800 text-slate-200">
+                          {[2, 3, 4, 5, 6, 8].map(num => (
+                            <SelectItem key={num} value={num.toString()} className="font-bold">
+                              {num} Equipes
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Nomes das Equipes</label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Array.from({ length: teamCount }).map((_, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Equipe {idx + 1}</span>
+                            <Input
+                              type="text"
+                              value={teamNames[idx] || ""}
+                              onChange={(e) => {
+                                const copy = [...teamNames];
+                                copy[idx] = e.target.value;
+                                setTeamNames(copy);
+                              }}
+                              placeholder={`Ex: Equipe ${idx + 1}`}
+                              className="bg-slate-950 border-slate-800 text-white font-bold h-10"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t border-slate-800/80">

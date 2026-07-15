@@ -52,6 +52,8 @@ export async function createSimulado(data: {
   apostilaName?: string;
   topics?: string;
   difficulty?: string;
+  isTeamCompetition?: boolean;
+  teamNames?: string[];
   questions: {
     enunciado: string;
     alternativas: string[];
@@ -82,6 +84,8 @@ export async function createSimulado(data: {
         apostilaName: data.apostilaName,
         topics: data.topics,
         difficulty: data.difficulty || "AVANCADO",
+        isTeamCompetition: !!data.isTeamCompetition,
+        teamNames: data.teamNames ? JSON.stringify(data.teamNames) : null,
         questions: {
           create: data.questions.map((q) => {
             const shuffled = shuffleAlternatives(q.alternativas, q.correta);

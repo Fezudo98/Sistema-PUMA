@@ -320,12 +320,52 @@ interface RoomState {
   pendingNotifications: string[];
   answeredStudentIds: string[];
   maxConnectedCount: number;
+  isTeamCompetition?: boolean;
+  teams?: { id: string; name: string; color: string; bg: string; border: string; score: number }[];
+  studentTeams?: Record<string, string>;
 }
 const rooms = new Map<string, RoomState>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 
 // Track socket connection info to handle disconnects
 const socketInfo = new Map<string, { roomCode: string; userId: string; role: string; name: string }>();
+
+const TEAM_COLORS = [
+  { color: "#3b82f6", bg: "rgba(59, 130, 246, 0.15)", border: "rgba(59, 130, 246, 0.4)" },
+  { color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.4)" },
+  { color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.4)" },
+  { color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)", border: "rgba(245, 158, 11, 0.4)" },
+  { color: "#8b5cf6", bg: "rgba(139, 92, 246, 0.15)", border: "rgba(139, 92, 246, 0.4)" },
+  { color: "#ec4899", bg: "rgba(236, 72, 153, 0.15)", border: "rgba(236, 72, 153, 0.4)" },
+  { color: "#06b6d4", bg: "rgba(6, 182, 212, 0.15)", border: "rgba(6, 182, 212, 0.4)" },
+  { color: "#f97316", bg: "rgba(249, 115, 22, 0.15)", border: "rgba(249, 115, 22, 0.4)" }
+];
+
+function emitRankingAndTeams(io: any, roomCode: string, room: RoomState) {
+  const currentRanking = Object.values(room.studentScores).sort((a: any, b: any) => b.score - a.score);
+  io.to(roomCode).emit('ranking_update', { ranking: currentRanking });
+
+  if (room.isTeamCompetition && room.teams) {
+    const enrichedTeams = room.teams.map(team => {
+      const members = Object.values(room.studentScores).filter(s => room.studentTeams?.[s.id] === team.id);
+      const totalScore = members.reduce((sum, m) => sum + (m.score || 0), 0);
+      const averageScore = members.length > 0 ? Math.round(totalScore / members.length) : 0;
+      return {
+        ...team,
+        totalScore,
+        memberCount: members.length,
+        averageScore,
+        members
+      };
+    }).sort((a, b) => b.totalScore - a.totalScore);
+
+    io.to(roomCode).emit('teams_update', {
+      isTeamCompetition: true,
+      teams: enrichedTeams,
+      studentTeams: room.studentTeams || {}
+    });
+  }
+}
 
 app.prepare().then(() => {
   const server = createServer(async (req, res) => {
@@ -359,6 +399,33 @@ app.prepare().then(() => {
           where: { codigoSala: roomCode }
         });
 
+        const isTeamCompetition = dbSimulado?.isTeamCompetition || false;
+        let teams: { id: string; name: string; color: string; bg: string; border: string; score: number }[] = [];
+        let studentTeams: Record<string, string> = {};
+
+        if (isTeamCompetition && dbSimulado?.teamNames) {
+          try {
+            const parsedNames: string[] = JSON.parse(dbSimulado.teamNames);
+            teams = parsedNames.map((name, idx) => ({
+              id: `team_${idx}`,
+              name: name || `Equipe ${idx + 1}`,
+              color: TEAM_COLORS[idx % TEAM_COLORS.length].color,
+              bg: TEAM_COLORS[idx % TEAM_COLORS.length].bg,
+              border: TEAM_COLORS[idx % TEAM_COLORS.length].border,
+              score: 0
+            }));
+          } catch (e) {
+            console.error("Error parsing teamNames:", e);
+          }
+        }
+        if (dbSimulado?.studentTeams) {
+          try {
+            studentTeams = JSON.parse(dbSimulado.studentTeams);
+          } catch (e) {
+            console.error("Error parsing studentTeams:", e);
+          }
+        }
+
         rooms.set(roomCode, {
           simuladoId: dbSimulado ? dbSimulado.id : '',
           status: dbSimulado ? (dbSimulado.status as any) : 'WAITING',
@@ -373,7 +440,10 @@ app.prepare().then(() => {
           questionEndedData: null,
           pendingNotifications: [],
           answeredStudentIds: [],
-          maxConnectedCount: 0
+          maxConnectedCount: 0,
+          isTeamCompetition,
+          teams,
+          studentTeams
         });
 
         if (dbSimulado) {
@@ -415,6 +485,30 @@ app.prepare().then(() => {
           room.studentScores[uid].avatarUrl = user.avatarUrl;
         }
 
+        // Alocar aleatoriamente e proporcionalmente o aluno em uma equipe se ainda não tiver equipe
+        if (room.isTeamCompetition && room.teams && room.teams.length > 0) {
+          if (!room.studentTeams) room.studentTeams = {};
+          if (!room.studentTeams[uid]) {
+            const teamCounts = new Map<string, number>();
+            room.teams.forEach(t => teamCounts.set(t.id, 0));
+            Object.values(room.studentTeams).forEach(tId => {
+              if (teamCounts.has(tId)) teamCounts.set(tId, (teamCounts.get(tId) || 0) + 1);
+            });
+            let minCount = Infinity;
+            teamCounts.forEach(count => { if (count < minCount) minCount = count; });
+            const candidates = room.teams.filter(t => (teamCounts.get(t.id) || 0) === minCount);
+            const chosenTeam = candidates[Math.floor(Math.random() * candidates.length)] || room.teams[0];
+            room.studentTeams[uid] = chosenTeam.id;
+
+            if (room.simuladoId) {
+              prisma.simulado.update({
+                where: { id: room.simuladoId },
+                data: { studentTeams: JSON.stringify(room.studentTeams) }
+              }).catch(err => console.error("Error updating DB studentTeams:", err));
+            }
+          }
+        }
+
         // Se a questão atual está rodando, verifica se o aluno reconectando já tem resposta gravada no DB
         if (room.currentQuestion) {
           studentAnswer = await prisma.answer.findFirst({
@@ -439,7 +533,10 @@ app.prepare().then(() => {
         raffleWinnerId: room.raffleWinnerId,
         questionEndedData: room.questionEndedData,
         answeredStudentIds: room.answeredStudentIds || [],
-        restoredAnswer: studentAnswer ? { alternativa: studentAnswer.alternativa, isCorrect: studentAnswer.isCorrect } : null
+        restoredAnswer: studentAnswer ? { alternativa: studentAnswer.alternativa, isCorrect: studentAnswer.isCorrect } : null,
+        isTeamCompetition: room.isTeamCompetition,
+        teams: room.teams,
+        studentTeams: room.studentTeams
       });
 
       // Broadcast padrão para os outros membros da sala
@@ -452,12 +549,14 @@ app.prepare().then(() => {
         isPaused: room.isPaused,
         raffleWinnerId: room.raffleWinnerId,
         questionEndedData: room.questionEndedData,
-        answeredStudentIds: room.answeredStudentIds || []
+        answeredStudentIds: room.answeredStudentIds || [],
+        isTeamCompetition: room.isTeamCompetition,
+        teams: room.teams,
+        studentTeams: room.studentTeams
       });
       
-      // Envia o ranking atual para quem acabou de entrar
-      const currentRanking = Object.values(room.studentScores).sort((a, b) => b.score - a.score);
-      io.to(roomCode).emit('ranking_update', { ranking: currentRanking });
+      // Envia o ranking atual e equipes
+      emitRankingAndTeams(io, roomCode, room);
     });
 
     // Instructor starts simulado
@@ -475,8 +574,12 @@ app.prepare().then(() => {
           timeLeft: room.timeLeft,
           isPaused: room.isPaused,
           raffleWinnerId: room.raffleWinnerId,
-          questionEndedData: room.questionEndedData
+          questionEndedData: room.questionEndedData,
+          isTeamCompetition: room.isTeamCompetition,
+          teams: room.teams,
+          studentTeams: room.studentTeams
         });
+        emitRankingAndTeams(io, roomCode, room);
       }
     });
 
@@ -494,8 +597,12 @@ app.prepare().then(() => {
           timeLeft: room.timeLeft,
           isPaused: room.isPaused,
           raffleWinnerId: room.raffleWinnerId,
-          questionEndedData: room.questionEndedData
+          questionEndedData: room.questionEndedData,
+          isTeamCompetition: room.isTeamCompetition,
+          teams: room.teams,
+          studentTeams: room.studentTeams
         });
+        emitRankingAndTeams(io, roomCode, room);
       }
     });
 
@@ -748,8 +855,7 @@ app.prepare().then(() => {
           answersByAlt
         });
         
-        const ranking = Object.values(room.studentScores).sort((a, b) => b.score - a.score);
-        io.to(roomCode).emit('ranking_update', { ranking });
+        emitRankingAndTeams(io, roomCode, room);
         
         if (room.pendingNotifications && room.pendingNotifications.length > 0) {
           io.to(roomCode).emit('streak_notifications', { notifications: room.pendingNotifications });
@@ -915,9 +1021,52 @@ app.prepare().then(() => {
       const currentSimuladoId = room.currentQuestion.simuladoId;
       checkAndUnlockBadges(studentId, io, currentSimuladoId);
 
-      // Envia o ranking atualizado em tempo real para todos os alunos
-      const currentRanking = Object.values(room.studentScores).sort((a: any, b: any) => b.score - a.score);
-      io.to(roomCode).emit('ranking_update', { ranking: currentRanking });
+      // Envia o ranking e equipes atualizados em tempo real
+      emitRankingAndTeams(io, roomCode, room);
+    });
+
+    // Instructor reassigns student manually to a team
+    socket.on('reassign_student_team', async ({ roomCode, studentId, targetTeamId }) => {
+      const room = rooms.get(roomCode);
+      if (room && room.isTeamCompetition && room.teams) {
+        if (room.teams.some(t => t.id === targetTeamId)) {
+          if (!room.studentTeams) room.studentTeams = {};
+          room.studentTeams[studentId] = targetTeamId;
+          if (room.simuladoId) {
+            await prisma.simulado.update({
+              where: { id: room.simuladoId },
+              data: { studentTeams: JSON.stringify(room.studentTeams) }
+            }).catch(err => console.error("Error updating DB studentTeams on reassign:", err));
+          }
+          emitRankingAndTeams(io, roomCode, room);
+        }
+      }
+    });
+
+    // Instructor automatically shuffles/rebalances all students into teams
+    socket.on('shuffle_teams', async ({ roomCode }) => {
+      const room = rooms.get(roomCode);
+      if (room && room.isTeamCompetition && room.teams && room.teams.length > 0) {
+        const allStudentIds = Object.keys(room.studentScores);
+        // Shuffle
+        for (let i = allStudentIds.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allStudentIds[i], allStudentIds[j]] = [allStudentIds[j], allStudentIds[i]];
+        }
+        if (!room.studentTeams) room.studentTeams = {};
+        allStudentIds.forEach((sId, index) => {
+          const targetTeam = room!.teams![index % room!.teams!.length];
+          room!.studentTeams![sId] = targetTeam.id;
+        });
+
+        if (room.simuladoId) {
+          await prisma.simulado.update({
+            where: { id: room.simuladoId },
+            data: { studentTeams: JSON.stringify(room.studentTeams) }
+          }).catch(err => console.error("Error updating DB studentTeams on shuffle:", err));
+        }
+        emitRankingAndTeams(io, roomCode, room);
+      }
     });
 
     // Instructor ends simulado
@@ -929,8 +1078,7 @@ app.prepare().then(() => {
         await prisma.simulado.update({ where: { id: simuladoId }, data: { status: 'FINISHED' } });
         
         // Garante que o último estado do ranking seja enviado antes de deletar a sala
-        const ranking = Object.values(room.studentScores).sort((a: any, b: any) => b.score - a.score);
-        io.to(roomCode).emit('ranking_update', { ranking });
+        emitRankingAndTeams(io, roomCode, room);
         
         io.to(roomCode).emit('simulado_ended');
         rooms.delete(roomCode); // Limpa da memória
