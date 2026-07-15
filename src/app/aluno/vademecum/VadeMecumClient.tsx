@@ -183,28 +183,28 @@ export default function VadeMecumClient({
       `}</style>
 
       {/* Header (no-print) */}
-      <header className="no-print bg-slate-900/60 border-b border-slate-800/80 px-6 py-4 flex items-center justify-between backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-4">
+      <header className="no-print bg-slate-900/60 border-b border-slate-800/80 px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/aluno/painel">
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white border border-slate-800 bg-slate-950/40 hover:bg-slate-900 rounded-lg cursor-pointer">
-              <ArrowLeft className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white border border-slate-800 bg-slate-950/40 hover:bg-slate-900 rounded-lg cursor-pointer h-9 w-9 sm:h-10 sm:w-10">
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </Link>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-500/15 border border-blue-400/30 text-blue-400">
-              <BookOpen className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/15 border border-blue-400/30 text-blue-400">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h1 className="text-lg font-black uppercase tracking-wider text-white">Vade Mecum PUMA</h1>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Resumo Temático & Doutrina de Estudos</p>
+              <h1 className="text-sm sm:text-lg font-black uppercase tracking-wider text-white">Vade Mecum PUMA</h1>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest hidden sm:block">Resumo Temático & Doutrina de Estudos</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <HeaderAvatar initials={user.name.substring(0, 2).toUpperCase()} avatarUrl={user.avatarUrl} />
           <form action={logout}>
-            <Button type="submit" variant="ghost" className="text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider border border-slate-800 bg-slate-950/40 hover:bg-red-950/20 rounded-lg h-10 px-3 cursor-pointer">
+            <Button type="submit" variant="ghost" className="text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider border border-slate-800 bg-slate-950/40 hover:bg-red-950/20 rounded-lg h-9 sm:h-10 px-2.5 sm:px-3 cursor-pointer">
               Sair
             </Button>
           </form>

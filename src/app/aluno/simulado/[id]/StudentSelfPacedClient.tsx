@@ -161,11 +161,11 @@ export default function StudentSelfPacedClient({
             </div>
             <div>
               <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest block">Treinamento de Combate</h2>
-              <h1 className="text-lg font-bold text-white truncate max-w-md">{simulado.apostilaName}</h1>
+              <h1 className="text-lg font-bold text-white truncate max-w-[calc(100vw-120px)] sm:max-w-md">{simulado.apostilaName}</h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
             {/* Sair do Simulado */}
             <Button
               variant="ghost"

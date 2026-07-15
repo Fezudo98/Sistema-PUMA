@@ -294,39 +294,39 @@ export default function ChatClient({
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-slate-200">
       {/* Top Header Bar */}
-      <header className="h-20 border-b border-slate-900 bg-slate-900/50 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-3">
+      <header className="h-20 border-b border-slate-900 bg-slate-900/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => router.push("/aluno/painel")}
-            className="text-slate-400 hover:text-white rounded-lg border border-slate-850 hover:bg-slate-800"
+            className="text-slate-400 hover:text-white rounded-lg border border-slate-850 hover:bg-slate-800 h-9 w-9 sm:h-10 sm:w-10"
             title="Voltar ao painel inicial"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <div className="w-10 h-10 rounded-xl bg-blue-950 border border-blue-500/30 flex items-center justify-center">
-            <Bot className="w-5 h-5 text-blue-400" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-950 border border-blue-500/30 flex items-center justify-center shrink-0">
+            <Bot className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-blue-400" />
           </div>
           <div>
-            <h1 className="text-sm font-black uppercase tracking-wider text-white">Mentoria de Estudos por Apostila</h1>
+            <h1 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white truncate max-w-[150px] xs:max-w-[200px] sm:max-w-none">Mentoria de Estudos por Apostila</h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Base de Operações Online</span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden xs:block">Base de Operações Online</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
             onClick={handleClearChat}
             disabled={clearing || !selectedApostilaId || messages.length === 0}
-            className="h-10 px-3.5 border border-slate-900 hover:border-red-900/40 hover:bg-red-950/20 text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+            className="h-9 sm:h-10 px-2.5 sm:px-3.5 border border-slate-900 hover:border-red-900/40 hover:bg-red-950/20 text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
             title="Limpar conversa"
           >
-            {clearing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Trash2 className="w-3.5 h-3.5 mr-1.5" />}
-            Limpar Histórico
+            {clearing ? <Loader2 className="w-3.5 h-3.5 animate-spin sm:mr-1.5" /> : <Trash2 className="w-3.5 h-3.5 sm:mr-1.5" />}
+            <span className="hidden sm:inline">Limpar Histórico</span>
           </Button>
         </div>
       </header>
