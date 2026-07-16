@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { createHash } from "crypto";
+
+// 1. Cache L1 de Curto Prazo (10 minutos) para evitar requisições idênticas ou cliques duplos
+const generationCache = new Map<string, { timestamp: number; questions: any[] }>();
+
+// 2. Cooldown Tracker de Chaves e Modelos em Memória (45 segundos de descanso em caso de erro 429)
+const keyModelCooldowns = new Map<string, number>();
+
+function isRateLimitError(errorMsg: string): boolean {
+  if (!errorMsg) return false;
+  const lower = errorMsg.toLowerCase();
+  return lower.includes("429") || lower.includes("too many requests") || lower.includes("quota") || lower.includes("exhausted");
+}
 
 // O SDK do Gemini será instanciado dentro da rota para suportar a chave de fallback
 
@@ -128,6 +141,19 @@ export async function POST(req: NextRequest) {
     O nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
     Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 
+    const cacheKeyString = `${apostilaId || "upload"}_${qtd}_${dificuldade}_${topics || ""}_${base64Data.slice(0, 200)}_${base64Data.length}`;
+    const cacheKey = createHash("sha256").update(cacheKeyString).digest("hex");
+
+    if (generationCache.has(cacheKey)) {
+      const cached = generationCache.get(cacheKey)!;
+      if (Date.now() - cached.timestamp < 10 * 60 * 1000) {
+        console.log("Retornando simulado direto do Cache L1 (0 RPM gasta)...");
+        return NextResponse.json({ questions: cached.questions });
+      } else {
+        generationCache.delete(cacheKey);
+      }
+    }
+
     const generateWithFallback = async (content: any[]) => {
       const primaryKey = process.env.GEMINI_API_KEY || "";
       const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
@@ -146,26 +172,47 @@ export async function POST(req: NextRequest) {
           generationConfig: genConfig.generationConfig
         };
         
-        try {
-          const genAI = new GoogleGenerativeAI(primaryKey);
-          const model = genAI.getGenerativeModel(dynamicGenConfig as any);
-          return await model.generateContent(content);
-        } catch (error: any) {
-          console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
-          
-          if (fallbackKey) {
-            console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
-            try {
-              const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-              const fallbackModel = fallbackGenAI.getGenerativeModel(dynamicGenConfig as any);
-              return await fallbackModel.generateContent(content);
-            } catch (fallbackError: any) {
-              console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
+        const primaryCooldownKey = `primary_${modelVersion}`;
+        const fallbackCooldownKey = `fallback_${modelVersion}`;
+        const now = Date.now();
+
+        // 1. Tentar Chave Principal (se não estiver em repouso por erro 429 recente)
+        if (primaryKey && (!keyModelCooldowns.has(primaryCooldownKey) || now > keyModelCooldowns.get(primaryCooldownKey)!)) {
+          try {
+            const genAI = new GoogleGenerativeAI(primaryKey);
+            const model = genAI.getGenerativeModel(dynamicGenConfig as any);
+            return await model.generateContent(content);
+          } catch (error: any) {
+            console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
+            if (isRateLimitError(error.message)) {
+              console.warn(`[Cooldown] Chave principal em repouso por 45s no modelo ${modelVersion}.`);
+              keyModelCooldowns.set(primaryCooldownKey, Date.now() + 45_000);
             }
           }
+        } else if (primaryKey) {
+          console.log(`[Cooldown] Chave principal em repouso no modelo ${modelVersion}. Pulando para fallback...`);
+        }
+
+        // 2. Tentar Chave Fallback (se não estiver em repouso por erro 429 recente)
+        if (fallbackKey && (!keyModelCooldowns.has(fallbackCooldownKey) || now > keyModelCooldowns.get(fallbackCooldownKey)!)) {
+          console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
+          try {
+            const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
+            const fallbackModel = fallbackGenAI.getGenerativeModel(dynamicGenConfig as any);
+            return await fallbackModel.generateContent(content);
+          } catch (fallbackError: any) {
+            console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
+            if (isRateLimitError(fallbackError.message)) {
+              console.warn(`[Cooldown] Chave fallback em repouso por 45s no modelo ${modelVersion}.`);
+              keyModelCooldowns.set(fallbackCooldownKey, Date.now() + 45_000);
+            }
+          }
+        } else if (fallbackKey) {
+          console.log(`[Cooldown] Chave fallback em repouso no modelo ${modelVersion}.`);
         }
       }
-      throw new Error("Todas as versões do modelo Gemini falharam.");
+
+      throw new Error("Todas as versões do modelo Gemini atingiram o limite temporário (429) ou estão indisponíveis. Aguarde 30 segundos e tente novamente.");
     };
 
     // Envia o prompt de texto JUNTO com o arquivo PDF em base64 nativamente!
@@ -196,6 +243,8 @@ export async function POST(req: NextRequest) {
       correta: q.correta,
       justificativa: cleanLatex(q.justificativa)
     }));
+
+    generationCache.set(cacheKey, { timestamp: Date.now(), questions: cleanedQuestions });
 
     return NextResponse.json({ questions: cleanedQuestions });
 
