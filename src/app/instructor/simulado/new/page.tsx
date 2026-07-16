@@ -68,44 +68,49 @@ export default function NovoSimulado() {
     if (selectedApostilaId === "upload" && !file) return alert("Selecione um arquivo PDF.");
 
     setLoading(true);
-    const formData = new FormData();
-    let nameOfApostila = "";
-    
-    if (selectedApostilaId === "upload") {
-      formData.append("pdf", file as File);
-      nameOfApostila = file ? file.name : "Upload";
-      
-      // Se for um novo arquivo e marcou para salvar
-      if (saveApostila) {
-        try {
-          const uploadData = new FormData();
-          uploadData.append("pdf", file as File);
-          await fetch("/api/apostilas", { method: "POST", body: uploadData });
-        } catch (err) {
-          console.error("Erro ao salvar apostila:", err);
-        }
-      }
-    } else {
-      formData.append("apostilaId", selectedApostilaId);
-      const apoObj = apostilas.find(a => a.id === selectedApostilaId);
-      nameOfApostila = apoObj ? apoObj.title : "Apostila";
-    }
-
-    formData.append("qtd", qtd);
-    formData.append("dificuldade", dificuldade);
-    formData.append("tempo", tempo);
-    formData.append("topics", topics);
-
     try {
+      const formData = new FormData();
+      let nameOfApostila = "";
+      
+      if (selectedApostilaId === "upload") {
+        formData.append("pdf", file as File);
+        nameOfApostila = file ? file.name : "Upload";
+        
+        // Se for um novo arquivo e marcou para salvar
+        if (saveApostila) {
+          try {
+            const uploadData = new FormData();
+            uploadData.append("pdf", file as File);
+            await fetch("/api/apostilas", { method: "POST", body: uploadData });
+          } catch (err) {
+            console.error("Erro ao salvar apostila:", err);
+          }
+        }
+      } else {
+        formData.append("apostilaId", selectedApostilaId);
+        const apoObj = apostilas.find(a => a.id === selectedApostilaId);
+        nameOfApostila = apoObj ? apoObj.title : "Apostila";
+      }
+
+      formData.append("qtd", qtd);
+      formData.append("dificuldade", dificuldade);
+      formData.append("tempo", tempo);
+      formData.append("topics", topics);
+
       const response = await fetch("/api/generate", {
         method: "POST",
         body: formData
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error(`Erro do servidor (${response.status}): o processamento demorou muito ou retornou resposta inválida.`);
+      }
       
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao gerar questões.");
+        throw new Error(data?.error || "Erro ao gerar questões.");
       }
 
       localStorage.setItem("generated_questions", JSON.stringify(data.questions));
@@ -121,7 +126,7 @@ export default function NovoSimulado() {
       
       router.push("/instructor/simulado/review");
     } catch (err: any) {
-      alert("Erro: " + err.message);
+      alert("Erro ao gerar questões: " + (err.message || "Falha desconhecida."));
       setLoading(false);
     }
   };
@@ -345,7 +350,7 @@ export default function NovoSimulado() {
                     </>
                   ) : (
                     <>
-                      <Settings className="w-5 h-5 mr-2 text-white animate-spin" />
+                      <Settings className="w-5 h-5 mr-2 text-white" />
                       Processar e Gerar Questões
                     </>
                   )}
