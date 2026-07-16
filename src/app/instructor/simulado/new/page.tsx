@@ -126,8 +126,8 @@ export default function NovoSimulado() {
       
       router.push("/instructor/simulado/review");
     } catch (err: any) {
-      alert("Erro ao gerar questões: " + (err.message || "Falha desconhecida."));
       setLoading(false);
+      alert("Erro ao gerar questões: " + (err.message || "Falha desconhecida."));
     }
   };
   return (
