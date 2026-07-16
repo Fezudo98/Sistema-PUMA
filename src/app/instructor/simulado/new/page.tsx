@@ -39,9 +39,14 @@ export default function NovoSimulado() {
 
   const handleTeamCountChange = (count: number) => {
     setTeamCount(count);
-    const newNames = [...teamNames];
+    const defaultNames = ["Equipe Alpha", "Equipe Bravo", "Equipe Charlie", "Equipe Delta", "Equipe Echo", "Equipe Foxtrot", "Equipe Golf", "Equipe Hotel"];
+    const newNames = teamNames.map((name, idx) => {
+      if (name === `Equipe ${idx + 1}` && defaultNames[idx]) {
+        return defaultNames[idx];
+      }
+      return name;
+    });
     while (newNames.length < count) {
-      const defaultNames = ["Equipe Alpha", "Equipe Bravo", "Equipe Charlie", "Equipe Delta", "Equipe Echo", "Equipe Foxtrot"];
       newNames.push(defaultNames[newNames.length] || `Equipe ${newNames.length + 1}`);
     }
     setTeamNames(newNames.slice(0, count));

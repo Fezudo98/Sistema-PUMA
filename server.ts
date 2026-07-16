@@ -406,9 +406,10 @@ app.prepare().then(() => {
         if (isTeamCompetition && dbSimulado?.teamNames) {
           try {
             const parsedNames: string[] = JSON.parse(dbSimulado.teamNames);
+            const defaultNames = ["Equipe Alpha", "Equipe Bravo", "Equipe Charlie", "Equipe Delta", "Equipe Echo", "Equipe Foxtrot", "Equipe Golf", "Equipe Hotel"];
             teams = parsedNames.map((name, idx) => ({
               id: `team_${idx}`,
-              name: name || `Equipe ${idx + 1}`,
+              name: (name && name !== `Equipe ${idx + 1}`) ? name : (defaultNames[idx] || `Equipe ${idx + 1}`),
               color: TEAM_COLORS[idx % TEAM_COLORS.length].color,
               bg: TEAM_COLORS[idx % TEAM_COLORS.length].bg,
               border: TEAM_COLORS[idx % TEAM_COLORS.length].border,
