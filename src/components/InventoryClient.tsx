@@ -366,112 +366,114 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
           )}
         </div>
 
-        {/* Modal / Formulário Inserido na Tela para Adicionar ou Editar Item */}
+        {/* Modal / Overlay Flutuante para Adicionar ou Editar Item (Aparece centralizado onde o usuário estiver) */}
         {(isAdding || editingItem) && (
-          <form onSubmit={isAdding ? handleSaveAdd : handleSaveEdit} className="bg-slate-950 border-2 border-blue-500/50 p-6 rounded-2xl shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-              <h3 className="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
-                {isAdding ? <PlusCircle className="w-5 h-5 text-blue-400" /> : <Edit className="w-5 h-5 text-amber-400" />}
-                {isAdding ? "Cadastrar Novo Item na Sala" : `Editar Item [${editingItem?.codigo}] - ${editingItem?.descricao}`}
-              </h3>
-              <button
-                type="button"
-                onClick={() => { setIsAdding(false); setEditingItem(null); }}
-                className="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Categoria</label>
-                <input
-                  type="text"
-                  list="categorias-list"
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                  placeholder="Ex: Equipamentos"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
-                />
-                <datalist id="categorias-list">
-                  <option value="Equipamentos" />
-                  <option value="Eletrodomésticos" />
-                  <option value="Móveis" />
-                  <option value="Material de Limpeza" />
-                  <option value="Outros" />
-                </datalist>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Descrição do Item</label>
-                <input
-                  type="text"
-                  value={formData.descricao}
-                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                  placeholder="Ex: Simulacro de Fuzil, Capa tática, Ventilador..."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Quantidade</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={formData.quantidade}
-                  onChange={(e) => setFormData({ ...formData, quantidade: parseInt(e.target.value) || 1 })}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-bold"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Estado</label>
-                <select
-                  value={formData.estado}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <form onSubmit={isAdding ? handleSaveAdd : handleSaveEdit} className="bg-slate-950 border-2 border-blue-500/60 p-6 rounded-2xl shadow-[0_0_50px_rgba(37,99,235,0.3)] max-w-2xl w-full space-y-5 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+                <h3 className="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  {isAdding ? <PlusCircle className="w-5 h-5 text-blue-400 shrink-0" /> : <Edit className="w-5 h-5 text-amber-400 shrink-0" />}
+                  <span>{isAdding ? "Cadastrar Novo Item na Sala" : `Editar Item [#${editingItem?.codigo}] - ${editingItem?.descricao}`}</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => { setIsAdding(false); setEditingItem(null); }}
+                  className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
                 >
-                  <option value="Novo">Novo</option>
-                  <option value="Bom">Bom</option>
-                  <option value="Regular">Regular</option>
-                  <option value="Danificado">Danificado</option>
-                  <option value="Em Manutenção">Em Manutenção</option>
-                </select>
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Observações / Detalhes</label>
-                <input
-                  type="text"
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                  placeholder="Ex: Jarro danificado, Faltando parafuso, Na estante superior..."
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
-                />
-              </div>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Categoria</label>
+                  <input
+                    type="text"
+                    list="categorias-list"
+                    value={formData.categoria}
+                    onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                    placeholder="Ex: Equipamentos"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                  <datalist id="categorias-list">
+                    <option value="Equipamentos" />
+                    <option value="Eletrodomésticos" />
+                    <option value="Móveis" />
+                    <option value="Material de Limpeza" />
+                    <option value="Outros" />
+                  </datalist>
+                </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => { setIsAdding(false); setEditingItem(null); }}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-7 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
-              >
-                <Check className="w-4 h-4" />
-                {saving ? "Salvando..." : isAdding ? "Confirmar Cadastro" : "Salvar Alterações"}
-              </button>
-            </div>
-          </form>
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Estado</label>
+                  <select
+                    value={formData.estado}
+                    onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Novo">Novo</option>
+                    <option value="Bom">Bom</option>
+                    <option value="Regular">Regular</option>
+                    <option value="Danificado">Danificado</option>
+                    <option value="Em Manutenção">Em Manutenção</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Descrição do Item</label>
+                  <input
+                    type="text"
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                    placeholder="Ex: Simulacro de Fuzil, Capa tática, Ventilador..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                    required
+                  />
+                </div>
+
+                <div className="sm:col-span-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Quantidade</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.quantidade}
+                    onChange={(e) => setFormData({ ...formData, quantidade: parseInt(e.target.value) || 1 })}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-bold"
+                    required
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Observações / Detalhes</label>
+                  <input
+                    type="text"
+                    value={formData.observacoes}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    placeholder="Ex: Jarro danificado, Faltando parafuso, Na estante superior..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => { setIsAdding(false); setEditingItem(null); }}
+                  className="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-7 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Check className="w-4 h-4" />
+                  {saving ? "Salvando..." : isAdding ? "Confirmar Cadastro" : "Salvar Alterações"}
+                </button>
+              </div>
+            </form>
+          </div>
         )}
 
         {/* Conteúdo da Aba 1: Tabela para Desktop/Tablet e Cards para Celular */}
