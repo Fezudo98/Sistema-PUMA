@@ -97,3 +97,29 @@ model SystemSetting {
   key   String @id
   value String
 }
+
+model InventoryItem {
+  id          String   @id @default(uuid())
+  codigo      Int      @unique
+  categoria   String   // Equipamentos, Eletrodomésticos, Móveis, Material de Limpeza, Outros
+  descricao   String
+  quantidade  Int      @default(1)
+  estado      String   @default("Bom") // Novo | Bom | Regular | Danificado | Em Manutenção
+  observacoes String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  histories   InventoryHistory[]
+}
+
+model InventoryHistory {
+  id           String        @id @default(uuid())
+  itemId       String?
+  item         InventoryItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  itemDesc     String        // Salvo para auditoria mesmo que o item seja removido
+  userId       String
+  userName     String        // Nome/QRA do usuário que alterou
+  userRole     String        // INSTRUCTOR | STUDENT
+  actionType   String        // CREATE | UPDATE | DELETE
+  changeDetail String        // Detalhe da mudança ("Alterou Estado de Bom para Danificado", etc.)
+  createdAt    DateTime      @default(now())
+}

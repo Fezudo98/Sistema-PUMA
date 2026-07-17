@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, FileText } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, FileText, Package } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import Link from "next/link";
@@ -359,7 +359,13 @@ export default function StudentDashboardClient({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full md:w-auto shrink-0">
+            <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full md:w-auto shrink-0 flex-wrap justify-end">
+              <Link href="/aluno/inventario" className="w-full sm:w-auto">
+                <Button className="w-full h-14 px-5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                  <Package className="w-4 h-4 text-emerald-400" />
+                  Inventário 32º PEL
+                </Button>
+              </Link>
               <Link href="/aluno/vademecum" className="w-full sm:w-auto">
                 <Button className="w-full h-14 px-6 bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4 text-blue-400" />
