@@ -192,6 +192,18 @@ export async function checkAndGenerateDailySimulados() {
           return { success: true, message: "Nenhuma apostila ativa cadastrada." };
         }
 
+        // Buscar nomes reais dos alunos para contextualização no prompt
+        let studentNames: string[] = [];
+        try {
+          const students = await prisma.user.findMany({
+            where: { role: "STUDENT" },
+            select: { name: true }
+          });
+          studentNames = Array.from(new Set(students.map((s: any) => s.name.trim()).filter(Boolean)));
+        } catch (dbErr) {
+          console.error("[DAILY CHECK] Erro ao buscar alunos para o prompt:", dbErr);
+        }
+
         // 2. Definir o início e fim do dia atual (UTC-3 ou fuso local do servidor)
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
@@ -248,8 +260,8 @@ export async function checkAndGenerateDailySimulados() {
               }
             };
 
-            // 5. Montar prompt com as regras avançadas
-            const prompt = `Você é um instrutor especialista elaborando um simulado.
+            // 5. Montar prompt com as regras avançadas e contextualização de alunos
+            let prompt = `Você é um instrutor especialista elaborando um simulado.
 Analise o documento PDF em anexo rigorosamente.
 
 Crie exatamente 25 questões de múltipla escolha utilizando EXCLUSIVAMENTE o conteúdo DIDÁTICO e TÉCNICO contido no PDF (os assuntos centrais que serão cobrados em prova).
@@ -260,9 +272,14 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
 3. FOCO TÉCNICO: NUNCA elabore questões sobre metadados do documento (ignore nomes de autores, diretores, reitores, ficha catalográfica, histórico de edições ou índices). Foque apenas na matéria/teoria militar e policial.
 4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
 5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
-6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
+6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.`;
 
-O nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
+            if (studentNames.length > 0) {
+              const shuffledNames = [...studentNames].sort(() => 0.5 - Math.random()).slice(0, 10);
+              prompt += `\n7. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 ou 2 questões deste simulado de 25 questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais do pelotão: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
+            }
+
+            prompt += `\n\nO nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
 Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 
             const result = await generateWithFallback([prompt, pdfPart]);
