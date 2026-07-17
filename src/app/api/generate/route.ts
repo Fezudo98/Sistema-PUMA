@@ -155,8 +155,12 @@ export async function POST(req: NextRequest) {
     }
 
     const generateWithFallback = async (content: any[]) => {
-      const primaryKey = process.env.GEMINI_API_KEY || "";
-      const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
+      const apiKeys = [
+        { label: "principal", key: process.env.GEMINI_API_KEY || "" },
+        { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
+        { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" }
+      ].filter(k => Boolean(k.key));
+
       const modelVersions = [
         "gemini-pro-latest",
         "gemini-3.5-flash",
@@ -172,43 +176,28 @@ export async function POST(req: NextRequest) {
           generationConfig: genConfig.generationConfig
         };
         
-        const primaryCooldownKey = `primary_${modelVersion}`;
-        const fallbackCooldownKey = `fallback_${modelVersion}`;
         const now = Date.now();
 
-        // 1. Tentar Chave Principal (se não estiver em repouso por erro 429 recente)
-        if (primaryKey && (!keyModelCooldowns.has(primaryCooldownKey) || now > keyModelCooldowns.get(primaryCooldownKey)!)) {
-          try {
-            const genAI = new GoogleGenerativeAI(primaryKey);
-            const model = genAI.getGenerativeModel(dynamicGenConfig as any);
-            return await model.generateContent(content);
-          } catch (error: any) {
-            console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
-            if (isRateLimitError(error.message)) {
-              console.warn(`[Cooldown] Chave principal em repouso por 45s no modelo ${modelVersion}.`);
-              keyModelCooldowns.set(primaryCooldownKey, Date.now() + 45_000);
+        for (const { label, key } of apiKeys) {
+          const cooldownKey = `${label}_${modelVersion}`;
+          if (!keyModelCooldowns.has(cooldownKey) || now > keyModelCooldowns.get(cooldownKey)!) {
+            if (label !== "principal") {
+              console.log(`Tentando chave ${label} com modelo ${modelVersion}...`);
             }
-          }
-        } else if (primaryKey) {
-          console.log(`[Cooldown] Chave principal em repouso no modelo ${modelVersion}. Pulando para fallback...`);
-        }
-
-        // 2. Tentar Chave Fallback (se não estiver em repouso por erro 429 recente)
-        if (fallbackKey && (!keyModelCooldowns.has(fallbackCooldownKey) || now > keyModelCooldowns.get(fallbackCooldownKey)!)) {
-          console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
-          try {
-            const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-            const fallbackModel = fallbackGenAI.getGenerativeModel(dynamicGenConfig as any);
-            return await fallbackModel.generateContent(content);
-          } catch (fallbackError: any) {
-            console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
-            if (isRateLimitError(fallbackError.message)) {
-              console.warn(`[Cooldown] Chave fallback em repouso por 45s no modelo ${modelVersion}.`);
-              keyModelCooldowns.set(fallbackCooldownKey, Date.now() + 45_000);
+            try {
+              const genAI = new GoogleGenerativeAI(key);
+              const model = genAI.getGenerativeModel(dynamicGenConfig as any);
+              return await model.generateContent(content);
+            } catch (error: any) {
+              console.warn(`Chave ${label} falhou com modelo ${modelVersion}:`, error.message);
+              if (isRateLimitError(error.message)) {
+                console.warn(`[Cooldown] Chave ${label} em repouso por 45s no modelo ${modelVersion}.`);
+                keyModelCooldowns.set(cooldownKey, Date.now() + 45_000);
+              }
             }
+          } else {
+            console.log(`[Cooldown] Chave ${label} em repouso no modelo ${modelVersion}. Pulando...`);
           }
-        } else if (fallbackKey) {
-          console.log(`[Cooldown] Chave fallback em repouso no modelo ${modelVersion}.`);
         }
       }
 
