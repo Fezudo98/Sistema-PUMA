@@ -18,6 +18,13 @@ const getLocalIPs = () => {
 const nextConfig: NextConfig = {
   // @ts-ignore - Permite HMR (Hot Module Replacement) e acesso via celular na rede local
   allowedDevOrigins: getLocalIPs(),
+  // Otimização para VPS com pouca RAM (evita OOM Killer "Killed" ao rodar verificação do TypeScript no servidor)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
