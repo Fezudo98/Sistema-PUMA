@@ -63,6 +63,7 @@ model Answer {
   isCorrect   Boolean
   pontuacao   Int
   isRaffle    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
 model Apostila {

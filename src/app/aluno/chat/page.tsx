@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import { getUser } from "@/app/actions/auth";
 import ChatClient from "./ChatClient";
+import { computeStudentPerformanceStats } from "@/lib/stats";
 
 const prisma = new PrismaClient();
 
@@ -27,7 +28,7 @@ export default async function AlunoChatPage() {
     redirect("/api/auth/force-logout");
   }
 
-  // Calculate stats from completed simulados
+  // Calculate stats from completed simulados using reusable stats engine
   const answers = await prisma.answer.findMany({
     where: { studentId: user.userId },
     include: {
@@ -40,42 +41,12 @@ export default async function AlunoChatPage() {
       }
     }
   });
-  const totalQuestions = answers.length;
-  
-  const simuladoStatsMap = new Map<string, { expectedQ: number; answeredCount: number; correctAnswers: number; tipo: string; status: string }>();
-  answers.forEach(a => {
-    const simuladoId = a.question.simuladoId;
-    if (!simuladoStatsMap.has(simuladoId)) {
-      const totalQ = a.question.simulado._count.questions || 0;
-      simuladoStatsMap.set(simuladoId, {
-        expectedQ: totalQ,
-        answeredCount: 0,
-        correctAnswers: 0,
-        tipo: (a.question.simulado as any).tipo || "STUDY",
-        status: (a.question.simulado as any).status || "FINISHED"
-      });
-    }
-    const s = simuladoStatsMap.get(simuladoId)!;
-    s.answeredCount++;
-    if (a.isCorrect) s.correctAnswers++;
-  });
-
-  let completedTotalQ = 0;
-  let completedCorrectQ = 0;
-  simuladoStatsMap.forEach(s => {
-    const isFinished = s.tipo === "LIVE" ? s.status === "FINISHED" : true;
-    const isCompleted = isFinished && s.answeredCount >= s.expectedQ && s.expectedQ > 0;
-    if (isCompleted) {
-      completedTotalQ += s.expectedQ;
-      completedCorrectQ += s.correctAnswers;
-    }
-  });
-
-  const accuracy = completedTotalQ > 0 ? Math.round((completedCorrectQ / completedTotalQ) * 100) : (totalQuestions > 0 ? Math.round((answers.filter(a => a.isCorrect).length / totalQuestions) * 100) : 0);
-  
+  const perf = computeStudentPerformanceStats(answers, user.userId);
   const stats = {
-    totalQuestions,
-    accuracy,
+    totalQuestions: perf.totalAnswers,
+    accuracy: perf.accuracy,
+    streakDays: perf.streakDays,
+    todayPoints: perf.todayPoints
   };
 
   // Load active booklets

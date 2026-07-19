@@ -1,6 +1,7 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
+import { computeStudentPerformanceStats } from "@/lib/stats";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
@@ -230,38 +231,9 @@ export async function sendChatMessageAction(content: string, apostilaId: string)
           }
         }
       });
-      const totalAnswers = stats.length;
-      
-      const simuladoStatsMap = new Map<string, { expectedQ: number; answeredCount: number; correctAnswers: number; tipo: string; status: string }>();
-      stats.forEach(a => {
-        const simuladoId = a.question.simuladoId;
-        if (!simuladoStatsMap.has(simuladoId)) {
-          const totalQ = a.question.simulado._count.questions || 0;
-          simuladoStatsMap.set(simuladoId, {
-            expectedQ: totalQ,
-            answeredCount: 0,
-            correctAnswers: 0,
-            tipo: (a.question.simulado as any).tipo || "STUDY",
-            status: (a.question.simulado as any).status || "FINISHED"
-          });
-        }
-        const s = simuladoStatsMap.get(simuladoId)!;
-        s.answeredCount++;
-        if (a.isCorrect) s.correctAnswers++;
-      });
-
-      let completedTotalQ = 0;
-      let completedCorrectQ = 0;
-      simuladoStatsMap.forEach(s => {
-        const isFinished = s.tipo === "LIVE" ? s.status === "FINISHED" : true;
-        const isCompleted = isFinished && s.answeredCount >= s.expectedQ && s.expectedQ > 0;
-        if (isCompleted) {
-          completedTotalQ += s.expectedQ;
-          completedCorrectQ += s.correctAnswers;
-        }
-      });
-
-      const accuracy = completedTotalQ > 0 ? Math.round((completedCorrectQ / completedTotalQ) * 100) : (totalAnswers > 0 ? Math.round((stats.filter(a => a.isCorrect).length / totalAnswers) * 100) : 0);
+      const perf = computeStudentPerformanceStats(stats, user.userId);
+      const totalAnswers = perf.totalAnswers;
+      const accuracy = perf.accuracy;
       
       // Assuntos com erros
       const wrongQuestions = stats.filter(a => !a.isCorrect);
@@ -288,7 +260,7 @@ export async function sendChatMessageAction(content: string, apostilaId: string)
 Suas diretrizes fundamentais:
 1. TOM NATURAL E PRESTATIVO: Fale de forma fluida, amigável e natural (como o ChatGPT ou o Gemini). Não seja grosseiro nem excessivamente rígido.
 2. ATENDIMENTO SOB DEMANDA: Foque 100% no que o aluno pediu. Responda dúvidas, formule questões de prova/teste ou crie materiais de estudo (flashcards, resumos) baseando-se no material fornecido abaixo.
-3. CONTEXTO DE DESEMPENHO SILENCIOSO: Você sabe que o Recruta resolveu ${totalAnswers} questões com aproveitamento de ${accuracy}% (Erros recentes: ${wrongSummary || "nenhum"}). NÃO mencione esses números ou estatísticas a menos que seja questionado diretamente.
+3. CONTEXTO DE DESEMPENHO SILENCIOSO: Você sabe que o Recruta resolveu ${totalAnswers} questões com aproveitamento de ${accuracy}%, está com sequência diária de foguinho de ${perf.streakDays} dia(s) e fez +${perf.todayPoints} pontos hoje (Erros recentes: ${wrongSummary || "nenhum"}). NÃO mencione esses números ou estatísticas a menos que seja questionado diretamente ou para elogiar a sequência no início.
 4. LIMITE DE CONHECIMENTO CRÍTICO E EXCLUSIVO (ATENÇÃO EXTREMA):
    - Você deve se pautar EXCLUSIVAMENTE nas apostilas ativas fornecidas abaixo.
    - NÃO utilize conhecimento prévio seu ou da internet sobre leis, regimentos, portarias, códigos ou matérias de concursos que não estejam explicitamente detalhadas no texto fornecido abaixo.

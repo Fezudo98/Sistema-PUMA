@@ -16,7 +16,9 @@ import {
   MessageSquare,
   Award,
   BookOpenCheck,
-  Lock
+  Lock,
+  Flame,
+  Zap
 } from "lucide-react";
 import { sendChatMessageAction, clearChatHistoryAction, getChatHistoryAction } from "@/app/actions/chat";
 import { formatApostilaTitle } from "@/lib/utils";
@@ -38,6 +40,8 @@ interface ChatClientProps {
   stats: {
     totalQuestions: number;
     accuracy: number;
+    streakDays?: number;
+    todayPoints?: number;
   };
   apostilas: {
     id: string;
@@ -426,6 +430,24 @@ export default function ChatClient({
                   </div>
                   <span className="text-xs font-black text-emerald-400">{stats.accuracy}%</span>
                 </div>
+                {typeof stats.streakDays === 'number' && (
+                  <div className="flex items-center justify-between border-t border-slate-800/80 pt-2">
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-4 h-4 text-orange-500 fill-orange-500/30 animate-pulse" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Foguinho (Diária)</span>
+                    </div>
+                    <span className="text-xs font-black text-orange-400">{stats.streakDays} dias</span>
+                  </div>
+                )}
+                {typeof stats.todayPoints === 'number' && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400/30" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Pontos Hoje</span>
+                    </div>
+                    <span className="text-xs font-black text-yellow-400">+{stats.todayPoints}</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Users, Target, Clock, Trophy, Search, User as UserIcon, KeyRound, Eye, EyeOff, Check, 
-  AlertTriangle, Loader2, MessageSquare, ShieldAlert, ShieldCheck, Lock, Unlock, Bot, Hash
+  AlertTriangle, Loader2, MessageSquare, ShieldAlert, ShieldCheck, Lock, Unlock, Bot, Hash, Flame, Zap
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -21,6 +21,8 @@ type StudentPerformance = {
   accuracy: number;
   totalScore: number;
   avgTime: number;
+  streakDays?: number;
+  todayPoints?: number;
   suspendedUntil?: string | null;
 };
 
@@ -239,10 +241,24 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                 <UserIcon className="w-4 h-4" />
                               </div>
                             )}
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-1">
                               <span className="font-bold text-white uppercase tracking-wider">
                                 {student.numero ? `${String(student.numero).padStart(2, '0')} - ${student.name}` : student.name}
                               </span>
+                              <div className="flex items-center gap-2">
+                                {typeof student.streakDays === 'number' && student.streakDays > 0 && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-950/80 border border-orange-500/40 text-orange-400 font-bold text-[10px]" title="Sequência Diária">
+                                    <Flame className="w-3 h-3 fill-orange-500 text-orange-500" />
+                                    {student.streakDays}d ({student.streakDays * 100} pts)
+                                  </span>
+                                )}
+                                {typeof student.todayPoints === 'number' && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-950/80 border border-yellow-500/40 text-yellow-400 font-bold text-[10px]" title="Pontos hoje (Ao Dia)">
+                                    <Zap className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    +{student.todayPoints} hoje
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>

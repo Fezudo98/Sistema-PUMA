@@ -8,6 +8,7 @@ import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import HeaderAvatar from "@/components/HeaderAvatar";
+import { computeStudentPerformanceStats } from "@/lib/stats";
 import EndSimuladoButton from "./EndSimuladoButton";
 import DeleteSimuladoButton from "./DeleteSimuladoButton";
 import StudentListClient from "./StudentListClient";
@@ -128,56 +129,18 @@ export default async function InstructorDashboard() {
   });
 
   const studentsPerformance = students.map(student => {
-    const totalAnswers = student.answers.length;
-    const correctAnswers = student.answers.filter(a => a.isCorrect).length;
-    
-    // Group answers by simulado to verify complete completion
-    const simuladoStatsMap = new Map<string, { expectedQ: number; answeredCount: number; correctAnswers: number; tipo: string; status: string }>();
-    student.answers.forEach(a => {
-      const simuladoId = a.question.simuladoId;
-      if (!simuladoStatsMap.has(simuladoId)) {
-        const totalQ = (a.question.simulado as any)._count?.questions || 0;
-        const totalRaffle = totalRaffleInSimulado.get(simuladoId) || 0;
-        const studentRaffle = studentRaffleInSimulado.get(`${student.id}_${simuladoId}`) || 0;
-        const otherRaffle = totalRaffle - studentRaffle;
-        const expectedQ = Math.max(0, totalQ - otherRaffle);
-        simuladoStatsMap.set(simuladoId, {
-          expectedQ,
-          answeredCount: 0,
-          correctAnswers: 0,
-          tipo: (a.question.simulado as any).tipo || "STUDY",
-          status: (a.question.simulado as any).status || "FINISHED"
-        });
-      }
-      const sStats = simuladoStatsMap.get(simuladoId)!;
-      sStats.answeredCount++;
-      if (a.isCorrect) sStats.correctAnswers++;
-    });
-
-    let completedTotalQuestions = 0;
-    let completedCorrectAnswers = 0;
-    simuladoStatsMap.forEach(s => {
-      const isFinished = s.tipo === "LIVE" ? s.status === "FINISHED" : true;
-      const isCompleted = isFinished && s.answeredCount >= s.expectedQ && s.expectedQ > 0;
-      if (isCompleted) {
-        completedTotalQuestions += s.expectedQ;
-        completedCorrectAnswers += s.correctAnswers;
-      }
-    });
-
-    const accuracy = completedTotalQuestions > 0 ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100) : 0;
-    const totalScore = student.answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
-    const avgTime = totalAnswers > 0 ? Math.round(student.answers.reduce((acc, curr) => acc + curr.tempoGasto, 0) / totalAnswers) : 0;
-
+    const sPerf = computeStudentPerformanceStats(student.answers, student.id, totalRaffleInSimulado, studentRaffleInSimulado);
     return {
       id: student.id,
       name: student.name,
       numero: (student as any).numero,
       avatarUrl: student.avatarUrl,
-      totalAnswers,
-      accuracy,
-      totalScore,
-      avgTime,
+      totalAnswers: sPerf.totalAnswers,
+      accuracy: sPerf.accuracy,
+      totalScore: sPerf.totalScore,
+      avgTime: sPerf.avgTime,
+      streakDays: sPerf.streakDays,
+      todayPoints: sPerf.todayPoints,
       suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null
     };
   }).sort((a, b) => b.totalScore - a.totalScore); // Sort by highest score

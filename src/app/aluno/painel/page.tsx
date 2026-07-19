@@ -2,6 +2,7 @@ import { getUser } from "@/app/actions/auth";
 import StudentDashboardClient from "./DashboardClient";
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
+import { computeStudentPerformanceStats } from "@/lib/stats";
 
 
 const prisma = new PrismaClient();
@@ -121,39 +122,66 @@ export default async function AlunoPainel() {
       accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
     }));
 
-  const completedTotalQuestions = history.reduce((sum, h) => sum + h.totalQuestions, 0);
-  const completedCorrectAnswers = history.reduce((sum, h) => sum + h.correctAnswers, 0);
-  const accuracy = completedTotalQuestions > 0 ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100) : 0;
+  // Fetch all raffle answers across all students to deduct exclusive questions accurately
+  const allRaffleAnswers = await prisma.answer.findMany({
+    where: { isRaffle: true },
+    select: {
+      studentId: true,
+      question: { select: { simuladoId: true } }
+    }
+  });
+  const totalRaffleInSimulado = new Map<string, number>();
+  const studentRaffleInSimulado = new Map<string, number>();
+  allRaffleAnswers.forEach(ra => {
+    const sId = ra.question.simuladoId;
+    const uId = ra.studentId;
+    totalRaffleInSimulado.set(sId, (totalRaffleInSimulado.get(sId) || 0) + 1);
+    studentRaffleInSimulado.set(`${uId}_${sId}`, (studentRaffleInSimulado.get(`${uId}_${sId}`) || 0) + 1);
+  });
+
+  const perfStats = computeStudentPerformanceStats(answers, user.userId, totalRaffleInSimulado, studentRaffleInSimulado);
 
   const stats = {
     simuladosCount: history.length,
-    totalAnswers,
-    accuracy,
-    avgTime,
-    totalScore,
+    totalAnswers: perfStats.totalAnswers,
+    accuracy: perfStats.accuracy,
+    avgTime: perfStats.avgTime,
+    totalScore: perfStats.totalScore,
+    streakDays: perfStats.streakDays,
+    todayPoints: perfStats.todayPoints,
     history
   };
 
-  // Buscar ranking geral da sala (todos os alunos e suas somas de score)
+  // Buscar ranking geral da sala (todos os alunos com suas sequências, pontos de hoje e totais)
   const dbStudents = await prisma.user.findMany({
     where: { role: "STUDENT" },
     include: {
       answers: {
-        select: {
-          pontuacao: true
+        include: {
+          question: {
+            include: {
+              simulado: {
+                include: {
+                  _count: { select: { questions: true } }
+                }
+              }
+            }
+          }
         }
       }
     }
   });
 
   const generalRanking = dbStudents.map(student => {
-    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
+    const sPerf = computeStudentPerformanceStats(student.answers, student.id, totalRaffleInSimulado, studentRaffleInSimulado);
     return {
       id: student.id,
       name: student.name,
       numero: (student as any).numero || null,
       avatarUrl: student.avatarUrl,
-      totalScore
+      totalScore: sPerf.totalScore,
+      streakDays: sPerf.streakDays,
+      todayPoints: sPerf.todayPoints
     };
   }).sort((a, b) => b.totalScore - a.totalScore);
 

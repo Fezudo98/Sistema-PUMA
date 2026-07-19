@@ -1,6 +1,7 @@
 "use server";
 
 import { PrismaClient } from "@prisma/client";
+import { computeStudentPerformanceStats } from "@/lib/stats";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
@@ -470,24 +471,15 @@ export async function completeSelfPacedSimulado(studentId: string, currentSimula
       if (a.isCorrect) s.correctAnswers++;
     });
 
-    let completedTotalQuestions = 0;
-    let completedCorrectAnswers = 0;
-    let simuladosCount = 0;
     const simuladoGroups: Record<string, typeof student.answers> = {};
-
     simuladoStatsMap.forEach((s, sId) => {
       simuladoGroups[sId] = s.answers;
-      const isFinished = s.tipo === "LIVE" ? s.status === "FINISHED" : true;
-      const isCompleted = isFinished && s.answeredCount >= s.expectedQ && s.expectedQ > 0;
-      if (isCompleted) {
-        simuladosCount++;
-        completedTotalQuestions += s.expectedQ;
-        completedCorrectAnswers += s.correctAnswers;
-      }
     });
 
-    const accuracy = completedTotalQuestions > 0 ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100) : 0;
-    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
+    const sPerf = computeStudentPerformanceStats(student.answers, student.id, otherRaffleCounts);
+    const simuladosCount = sPerf.simuladosCount;
+    const accuracy = sPerf.accuracy;
+    const totalScore = sPerf.totalScore;
     
     let advancedSimuladosCount = 0;
     let hardSimuladosWith70Acc = 0;

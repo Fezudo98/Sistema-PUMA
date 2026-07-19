@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, FileText, Package } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, FileText, Package, Flame } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import Link from "next/link";
@@ -765,7 +765,21 @@ export default function StudentDashboardClient({
                               {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
                             </span>
                           </div>
-                          <span className="font-mono font-black text-xs text-blue-400 ml-2 shrink-0">{aluno.totalScore} pts</span>
+                          <div className="flex items-center gap-2.5 ml-2 shrink-0">
+                            {aluno.streakDays > 0 && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-950/80 border border-orange-500/40 text-orange-400 font-black text-xs shadow-[0_0_8px_rgba(249,115,22,0.2)]" title="Sequência Diária">
+                                <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
+                                {aluno.streakDays}d
+                              </span>
+                            )}
+                            {typeof aluno.todayPoints === 'number' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-950/80 border border-yellow-500/40 text-yellow-400 font-black text-xs" title="Pontos conquistados hoje (Ao Dia)">
+                                <Zap className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                +{aluno.todayPoints} ao dia
+                              </span>
+                            )}
+                            <span className="font-mono font-black text-xs text-blue-400">{aluno.totalScore} pts</span>
+                          </div>
                         </div>
                       );
                     })}
@@ -816,26 +830,38 @@ export default function StudentDashboardClient({
           <div className="lg:col-span-2 space-y-8">
             
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="border-slate-800 bg-slate-900/60 p-4 flex flex-col items-center justify-center text-center">
-                <Award className="w-8 h-8 text-yellow-500 mb-2" />
-                <p className="text-3xl font-black text-white">{stats?.simuladosCount || 0}</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider mt-1">Simulados</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <Card className="border-slate-800 bg-slate-900/60 p-3.5 flex flex-col items-center justify-center text-center">
+                <Award className="w-7 h-7 text-yellow-500 mb-1.5" />
+                <p className="text-2xl font-black text-white">{stats?.simuladosCount || 0}</p>
+                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mt-1">Simulados</p>
               </Card>
-              <Card className="border-slate-800 bg-slate-900/60 p-4 flex flex-col items-center justify-center text-center">
-                <Target className="w-8 h-8 text-blue-500 mb-2" />
-                <p className="text-3xl font-black text-white">{stats?.accuracy || 0}%</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider mt-1">Taxa Global</p>
+              <Card className="border-slate-800 bg-slate-900/60 p-3.5 flex flex-col items-center justify-center text-center">
+                <Target className="w-7 h-7 text-blue-500 mb-1.5" />
+                <p className="text-2xl font-black text-white">{stats?.accuracy || 0}%</p>
+                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mt-1">Taxa Global</p>
               </Card>
-              <Card className="border-slate-800 bg-slate-900/60 p-4 flex flex-col items-center justify-center text-center">
-                <TrendingUp className="w-8 h-8 text-emerald-500 mb-2" />
-                <p className="text-3xl font-black text-emerald-400">{stats?.totalScore || 0}</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider mt-1">Pontos Totais</p>
+              <Card className="border-slate-800 bg-slate-900/60 p-3.5 flex flex-col items-center justify-center text-center">
+                <TrendingUp className="w-7 h-7 text-emerald-500 mb-1.5" />
+                <p className="text-2xl font-black text-emerald-400">{stats?.totalScore || 0}</p>
+                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mt-1">Pontos Totais</p>
               </Card>
-              <Card className="border-slate-800 bg-slate-900/60 p-4 flex flex-col items-center justify-center text-center">
-                <AlertTriangle className="w-8 h-8 text-orange-500 mb-2" />
-                <p className="text-3xl font-black text-white">{stats?.avgTime || 0}s</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider mt-1">Tempo Médio</p>
+              <Card className="border-slate-800 bg-slate-900/60 p-3.5 flex flex-col items-center justify-center text-center">
+                <AlertTriangle className="w-7 h-7 text-orange-500 mb-1.5" />
+                <p className="text-2xl font-black text-white">{stats?.avgTime || 0}s</p>
+                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mt-1">Tempo Médio</p>
+              </Card>
+              <Card className="border-orange-500/30 bg-gradient-to-b from-orange-950/40 to-slate-900/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(249,115,22,0.1)] relative overflow-hidden">
+                <Flame className="w-7 h-7 text-orange-500 fill-orange-500/30 mb-1.5 animate-bounce" />
+                <p className="text-2xl font-black text-orange-400">{stats?.streakDays || 0}</p>
+                <p className="text-[11px] text-orange-300 uppercase font-bold tracking-wider mt-1">Foguinho (Dias)</p>
+                <span className="text-[9px] text-slate-400 mt-0.5">+100 pts/dia</span>
+              </Card>
+              <Card className="border-yellow-500/30 bg-gradient-to-b from-yellow-950/40 to-slate-900/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(234,179,8,0.1)] relative overflow-hidden">
+                <Zap className="w-7 h-7 text-yellow-400 fill-yellow-400/30 mb-1.5" />
+                <p className="text-2xl font-black text-yellow-400">+{stats?.todayPoints || 0}</p>
+                <p className="text-[11px] text-yellow-300 uppercase font-bold tracking-wider mt-1">Pontos Hoje</p>
+                <span className="text-[9px] text-slate-400 mt-0.5">Ao Dia</span>
               </Card>
             </div>
 
