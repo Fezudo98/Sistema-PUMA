@@ -79,8 +79,6 @@ export default async function AlunoPainel() {
     participatedSimulados.set(simuladoId, expectedQ);
   });
 
-  const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
-  const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
   const totalScore = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
   const avgTime = totalAnswers > 0 ? Math.round(answers.reduce((acc, curr) => acc + curr.tempoGasto, 0) / totalAnswers) : 0;
 
@@ -114,7 +112,7 @@ export default async function AlunoPainel() {
       if (h.tipo === "LIVE") {
         return h.status === "FINISHED";
       } else {
-        return h.answeredCount >= h.totalQuestions;
+        return h.answeredCount >= h.totalQuestions && h.totalQuestions > 0;
       }
     })
     .map(h => ({
@@ -125,6 +123,10 @@ export default async function AlunoPainel() {
       score: h.score,
       accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
     }));
+
+  const completedTotalQuestions = history.reduce((sum, h) => sum + h.totalQuestions, 0);
+  const completedCorrectAnswers = history.reduce((sum, h) => sum + h.correctAnswers, 0);
+  const accuracy = completedTotalQuestions > 0 ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100) : 0;
 
   const stats = {
     simuladosCount: history.length,

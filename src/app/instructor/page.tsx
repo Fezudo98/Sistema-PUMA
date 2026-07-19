@@ -131,22 +131,40 @@ export default async function InstructorDashboard() {
     const totalAnswers = student.answers.length;
     const correctAnswers = student.answers.filter(a => a.isCorrect).length;
     
-    // Calculate total questions across all unique simulados the student participated in
-    const participatedSimulados = new Map<string, number>();
+    // Group answers by simulado to verify complete completion
+    const simuladoStatsMap = new Map<string, { expectedQ: number; answeredCount: number; correctAnswers: number; tipo: string; status: string }>();
     student.answers.forEach(a => {
       const simuladoId = a.question.simuladoId;
-      const totalQ = (a.question.simulado as any)._count?.questions || 0;
-      
-      const totalRaffle = totalRaffleInSimulado.get(simuladoId) || 0;
-      const studentRaffle = studentRaffleInSimulado.get(`${student.id}_${simuladoId}`) || 0;
-      const otherRaffle = totalRaffle - studentRaffle;
-      
-      const expectedQ = Math.max(0, totalQ - otherRaffle);
-      participatedSimulados.set(simuladoId, expectedQ);
+      if (!simuladoStatsMap.has(simuladoId)) {
+        const totalQ = (a.question.simulado as any)._count?.questions || 0;
+        const totalRaffle = totalRaffleInSimulado.get(simuladoId) || 0;
+        const studentRaffle = studentRaffleInSimulado.get(`${student.id}_${simuladoId}`) || 0;
+        const otherRaffle = totalRaffle - studentRaffle;
+        const expectedQ = Math.max(0, totalQ - otherRaffle);
+        simuladoStatsMap.set(simuladoId, {
+          expectedQ,
+          answeredCount: 0,
+          correctAnswers: 0,
+          tipo: (a.question.simulado as any).tipo || "STUDY",
+          status: (a.question.simulado as any).status || "FINISHED"
+        });
+      }
+      const sStats = simuladoStatsMap.get(simuladoId)!;
+      sStats.answeredCount++;
+      if (a.isCorrect) sStats.correctAnswers++;
     });
 
-    const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
-    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+    let completedTotalQuestions = 0;
+    let completedCorrectAnswers = 0;
+    simuladoStatsMap.forEach(s => {
+      const isCompleted = s.tipo === "LIVE" ? s.status === "FINISHED" : s.answeredCount >= s.expectedQ && s.expectedQ > 0;
+      if (isCompleted) {
+        completedTotalQuestions += s.expectedQ;
+        completedCorrectAnswers += s.correctAnswers;
+      }
+    });
+
+    const accuracy = completedTotalQuestions > 0 ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100) : 0;
     const totalScore = student.answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
     const avgTime = totalAnswers > 0 ? Math.round(student.answers.reduce((acc, curr) => acc + curr.tempoGasto, 0) / totalAnswers) : 0;
 

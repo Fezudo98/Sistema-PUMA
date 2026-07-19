@@ -447,27 +447,46 @@ export async function completeSelfPacedSimulado(studentId: string, currentSimula
       otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
     });
 
-    // Calculate total questions across all unique simulados the student participated in
-    const participatedSimulados = new Map<string, number>();
+    // Group answers by simulado to verify complete completion
+    const simuladoStatsMap = new Map<string, { expectedQ: number; answeredCount: number; correctAnswers: number; tipo: string; status: string; answers: typeof student.answers }>();
     student.answers.forEach(a => {
       const simuladoId = a.question.simuladoId;
-      const totalQ = a.question.simulado._count.questions;
-      const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
-      const expectedQ = Math.max(0, totalQ - otherRaffleCount);
-      participatedSimulados.set(simuladoId, expectedQ);
+      if (!simuladoStatsMap.has(simuladoId)) {
+        const totalQ = a.question.simulado._count.questions || 0;
+        const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
+        const expectedQ = Math.max(0, totalQ - otherRaffleCount);
+        simuladoStatsMap.set(simuladoId, {
+          expectedQ,
+          answeredCount: 0,
+          correctAnswers: 0,
+          tipo: (a.question.simulado as any).tipo || "STUDY",
+          status: (a.question.simulado as any).status || "FINISHED",
+          answers: []
+        });
+      }
+      const s = simuladoStatsMap.get(simuladoId)!;
+      s.answeredCount++;
+      s.answers.push(a);
+      if (a.isCorrect) s.correctAnswers++;
     });
 
-    const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
-    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers.length / totalQuestions) * 100) : 0;
-    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
-    
+    let completedTotalQuestions = 0;
+    let completedCorrectAnswers = 0;
+    let simuladosCount = 0;
     const simuladoGroups: Record<string, typeof student.answers> = {};
-    student.answers.forEach(a => {
-      if (!simuladoGroups[a.question.simuladoId]) simuladoGroups[a.question.simuladoId] = [];
-      simuladoGroups[a.question.simuladoId].push(a);
+
+    simuladoStatsMap.forEach((s, sId) => {
+      simuladoGroups[sId] = s.answers;
+      const isCompleted = s.tipo === "LIVE" ? s.status === "FINISHED" : s.answeredCount >= s.expectedQ && s.expectedQ > 0;
+      if (isCompleted) {
+        simuladosCount++;
+        completedTotalQuestions += s.expectedQ;
+        completedCorrectAnswers += s.correctAnswers;
+      }
     });
 
-    const simuladosCount = Object.keys(simuladoGroups).length;
+    const accuracy = completedTotalQuestions > 0 ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100) : 0;
+    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
     
     let advancedSimuladosCount = 0;
     let hardSimuladosWith70Acc = 0;
