@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
 import { resetSimuladoAttempt } from "@/app/actions/dailySimulado";
+import { formatApostilaTitle } from "@/lib/utils";
 
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
@@ -432,8 +433,8 @@ export default function StudentDashboardClient({
                                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                Sala: {room.codigoSala}
                              </span>
-                             <span className="text-[10px] font-bold text-slate-500 block uppercase truncate mt-0.5">
-                               {room.apostilaName || "Simulado da IA"}
+                             <span className="text-[10px] font-bold text-slate-500 block uppercase line-clamp-2 leading-snug mt-0.5" title={room.apostilaName}>
+                               {formatApostilaTitle(room.apostilaName || "Simulado da IA")}
                              </span>
                            </div>
                            <div className="flex items-center gap-2 shrink-0">
@@ -516,8 +517,8 @@ export default function StudentDashboardClient({
                               className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/40 flex items-center justify-between gap-3 text-left"
                             >
                               <div className="min-w-0 flex-1">
-                                <span className="text-xs font-black text-slate-300 block truncate">
-                                  {sim.apostilaName}
+                                <span className="text-xs font-black text-slate-300 block line-clamp-2 leading-snug" title={sim.apostilaName}>
+                                  {formatApostilaTitle(sim.apostilaName)}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-500 block uppercase mt-0.5">
                                   {sim.questionsCount} Alvos • Dificuldade Máxima
@@ -583,8 +584,8 @@ export default function StudentDashboardClient({
                             className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/40 flex items-center justify-between gap-3 text-left"
                           >
                             <div className="min-w-0 flex-1">
-                              <span className="text-xs font-black text-slate-300 block truncate">
-                                {sim.apostilaName}
+                              <span className="text-xs font-black text-slate-300 block line-clamp-2 leading-snug" title={sim.apostilaName}>
+                                {formatApostilaTitle(sim.apostilaName)}
                               </span>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-[9px] font-bold text-slate-500 uppercase">

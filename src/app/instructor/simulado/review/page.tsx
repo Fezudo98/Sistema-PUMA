@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Save, AlertCircle, Loader2, ArrowLeft, Edit2, Trash2, Check, X, BookOpen, Clock, AlertTriangle } from "lucide-react";
 import { createSimulado } from "@/app/actions/simulado";
+import { formatApostilaTitle } from "@/lib/utils";
 
 type Question = {
   enunciado: string;
@@ -183,7 +184,7 @@ export default function ReviewSimulado() {
             <BookOpen className="w-5 h-5 text-blue-500" />
             <div>
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Material Base</span>
-              <span className="text-sm font-bold text-white max-w-[250px] md:max-w-[350px] truncate block">{apostilaName || "Carregando..."}</span>
+              <span className="text-sm font-bold text-white max-w-[250px] md:max-w-[350px] line-clamp-2 block" title={apostilaName || ""}>{formatApostilaTitle(apostilaName || "Carregando...")}</span>
             </div>
           </div>
           

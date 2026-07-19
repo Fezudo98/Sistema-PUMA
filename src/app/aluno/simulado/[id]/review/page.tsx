@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import RefazerReviewButton from "./RefazerReviewButton";
+import { formatApostilaTitle } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -168,7 +169,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
           <Card className="bg-slate-900/50 border-slate-800 shadow-sm">
             <CardContent className="p-6 text-center flex flex-col justify-center min-h-[100px]">
               <p className="text-sm text-slate-500 uppercase tracking-wider mb-1">Apostila Base</p>
-              <p className="text-sm font-semibold text-blue-400 truncate px-2">{simulado.apostilaName || "N/A"}</p>
+              <p className="text-sm font-semibold text-blue-400 line-clamp-2 px-2" title={simulado.apostilaName || "N/A"}>{formatApostilaTitle(simulado.apostilaName || "N/A")}</p>
               {simulado.topics && (
                 <p className="text-xs text-slate-500 mt-1 truncate px-2" title={simulado.topics}>Tópicos: {simulado.topics}</p>
               )}

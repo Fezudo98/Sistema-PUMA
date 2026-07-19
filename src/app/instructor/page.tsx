@@ -14,6 +14,7 @@ import StudentListClient from "./StudentListClient";
 import ApostilaManagerClient from "./ApostilaManagerClient";
 import SettingsClient from "./SettingsClient";
 import InventoryClient from "@/components/InventoryClient";
+import { formatApostilaTitle } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -249,7 +250,7 @@ export default async function InstructorDashboard() {
                     </div>
                     {simulado.apostilaName && (
                       <div className="flex flex-col gap-1 text-xs text-slate-400 bg-slate-950 border border-slate-800 rounded px-3 py-2">
-                        <span className="font-bold truncate">Base: {simulado.apostilaName}</span>
+                        <span className="font-bold line-clamp-2" title={simulado.apostilaName}>Base: {formatApostilaTitle(simulado.apostilaName)}</span>
                         {simulado.topics && (
                           <span className="text-blue-400 font-medium truncate">Tópicos: {simulado.topics}</span>
                         )}

@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, AlertTriangle, HelpCircle, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveSelfPacedAnswer, completeSelfPacedSimulado } from "@/app/actions/dailySimulado";
+import { formatApostilaTitle } from "@/lib/utils";
 
 interface Question {
   id: string;
@@ -161,7 +162,7 @@ export default function StudentSelfPacedClient({
             </div>
             <div>
               <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest block">Treinamento de Combate</h2>
-              <h1 className="text-lg font-bold text-white truncate max-w-[calc(100vw-120px)] sm:max-w-md">{simulado.apostilaName}</h1>
+              <h1 className="text-lg font-bold text-white truncate max-w-[calc(100vw-120px)] sm:max-w-md" title={simulado.apostilaName || ""}>{formatApostilaTitle(simulado.apostilaName)}</h1>
             </div>
           </div>
 

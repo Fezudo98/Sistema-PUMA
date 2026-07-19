@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber } from "@/app/actions/user";
+import { formatApostilaTitle } from "@/lib/utils";
 
 type StudentPerformance = {
   id: string;
@@ -548,7 +549,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                   {sim.codigoSala} • {sim.tipo}
                                 </span>
                               </div>
-                              <h5 className="text-xs font-bold text-white max-w-sm truncate">{sim.apostilaName}</h5>
+                              <h5 className="text-xs font-bold text-white max-w-sm line-clamp-2" title={sim.apostilaName || ""}>{formatApostilaTitle(sim.apostilaName)}</h5>
                               <p className="text-[10px] font-medium text-slate-500">Realizado em {new Date(sim.createdAt).toLocaleDateString("pt-BR")}</p>
                             </div>
 
