@@ -59,94 +59,266 @@ export default function VadeMecumClient({
     window.print();
   };
 
-  // Helper to parse inline bold and code tags
+  // Helper to parse inline HTML tags (<br>, <br/>), bold (**bold**), italics (*italics*), and code (`code`)
   const parseInline = (text: string) => {
-    const parts = [];
-    let currentIndex = 0;
-    const regex = /(\*\*.*?\*\*|`.*?`)/g;
-    let match;
-
-    while ((match = regex.exec(text)) !== null) {
-      const matchIndex = match.index;
-      if (matchIndex > currentIndex) {
-        parts.push(text.slice(currentIndex, matchIndex));
-      }
-
-      const matchText = match[0];
-      if (matchText.startsWith("**") && matchText.endsWith("**")) {
-        parts.push(
-          <strong key={matchIndex} className="font-extrabold text-white">
-            {matchText.slice(2, -2)}
-          </strong>
-        );
-      } else if (matchText.startsWith("`") && matchText.endsWith("`")) {
-        parts.push(
-          <code key={matchIndex} className="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 font-mono text-xs border border-slate-800">
-            {matchText.slice(1, -1)}
-          </code>
-        );
-      }
-
-      currentIndex = regex.lastIndex;
-    }
-
-    if (currentIndex < text.length) {
-      parts.push(text.slice(currentIndex));
-    }
-
-    return parts.length > 0 ? parts : text;
-  };
-
-  // Lightweight custom markdown parser for booklet summaries
-  const renderMarkdown = (text: string) => {
     if (!text) return null;
     
-    // Filter lines based on search query (simple line matching or highlight logic)
+    // First, split by <br> or <br/> or <br /> to handle line breaks within table cells or paragraphs
+    const lines = text.split(/<br\s*\/?>/i);
+    
+    return lines.map((segment, lineIndex) => {
+      const parts: React.ReactNode[] = [];
+      let currentIndex = 0;
+      // Match **bold**, *italic*, or `code`
+      const regex = /(\*\*.*?\*\*|\*[^\*]+\*|`.*?`)/g;
+      let match;
+
+      while ((match = regex.exec(segment)) !== null) {
+        const matchIndex = match.index;
+        if (matchIndex > currentIndex) {
+          parts.push(segment.slice(currentIndex, matchIndex));
+        }
+
+        const matchText = match[0];
+        if (matchText.startsWith("**") && matchText.endsWith("**")) {
+          parts.push(
+            <strong key={`${lineIndex}-${matchIndex}`} className="font-extrabold text-white sm:text-slate-100 print:text-black">
+              {matchText.slice(2, -2)}
+            </strong>
+          );
+        } else if (matchText.startsWith("`") && matchText.endsWith("`")) {
+          parts.push(
+            <code key={`${lineIndex}-${matchIndex}`} className="bg-slate-900/90 px-1.5 py-0.5 rounded text-blue-400 font-mono text-xs border border-slate-800 print:border-slate-300 print:bg-slate-100 print:text-black">
+              {matchText.slice(1, -1)}
+            </code>
+          );
+        } else if (matchText.startsWith("*") && matchText.endsWith("*") && matchText.length > 2) {
+          parts.push(
+            <em key={`${lineIndex}-${matchIndex}`} className="italic text-slate-400 font-medium print:text-slate-700">
+              {matchText.slice(1, -1)}
+            </em>
+          );
+        }
+
+        currentIndex = regex.lastIndex;
+      }
+
+      if (currentIndex < segment.length) {
+        parts.push(segment.slice(currentIndex));
+      }
+
+      return (
+        <span key={lineIndex}>
+          {parts.length > 0 ? parts : segment}
+          {lineIndex < lines.length - 1 && <br className="my-1" />}
+        </span>
+      );
+    });
+  };
+
+  // Advanced custom markdown parser for booklet summaries (Tables, Organograms, Headings, Lists, Blockquotes)
+  const renderMarkdown = (text: string) => {
+    if (!text) return null;
+
     const lines = text.split("\n");
-    return lines.map((line, i) => {
-      // H2 Headers
-      if (line.startsWith("## ")) {
-        return (
-          <h2 key={i} className="text-lg font-black text-blue-400 mt-6 mb-3 uppercase tracking-wider flex items-center border-b border-slate-800 pb-2">
-            {line.replace("## ", "")}
+    const blocks: React.ReactNode[] = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // 1. Table Blocks (lines starting and ending with | or containing at least two | separators)
+      if (trimmed.startsWith("|") && trimmed.includes("|", 1)) {
+        const tableLines: string[] = [];
+        while (i < lines.length && lines[i].trim().startsWith("|") && lines[i].trim().includes("|", 1)) {
+          tableLines.push(lines[i].trim());
+          i++;
+        }
+
+        // Filter out markdown table separator lines like |:---|:---| or |---|---|
+        const contentRows = tableLines.filter((l) => !l.match(/^\|\s*:?[-=]+\s*(\|\s*:?[-=]+\s*)*\|?$/));
+
+        if (contentRows.length > 0) {
+          // Parse cells of the first row as the table header (thead)
+          const headerCells = contentRows[0]
+            .replace(/^\|/, "")
+            .replace(/\|$/, "")
+            .split("|")
+            .map((c) => c.trim());
+
+          // Parse remaining rows as tbody
+          const bodyRows = contentRows.slice(1).map((rowStr) =>
+            rowStr
+              .replace(/^\|/, "")
+              .replace(/\|$/, "")
+              .split("|")
+              .map((c) => c.trim())
+          );
+
+          blocks.push(
+            <div key={`table-${blocks.length}`} className="my-6 overflow-x-auto rounded-2xl border border-slate-800/80 shadow-2xl bg-slate-950/90 backdrop-blur-md print:border-slate-400 print:shadow-none print:bg-white">
+              <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                  <tr className="bg-slate-900/95 border-b border-slate-800 text-blue-400 font-black uppercase tracking-wider print:bg-slate-200 print:text-black print:border-slate-400">
+                    {headerCells.map((headerText, hIdx) => (
+                      <th key={hIdx} className="p-3.5 sm:p-4 border-r border-slate-800/60 last:border-r-0 print:border-slate-400">
+                        {parseInline(headerText)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 print:divide-slate-300">
+                  {bodyRows.map((rowCells, rIdx) => (
+                    <tr key={rIdx} className="hover:bg-slate-900/40 transition-colors print:hover:bg-transparent">
+                      {rowCells.map((cellText, cIdx) => (
+                        <td key={cIdx} className="p-3.5 sm:p-4 text-slate-300 leading-relaxed border-r border-slate-800/40 last:border-r-0 align-top print:text-black print:border-slate-300">
+                          {parseInline(cellText)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        continue;
+      }
+
+      // 2. ASCII Diagrams / Organograms / Preformatted Blocks
+      const isAsciiTree = trimmed.match(/[└├│▼►▲◄_┌┐┼─]/) || trimmed.startsWith("___") || (trimmed.startsWith("▼") && trimmed.includes("▼"));
+      if (isAsciiTree || trimmed.startsWith("```")) {
+        const asciiLines: string[] = [];
+        if (trimmed.startsWith("```")) {
+          i++; // skip opening ```
+          while (i < lines.length && !lines[i].trim().startsWith("```")) {
+            asciiLines.push(lines[i]);
+            i++;
+          }
+          if (i < lines.length) i++; // skip closing ```
+        } else {
+          // Group consecutive lines that look like organogram / diagram / labels right next to tree lines
+          while (
+            i < lines.length &&
+            (lines[i].trim().match(/[└├│▼►▲◄_┌┐┼─]/) ||
+              lines[i].trim().startsWith("___") ||
+              (lines[i].trim().length > 0 && lines[i].trim().length < 70 && !lines[i].trim().startsWith("#") && !lines[i].trim().startsWith("- ") && !lines[i].trim().startsWith("* ") && (i + 1 < lines.length && lines[i + 1].trim().match(/[└├│▼►▲◄_┌┐┼─]/))))
+          ) {
+            asciiLines.push(lines[i]);
+            i++;
+          }
+        }
+
+        if (asciiLines.length > 0) {
+          blocks.push(
+            <div key={`ascii-${blocks.length}`} className="my-5 p-4 sm:p-5 bg-slate-950 border border-blue-500/30 rounded-2xl font-mono text-xs sm:text-sm text-blue-300 overflow-x-auto whitespace-pre leading-relaxed shadow-inner print:border-slate-400 print:bg-slate-50 print:text-black">
+              {asciiLines.join("\n")}
+            </div>
+          );
+        }
+        continue;
+      }
+
+      // 3. Headings
+      if (trimmed.startsWith("# ")) {
+        blocks.push(
+          <h1 key={`h1-${blocks.length}`} className="text-xl sm:text-2xl font-black text-white mt-8 mb-4 uppercase tracking-wider border-b-2 border-blue-600 pb-3 print:text-black print:border-black">
+            {parseInline(trimmed.replace(/^#\s+/, ""))}
+          </h1>
+        );
+        i++;
+        continue;
+      }
+      if (trimmed.startsWith("## ")) {
+        blocks.push(
+          <h2 key={`h2-${blocks.length}`} className="text-base sm:text-lg font-black text-blue-400 mt-7 mb-3.5 uppercase tracking-wider flex items-center border-b border-slate-800/80 pb-2.5 print:text-blue-900 print:border-slate-400">
+            {parseInline(trimmed.replace(/^##\s+/, ""))}
           </h2>
         );
+        i++;
+        continue;
       }
-      // H3 Headers
-      if (line.startsWith("### ")) {
-        return (
-          <h3 key={i} className="text-sm font-bold text-white mt-4 mb-2 flex items-center">
-            {line.replace("### ", "")}
+      if (trimmed.startsWith("### ")) {
+        blocks.push(
+          <h3 key={`h3-${blocks.length}`} className="text-sm sm:text-base font-bold text-indigo-300 mt-5 mb-2 flex items-center print:text-black">
+            {parseInline(trimmed.replace(/^###\s+/, ""))}
           </h3>
         );
+        i++;
+        continue;
       }
-      // Blockquote
-      if (line.startsWith("> ")) {
-        return (
-          <blockquote key={i} className="border-l-4 border-slate-700 bg-slate-800/20 px-4 py-2.5 my-3 text-slate-300 italic rounded-r-lg">
-            {parseInline(line.replace("> ", ""))}
+      if (trimmed.startsWith("#### ")) {
+        blocks.push(
+          <h4 key={`h4-${blocks.length}`} className="text-xs sm:text-sm font-bold text-slate-200 mt-4 mb-2 uppercase tracking-wide print:text-black">
+            {parseInline(trimmed.replace(/^####\s+/, ""))}
+          </h4>
+        );
+        i++;
+        continue;
+      }
+
+      // 4. Horizontal Rules
+      if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
+        blocks.push(<hr key={`hr-${blocks.length}`} className="my-8 border-slate-800/80 print:border-slate-400" />);
+        i++;
+        continue;
+      }
+
+      // 5. Blockquotes
+      if (trimmed.startsWith("> ")) {
+        blocks.push(
+          <blockquote key={`quote-${blocks.length}`} className="border-l-4 border-blue-500 bg-slate-900/50 px-4 py-3 my-4 text-slate-300 text-xs sm:text-sm italic rounded-r-xl shadow-sm print:bg-slate-100 print:border-slate-600 print:text-black">
+            {parseInline(trimmed.replace(/^>\s*/, ""))}
           </blockquote>
         );
+        i++;
+        continue;
       }
-      // Unordered lists
-      if (line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
-        return (
-          <li key={i} className="ml-6 list-disc text-slate-300 my-1 text-sm leading-relaxed">
-            {parseInline(line.trim().replace(/^[\-\*]\s+/, ""))}
-          </li>
+
+      // 6. Unordered and Ordered Lists (grouping consecutive list items)
+      if (trimmed.match(/^[\-\*]\s+/) || trimmed.match(/^\d+\.\s+/)) {
+        const listItems: { isOrdered: boolean; text: string }[] = [];
+        while (i < lines.length && (lines[i].trim().match(/^[\-\*]\s+/) || lines[i].trim().match(/^\d+\.\s+/))) {
+          const l = lines[i].trim();
+          if (l.match(/^[\-\*]\s+/)) {
+            listItems.push({ isOrdered: false, text: l.replace(/^[\-\*]\s+/, "") });
+          } else {
+            listItems.push({ isOrdered: true, text: l.replace(/^\d+\.\s+/, "") });
+          }
+          i++;
+        }
+
+        blocks.push(
+          <ul key={`list-${blocks.length}`} className="my-3 space-y-2 pl-2 sm:pl-4">
+            {listItems.map((item, idx) => (
+              <li key={idx} className="flex items-start gap-2.5 text-slate-300 text-xs sm:text-sm leading-relaxed print:text-black">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0 print:bg-black" />
+                <span className="flex-1">{parseInline(item.text)}</span>
+              </li>
+            ))}
+          </ul>
         );
+        continue;
       }
-      // Empty lines
-      if (!line.trim()) {
-        return <div key={i} className="h-2" />;
+
+      // 7. Empty lines
+      if (!trimmed) {
+        blocks.push(<div key={`empty-${blocks.length}`} className="h-3" />);
+        i++;
+        continue;
       }
-      // Standard paragraphs
-      return (
-        <p key={i} className="text-slate-300 text-sm leading-relaxed my-1.5">
+
+      // 8. Standard paragraphs
+      blocks.push(
+        <p key={`p-${blocks.length}`} className="text-slate-300 text-xs sm:text-sm leading-relaxed my-2.5 text-justify print:text-black">
           {parseInline(line)}
         </p>
       );
-    });
+      i++;
+    }
+
+    return blocks;
   };
 
   return (
