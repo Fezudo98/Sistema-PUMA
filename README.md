@@ -1,80 +1,154 @@
-# Sistema PUMA - Treinamento Tático de Concurso (PMCE)
+# Sistema PUMA - Treinamento Tático & Gamificação Policial (PMCE)
 
-Bem-vindo ao **Sistema PUMA**, uma plataforma web revolucionária e gamificada para treinamento de turmas de concurso policial, projetada especificamente para simular pressão, avaliar tempos de reação e elevar o preparo tático dos alunos através de dinâmicas ao vivo.
-
-## 🎯 Sobre o Projeto
-
-O Sistema PUMA permite que Instrutores criem salas interativas (simulados) onde os Alunos respondem questões projetadas em um "telão". O grande diferencial do sistema é o uso de Inteligência Artificial (Google Gemini 3.5 Flash) tanto para gerar questões automaticamente com base em arquivos PDF, quanto para realizar análises comportamentais e de desempenho individualizado para cada aluno.
-
-## 🚀 Principais Funcionalidades
-
-### 👨‍✈️ Painel do Instrutor
-- **Geração de Simulados via IA:** Faça o upload de PDFs (Apostilas, Leis, Manuais) e deixe a IA gerar questões com enunciados, 5 alternativas e justificativas embasadas no material.
-- **Controle de Sala Ao Vivo:** Comande a progressão das questões como um mestre de sala. Avance, pause o tempo, anule questões, encerre prematuramente e revele o gabarito no telão principal.
-- **Roleta Tática (Sorteio de Alvo):** Ative o modo "Sorteio" para escolher aleatoriamente um único recruta que deverá responder a questão perante todos os outros, sob alta pressão.
-- **Pódio e Relatórios:** Acompanhe a pontuação ao vivo, gere o "Top 3 Combatentes" ao final do simulado e analise as estatísticas completas de acertos e tempo por questão da turma.
-
-### 🪖 Painel do Aluno (Recruta)
-- **Dashboard Pessoal:** Um Quartel General com estatísticas vitais: quantidade de simulados, taxa de acerto global e tempo médio de reação.
-- **Mentor Policial IA:** Uma IA integrada com jargões militares analisa seu último desempenho e fornece conselhos táticos (com cache inteligente para não desperdiçar tokens).
-- **Mural de Brevês (Gamificação):** Ganhe medalhas de mérito ("Recruta", "Veterano", "Sniper", "Pronto Resposta Raio", etc.) baseadas em conquistas reais no campo de batalha virtual.
-- **Simulado no Celular/PC:** Participe em tempo real usando um código de sala, com proteção dupla de botões para evitar "tiros acidentais" (selecionar alternativas sem querer).
-
-## 🛠️ Stack Tecnológica
-
-O sistema foi construído utilizando as melhores práticas do desenvolvimento moderno web:
-
-- **Next.js 15+ (App Router):** Framework React full-stack.
-- **TypeScript:** Tipagem estática para um código robusto e seguro.
-- **Prisma ORM:** Integração elegante e type-safe com o banco de dados.
-- **SQLite:** Banco de dados relacional leve e embutido (fácil portabilidade).
-- **Socket.io:** WebSockets para o painel de controle ao vivo do instrutor e sincronização milissegundo com os alunos.
-- **Tailwind CSS & shadcn/ui:** Componentização ágil com design arrojado, Dark Mode refinado e animações táticas (pulse, spin, fade-ins).
-- **Google Generative AI (Gemini 3.5 Flash):** Cérebro da plataforma para geração de questões e análise de perfis, implementado com failover via Chave de Fallback.
-
-## ⚙️ Como Executar o Sistema Localmente
-
-1. **Clone o Repositório ou Extraia os Arquivos:**
-   Navegue até a pasta do sistema.
-
-2. **Instale as Dependências:**
-   Abra um terminal (cmd/powershell) e digite:
-   ```bash
-   npm install
-   ```
-
-3. **Configure as Chaves da IA (Variáveis de Ambiente):**
-   Crie um arquivo `.env` na raiz do projeto (se não existir) e adicione suas chaves da API do Google Gemini:
-   ```env
-   GEMINI_API_KEY="SUA_CHAVE_PRINCIPAL_AQUI"
-   GEMINI_API_KEY_FALLBACK="SUA_CHAVE_RESERVA_AQUI"
-   DATABASE_URL="file:./dev.db"
-   ```
-
-4. **Sincronize o Banco de Dados:**
-   Execute a atualização das tabelas locais:
-   ```bash
-   npx prisma db push
-   ```
-
-5. **Inicie o Servidor:**
-   Você pode usar o arquivo executável prático que criamos ou o comando:
-   ```bash
-   npm run dev
-   ```
-   *Alternativa Windows:* Clique duas vezes no arquivo `Iniciar sistema.bat`.
-
-6. **Acesse o Sistema:**
-   Abra seu navegador em: `http://localhost:3000`
-
-## 🛡️ Dicas de Operação
-
-- **Login Instrutor Padrão:** Geralmente, os primeiros usuários registrados ganham a role de `INSTRUCTOR`. Use o Painel Inicial para cadastrar alunos com role `STUDENT`.
-- **Limites de Tempo:** Questões geradas pela IA geralmente vêm com 60s padrão, você pode alterar isso no código se necessário.
-- **Reconexão Rápida:** O sistema possui proteção contra recarregamentos de página; o socket é estabilizado pela ID de usuário (evitando amnésia da sala).
-- **Recuperação de Senha (Offline):** Caso um aluno (`STUDENT`) esqueça sua senha, o instrutor pode redefini-la instantaneamente através da aba **Combatentes** do Painel do Instrutor, abrindo o **Dossiê Operacional** do aluno e utilizando a redefinição rápida com a senha padrão (`PMCE123`) ou uma personalizada.
-- **Recuperação de Senha do Instrutor:** Caso o instrutor perca sua credencial, a senha pode ser restaurada localmente no notebook executando o Prisma Studio (`npx prisma studio`) ou rodando um script de atualização direta no banco de dados SQLite (`dev.db`).
+<div align="center">
+  <img src="public/logo.png" alt="Brasão 32º Pelotão PUMA" width="140" height="140" />
+  <h3>32º Pelotão do Curso de Formação de Oficiais / Praças — Polícia Militar do Ceará</h3>
+  <p><strong>Plataforma Web Avançada de Simulados ao Vivo, Inteligência Artificial e Mentor Tático</strong></p>
+</div>
 
 ---
 
-> *"Treinamento duro, combate fácil. Bem-vindo à força, soldado!"*
+Bem-vindo ao **Sistema PUMA**, uma plataforma de treinamento tático de precisão desenvolvida sob medida para a preparação de policiais e turmas de concurso de alto nível da **Polícia Militar do Ceará (PMCE)**. 
+
+O sistema combina dinâmicas de sala de aula em tempo real (via WebSockets), **Inteligência Artificial Generativa (Google Gemini)** com análise comportamental e um robusto sistema de **Gamificação Militar com Brevês de Honra**, projetados para simular a pressão real de combate, treinar a tomada de decisão sob estresse e monitorar o tempo de reação de cada recruta milissegundo a milissegundo.
+
+---
+
+## 🚀 Destaques & Diferenciais Operacionais
+
+### 🛡️ Identidade Visual & Glassmorphism Tático
+- **Estética Militar Premium:** Interface escurecida (*Dark Mode*) moderna, com acentos em âmbar dourado e verde esmeralda, bordas luminosas e sombras dinâmicas.
+- **Brasão PUMA Fundido (`mix-blend-screen`):** A identidade do **32º Pelotão PUMA** integra-se perfeitamente às barras de navegação superior e telas de autenticação, eliminando fundos sólidos e proporcionando um visual tecnológico de centro de comando.
+- **Responsividade Total:** Adaptado perfeitamente para telões de projetor em sala de aula, notebooks dos instrutores e smartphones dos combatentes em campo.
+
+---
+
+### 🤖 Inteligência Artificial Integrada (Google Gemini)
+- **Geração Automática de Simulados por PDF:** Faça o upload de apostilas, leis, Vade Mecum ou manuais em PDF. A IA realiza a leitura integral do material e extrai questões com enunciado, 5 alternativas (`A` a `E`) e justificativa técnica embasada na doutrina.
+- **Mentor Policial IA (`/aluno/chat`):** Uma IA interativa treinada com jargões militares e conhecimento jurídico/policial que orienta o aluno, responde dúvidas com base no conteúdo integral das apostilas ativas e aconselha sobre como corrigir deficiências nos simulados recentes.
+- **Análise Comportamental Diária (`/api/aluno/analysis`):** Geração de relatórios automáticos 1x ao dia (com cache de dados em banco para economia de tokens), avaliando a precisão de disparo, tempo de reação e consistência tática do militar.
+- **Alta Disponibilidade com Fallback Duplo:** Sistema equipado com chave principal (`GEMINI_API_KEY`) e chave reserva (`GEMINI_API_KEY_FALLBACK`) para alternância automática em caso de instabilidade momentânea da API.
+
+---
+
+### 👨‍✈️ Centro de Comando do Instrutor (`/instructor`)
+- **Controle de Sala Ao Vivo (`LIVE`):** Comande a progressão da turma como um mestre de sala. Avance questões, pause o tempo, anule itens controversos, encerre missões antecipadamente e projete o gabarito no telão principal com estatísticas de erro/acerto em tempo real.
+- **Roleta Tática (Sorteio de Alvo):** Ative o modo "Sorteio" durante o simulado para escolher aleatoriamente um único recruta que deverá responder a questão perante todo o pelotão. A pontuação é computada com exclusividade, garantindo que a taxa global dos demais alunos permaneça intacta e justa.
+- **Gestão de Vagas e Pelotão (Vaga 01 a 34+):** Cadastro ágil de alunos identificados por número de capacete/vaga no pelotão e nome de guerra (QRA).
+- **Dossiê Operacional & Redefinição Rápida de Senhas:** Acesso a relatórios de desempenho individual, histórico completo de respostas, suspensão disciplinar temporária e redefinição instantânea de senha (com senha padrão `PMCE123` ou personalizada).
+- **Pódio e Relatórios Analíticos:** Exibição celebrativa do **Top 3 Combatentes** ao final do simulado e visão geral de aproveitamento da turma em cada alternativa.
+
+---
+
+### 🪖 Quartel General do Aluno (`/aluno/painel`)
+- **Dashboard de Estatísticas Vitais:** Monitoramento claro dos 4 pilares operacionais:
+  1. **Total de Simulados Concluídos:** Contagem de missões finalizadas com êxito.
+  2. **Taxa Global de Acertos (`Accuracy`):** Aproveitamento geral do militar calibrado com rigor matemático.
+  3. **Pontos Totais:** Acúmulo de pontuação por acerto rápido e missões especiais.
+  4. **Tempo Médio de Reação:** Média de segundos gastos para análise e disparo por questão.
+- **Missões do Dia & Simulados de Estudo (`SELF_PACED`):** Listagem de missões com identificação nítida da apostila de origem em duas linhas visíveis, facilitando a escolha da bateria de exercícios.
+- **Mural de Brevês (Gamificação Militar):** Conquiste medalhas e distinções de mérito ao atingir metas de alto desempenho no campo de batalha virtual:
+  - 🏅 **Recruta Padrão:** Concedido ao concluir os primeiros passos no sistema.
+  - 🛡️ **Veterano de Combate:** Concluídos pelo menos 10 simulados no sistema.
+  - 🎯 **Atirador de Elite (Sniper):** Atingir 100% de precisão em um simulado com 20 ou mais questões.
+  - ⚡ **Pronto Resposta (Raio):** Acerto $\ge 85\%$ com tempo médio de reação $\le 15\text{s}$ em simulado de 15+ questões.
+  - 🌟 **Padrão PM:** Acumular 150.000 pontos e manter taxa global de acertos $\ge 92\%$.
+  - 💀 **Caveira:** Concluir no mínimo 40 simulados avançados com taxa global de acertos $\ge 97\%$ e 100.000+ pontos.
+- **Proteção Dupla contra Tiros Acidentais:** Mecanismo de confirmação em duas etapas para seleção de alternativas em dispositivos móveis ou telas touch, impedindo cliques involuntários sob pressão.
+
+---
+
+### ⚖️ Calibragem e Justiça Matemática (Taxa Global)
+O sistema opera sob a diretriz estrita de que **a Taxa Global de Acertos (`Accuracy`) computa exclusivamente os alvos de simulados 100% concluídos**. 
+- Simulados que ainda estão em andamento, missões abandonadas ou salas ao vivo encerradas prematuramente pelo instrutor sem que o aluno tenha respondido a totalidade das questões são automaticamente desconsiderados no denominador da fórmula, impedindo quedas injustas na nota e no histórico do combatente.
+
+---
+
+## 🛠️ Stack Tecnológica & Arquitetura
+
+O Sistema PUMA é construído sobre uma arquitetura moderna, escalável e de baixa latência:
+
+| Camada | Tecnologia | Descrição |
+| :--- | :--- | :--- |
+| **Framework Web** | [Next.js 15+](https://nextjs.org) (`App Router`) | Full-stack React com Server Components e Server Actions |
+| **Linguagem** | [TypeScript 5+](https://www.typescriptlang.org) | Tipagem estática rigorosa para estabilidade do código |
+| **Tempo Real** | [Socket.io](https://socket.io) (`server.ts`) | WebSockets para sincronização instantânea de salas ao vivo |
+| **Banco de Dados & ORM** | [Prisma ORM](https://www.prisma.io) + SQLite / PostgreSQL | Abstração relacional robusta e type-safe |
+| **Estilização** | [Tailwind CSS](https://tailwindcss.com) + `shadcn/ui` | Design system moderno com Dark Mode e animações customizadas |
+| **Inteligência Artificial** | [Google Generative AI](https://ai.google.dev) (`Gemini 3.5 Flash`) | Processamento de linguagem natural e geração de simulados via PDF |
+| **Ícones & UI** | [Lucide React](https://lucide.dev) | Biblioteca de ícones vetoriais modernos e leves |
+
+---
+
+## ⚙️ Instalação & Execução Local
+
+Siga o passo a passo abaixo para rodar o ambiente de desenvolvimento local em sua máquina ou servidor:
+
+### 1. Pré-requisitos
+- **Node.js** (versão 18, 20 ou superior)
+- **NPM** ou **Yarn**
+
+### 2. Instalação de Dependências
+Clone o repositório e instale os pacotes no terminal:
+```bash
+git clone https://github.com/Fezudo98/Sistema-PUMA.git
+cd "sistema pmce"
+npm install
+```
+
+### 3. Configuração do Ambiente (`.env`)
+Crie o arquivo `.env` na raiz do projeto contendo as chaves da API e a URL do banco:
+```env
+# Chaves da API do Google Gemini (IA)
+GEMINI_API_KEY="SUA_CHAVE_PRINCIPAL_AQUI"
+GEMINI_API_KEY_FALLBACK="SUA_CHAVE_RESERVA_AQUI"
+
+# Conexão com o Banco de Dados (SQLite local ou PostgreSQL)
+DATABASE_URL="file:./dev.db"
+```
+
+### 4. Sincronização e Carga Inicial do Banco de Dados
+Sincronize o schema do Prisma e crie o arquivo local do banco:
+```bash
+npx prisma db push
+```
+*(Opcional)* Para povoar o banco com dados de teste e usuários iniciais:
+```bash
+npx ts-node populate_dummy_data.ts
+```
+
+### 5. Inicialização do Servidor (com WebSockets)
+Para rodar o sistema em modo de desenvolvimento ativando o servidor customizado `server.ts` junto ao Socket.io:
+```bash
+npm run dev
+```
+> *Alternativa Prática (Windows):* Dê um duplo clique no script `Iniciar sistema.bat`.
+
+### 6. Acesso à Plataforma
+Abra seu navegador no endereço:
+- **URL Padrão:** `http://localhost:3000`
+
+---
+
+## 📋 Guia de Operação e Dicas Táticas
+
+- **Credenciais Iniciais:**
+  - **Instrutor Padrão:** Cadastrado com a credencial de oficial/instrutor (`role: INSTRUCTOR`).
+  - **Alunos do Pelotão (Vagas 01 a 34+):** Cadastrados no painel do instrutor (`role: STUDENT`), acessando via `/aluno` com CPF ou código de vaga e senha.
+- **Redefinição Rápida de Senha:** Caso o militar esqueça sua senha de acesso, o Instrutor pode acessar a aba **Combatentes**, clicar em **Ver Dossiê** e acionar o botão de redefinição para a senha padrão (`PMCE123`) em 1 segundo.
+- **Recuperação de Senha do Instrutor:** Se necessário, a credencial do instrutor pode ser ajustada via terminal utilizando o painel visual do Prisma Studio:
+  ```bash
+  npx prisma studio
+  ```
+- **Atualização em VPS / Produção (PM2):**
+  Para atualizar o servidor de produção remotamente após novos commits:
+  ```bash
+  cd /var/www/puma && git pull origin main && npm run build && pm2 restart puma
+  ```
+
+---
+
+<div align="center">
+  <p><strong>32º Pelotão PUMA — Curso de Formação PMCE</strong></p>
+  <p><em>"Treinamento duro, combate fácil. Força e Honra!"</em> 👮‍♂️🗡️</p>
+</div>
