@@ -109,11 +109,8 @@ export default async function AlunoPainel() {
   
   const history = Array.from(historyMap.values())
     .filter(h => {
-      if (h.tipo === "LIVE") {
-        return h.status === "FINISHED";
-      } else {
-        return h.answeredCount >= h.totalQuestions && h.totalQuestions > 0;
-      }
+      const isFinished = h.tipo === "LIVE" ? h.status === "FINISHED" : true;
+      return isFinished && h.answeredCount >= h.totalQuestions && h.totalQuestions > 0;
     })
     .map(h => ({
       id: h.id,

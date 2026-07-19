@@ -157,7 +157,8 @@ export default async function InstructorDashboard() {
     let completedTotalQuestions = 0;
     let completedCorrectAnswers = 0;
     simuladoStatsMap.forEach(s => {
-      const isCompleted = s.tipo === "LIVE" ? s.status === "FINISHED" : s.answeredCount >= s.expectedQ && s.expectedQ > 0;
+      const isFinished = s.tipo === "LIVE" ? s.status === "FINISHED" : true;
+      const isCompleted = isFinished && s.answeredCount >= s.expectedQ && s.expectedQ > 0;
       if (isCompleted) {
         completedTotalQuestions += s.expectedQ;
         completedCorrectAnswers += s.correctAnswers;

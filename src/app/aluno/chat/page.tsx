@@ -63,7 +63,8 @@ export default async function AlunoChatPage() {
   let completedTotalQ = 0;
   let completedCorrectQ = 0;
   simuladoStatsMap.forEach(s => {
-    const isCompleted = s.tipo === "LIVE" ? s.status === "FINISHED" : s.answeredCount >= s.expectedQ && s.expectedQ > 0;
+    const isFinished = s.tipo === "LIVE" ? s.status === "FINISHED" : true;
+    const isCompleted = isFinished && s.answeredCount >= s.expectedQ && s.expectedQ > 0;
     if (isCompleted) {
       completedTotalQ += s.expectedQ;
       completedCorrectQ += s.correctAnswers;
