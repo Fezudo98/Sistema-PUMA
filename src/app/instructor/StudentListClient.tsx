@@ -107,8 +107,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
   const handleUpdateNumber = async () => {
     if (!selectedStudent || !newStudentNumber) return;
     const num = parseInt(newStudentNumber, 10);
-    if (isNaN(num) || num < 1 || num > 33) {
-      setNumberUpdateMessage({ type: "error", text: "O número deve ser entre 1 e 33." });
+    if (isNaN(num) || num < 1 || num > 34) {
+      setNumberUpdateMessage({ type: "error", text: "O número deve ser entre 1 e 34." });
       return;
     }
 
@@ -464,8 +464,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                         <Input
                           type="number"
                           min={1}
-                          max={33}
-                          placeholder="Número do combatente (1 a 33)"
+                          max={34}
+                          placeholder="Número do combatente (1 a 34)"
                           value={newStudentNumber}
                           onChange={(e) => {
                             setNewStudentNumber(e.target.value);
