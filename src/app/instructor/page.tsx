@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import Image from "next/image";
 import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy } from "lucide-react";
 import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
@@ -166,7 +167,7 @@ export default async function InstructorDashboard() {
       <div className="max-w-7xl mx-auto">
         <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10 border-b border-slate-800 pb-6">
           <div className="flex items-center gap-4">
-            <Target className="w-10 h-10 text-blue-500 animate-pulse shrink-0" />
+            <Image src="/logo.png" alt="Logo PUMA" width={56} height={56} className="drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] mix-blend-screen object-contain shrink-0 hover:scale-105 transition-transform duration-300" />
             <div>
               <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">CENTRO DE COMANDO</h1>
               <p className="text-blue-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs mt-1">Painel do Instrutor • Sistema PUMA</p>
