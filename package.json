@@ -9,6 +9,7 @@
     "build:server": "tsc server.ts --module commonjs --target es2022 --noEmit false --esModuleInterop true --moduleResolution node --skipLibCheck true",
     "start": "next start",
     "start:prod": "node server.js",
+    "backfill:streak": "tsx backfill_answers_createdAt.ts",
     "postinstall": "prisma generate",
     "lint": "next lint"
   },
