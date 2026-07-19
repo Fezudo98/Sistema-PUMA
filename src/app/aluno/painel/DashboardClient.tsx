@@ -730,7 +730,7 @@ export default function StudentDashboardClient({
                 </CardTitle>
                 <CardDescription className="text-xs">Classificação geral de todos os combatentes ativos.</CardDescription>
               </CardHeader>
-              <CardContent className="p-0 max-h-[350px] overflow-y-auto custom-scrollbar">
+              <CardContent className="p-0 max-h-[480px] overflow-y-auto custom-scrollbar">
                 {generalRanking.length === 0 ? (
                   <div className="p-6 text-center text-slate-500 text-sm">Nenhum combatente ativo.</div>
                 ) : (
@@ -740,7 +740,7 @@ export default function StudentDashboardClient({
                       return (
                         <div 
                           key={aluno.id} 
-                          className={`flex items-center justify-between p-3.5 transition-colors ${
+                          className={`flex flex-col gap-2 p-3.5 transition-colors ${
                             isMe 
                               ? 'bg-blue-950/20 border-y border-blue-500/20 shadow-[inset_0_0_15px_rgba(59,130,246,0.05)]' 
                               : 'hover:bg-slate-800/30'
@@ -761,24 +761,26 @@ export default function StudentDashboardClient({
                                 {aluno.name.substring(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <span className={`font-bold truncate text-sm uppercase ${isMe ? 'text-blue-400' : 'text-slate-200'}`}>
+                            <span className={`font-bold text-sm uppercase leading-snug ${isMe ? 'text-blue-400' : 'text-slate-200'}`} title={aluno.name}>
                               {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2.5 ml-2 shrink-0">
-                            {aluno.streakDays > 0 && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-950/80 border border-orange-500/40 text-orange-400 font-black text-xs shadow-[0_0_8px_rgba(249,115,22,0.2)]" title="Sequência Diária">
-                                <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
-                                {aluno.streakDays}d
-                              </span>
-                            )}
-                            {typeof aluno.todayPoints === 'number' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-950/80 border border-yellow-500/40 text-yellow-400 font-black text-xs" title="Pontos conquistados hoje (Ao Dia)">
-                                <Zap className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                +{aluno.todayPoints} ao dia
-                              </span>
-                            )}
-                            <span className="font-mono font-black text-xs text-blue-400">{aluno.totalScore} pts</span>
+                          <div className="flex items-center justify-between gap-2 pl-9">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {aluno.streakDays > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-950/80 border border-orange-500/40 text-orange-400 font-black text-xs shadow-[0_0_8px_rgba(249,115,22,0.2)]" title="Sequência Diária">
+                                  <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
+                                  {aluno.streakDays}d
+                                </span>
+                              )}
+                              {typeof aluno.todayPoints === 'number' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-950/80 border border-yellow-500/40 text-yellow-400 font-black text-xs" title="Pontos conquistados hoje (Ao Dia)">
+                                  <Zap className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  +{aluno.todayPoints} ao dia
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-mono font-black text-xs text-blue-400 shrink-0">{aluno.totalScore} pts</span>
                           </div>
                         </div>
                       );
