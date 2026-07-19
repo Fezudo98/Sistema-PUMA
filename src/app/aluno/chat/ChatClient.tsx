@@ -19,6 +19,7 @@ import {
   Lock
 } from "lucide-react";
 import { sendChatMessageAction, clearChatHistoryAction, getChatHistoryAction } from "@/app/actions/chat";
+import { formatApostilaTitle } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -289,7 +290,8 @@ export default function ChatClient({
     "Destaque potenciais pegadinhas de concurso sobre essa legislação."
   ];
 
-  const currentBookletName = apostilas.find(a => a.id === selectedApostilaId)?.title || "Apostila selecionada";
+  const currentBooklet = apostilas.find(a => a.id === selectedApostilaId);
+  const currentBookletName = currentBooklet ? formatApostilaTitle(currentBooklet.title) : "Apostila selecionada";
 
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-slate-200">
@@ -362,7 +364,7 @@ export default function ChatClient({
                         }`}
                       >
                         <BookOpen className={`w-4 h-4 mt-0.5 shrink-0 ${isSelected ? "text-blue-400" : "text-slate-500"}`} />
-                        <span className="text-xs font-bold leading-snug line-clamp-2">{apo.title}</span>
+                        <span className="text-xs font-bold leading-snug line-clamp-2" title={apo.title}>{formatApostilaTitle(apo.title)}</span>
                       </button>
                     );
                   })}
@@ -390,7 +392,7 @@ export default function ChatClient({
                           }`}
                         >
                           <Lock className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${isSelected ? "text-red-400" : "text-slate-700"}`} />
-                          <span className="text-xs font-bold leading-snug line-clamp-2 italic">{apo.title}</span>
+                          <span className="text-xs font-bold leading-snug line-clamp-2 italic" title={apo.title}>{formatApostilaTitle(apo.title)}</span>
                         </button>
                       );
                     })}
@@ -445,7 +447,7 @@ export default function ChatClient({
               >
                 {apostilas.map((apo) => (
                   <option key={apo.id} value={apo.id}>
-                    {apo.isActive ? "" : "🔒 [Inativa] "} {apo.title}
+                    {apo.isActive ? "" : "🔒 [Inativa] "} {formatApostilaTitle(apo.title)}
                   </option>
                 ))}
               </select>

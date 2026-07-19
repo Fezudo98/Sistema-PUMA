@@ -8,6 +8,7 @@ import { BookOpen, FileUp, Loader2, Power, PowerOff, Trash2, Calendar, FileText,
 import { toggleApostilaStatus, deleteApostila } from "@/app/actions/apostila";
 import { forceGenerateDailySimuladoForApostila, forceGenerateAllDailySimuladosAction } from "@/app/actions/dailySimulado";
 import { generateVadeMecumAction } from "@/app/actions/vadeMecum";
+import { formatApostilaTitle } from "@/lib/utils";
 
 interface Apostila {
   id: string;
@@ -304,8 +305,8 @@ export default function ApostilaManagerClient({
                         <FileText className="w-6 h-6" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className={`text-base font-bold break-words ${apo.isActive ? "text-white" : "text-slate-400 line-through"}`}>
-                          {apo.title}
+                        <h4 className={`text-base font-bold break-words ${apo.isActive ? "text-white" : "text-slate-400 line-through"}`} title={apo.title}>
+                          {formatApostilaTitle(apo.title)}
                         </h4>
                         
                         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-slate-500 font-medium">

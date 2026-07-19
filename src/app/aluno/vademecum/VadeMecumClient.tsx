@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { logout } from "@/app/actions/auth";
+import { formatApostilaTitle } from "@/lib/utils";
 
 interface User {
   name: string;
@@ -412,9 +413,9 @@ export default function VadeMecumClient({
                         : "bg-slate-950/40 border-slate-900 hover:border-slate-800 text-slate-400 hover:text-slate-300 hover:bg-slate-900/30"
                     }`}
                   >
-                    <div className="min-w-0 flex items-center gap-2.5">
-                      <FileText className={`w-4 h-4 shrink-0 ${selectedId === apo.id ? "text-blue-400" : "text-slate-500 group-hover:text-slate-400"}`} />
-                      <span className="text-xs truncate block pr-2">{apo.title}</span>
+                    <div className="min-w-0 flex items-start gap-2.5 flex-1 pr-2" title={apo.title}>
+                      <FileText className={`w-4 h-4 mt-0.5 shrink-0 ${selectedId === apo.id ? "text-blue-400" : "text-slate-500 group-hover:text-slate-400"}`} />
+                      <span className="text-xs font-bold leading-snug line-clamp-2">{formatApostilaTitle(apo.title)}</span>
                     </div>
                     <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-transform ${selectedId === apo.id ? "translate-x-0.5 text-blue-400" : "text-slate-600 group-hover:text-slate-500"}`} />
                   </button>
@@ -480,7 +481,7 @@ export default function VadeMecumClient({
               {/* Title Section (printed nicely) */}
               <div className="p-6 border-b border-slate-800/40 bg-slate-950/10">
                 <div className="text-[10px] text-blue-500 font-black tracking-widest uppercase mb-1">VADE MECUM DO ALUNO</div>
-                <h2 className="text-xl font-black text-white">{selectedApostila.title}</h2>
+                <h2 className="text-xl font-black text-white">{formatApostilaTitle(selectedApostila.title)}</h2>
               </div>
 
               {/* Markdown Content Area */}

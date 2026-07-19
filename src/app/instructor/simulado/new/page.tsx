@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation";
 import { FileUp, Loader2, Settings, ArrowLeft, BookOpen, Save } from "lucide-react";
 import Link from "next/link";
+import { formatApostilaTitle } from "@/lib/utils";
 
 interface Apostila {
   id: string;
@@ -172,7 +173,7 @@ export default function NovoSimulado() {
                     </SelectItem>
                     {apostilas.map(apo => (
                       <SelectItem key={apo.id} value={apo.id} className="focus:bg-slate-800 focus:text-white">
-                        {apo.title} (Salvo em {new Date(apo.createdAt).toLocaleDateString()})
+                        {formatApostilaTitle(apo.title)} (Salvo em {new Date(apo.createdAt).toLocaleDateString()})
                       </SelectItem>
                     ))}
                   </SelectContent>
