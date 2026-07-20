@@ -10,6 +10,7 @@
     "start": "next start",
     "start:prod": "node server.js",
     "backfill:streak": "tsx backfill_answers_createdAt.ts",
+    "backfill:badges": "tsx backfill_badges.ts",
     "postinstall": "prisma generate",
     "lint": "next lint"
   },
