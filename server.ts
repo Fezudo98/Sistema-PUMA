@@ -63,6 +63,7 @@ import { parse } from 'url';
 import next from 'next';
 import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
+import { computeStudentPerformanceStats } from './src/lib/stats';
 
 const prisma = new PrismaClient();
 
@@ -150,27 +151,16 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
     });
 
-    // Calculate total questions across all unique simulados the student participated in
-    const participatedSimulados = new Map<string, number>();
-    student.answers.forEach(a => {
-      const simuladoId = a.question.simuladoId;
-      const totalQ = a.question.simulado._count.questions;
-      const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
-      const expectedQ = Math.max(0, totalQ - otherRaffleCount);
-      participatedSimulados.set(simuladoId, expectedQ);
-    });
-
-    const totalQuestions = Array.from(participatedSimulados.values()).reduce((sum, count) => sum + count, 0);
-    const accuracy = totalQuestions > 0 ? Math.round((correctAnswers.length / totalQuestions) * 100) : 0;
-    const totalScore = student.answers.reduce((acc, curr) => acc + (curr.pontuacao || 0), 0);
-    
     const simuladoGroups: Record<string, typeof student.answers> = {};
     student.answers.forEach(a => {
       if (!simuladoGroups[a.question.simuladoId]) simuladoGroups[a.question.simuladoId] = [];
       simuladoGroups[a.question.simuladoId].push(a);
     });
 
-    const simuladosCount = Object.keys(simuladoGroups).length;
+    const sPerf = computeStudentPerformanceStats(student.answers as any, student.id, otherRaffleCounts);
+    const simuladosCount = sPerf.simuladosCount;
+    const accuracy = sPerf.accuracy;
+    const totalScore = sPerf.totalScore;
     
     let advancedSimuladosCount = 0;
     let hardSimuladosWith70Acc = 0;
