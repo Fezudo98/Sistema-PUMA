@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // @ts-ignore - Ignora verificação do ESLint no build do servidor
   eslint: {
     ignoreDuringBuilds: true,
   },

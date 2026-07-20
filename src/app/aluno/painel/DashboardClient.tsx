@@ -856,7 +856,7 @@ export default function StudentDashboardClient({
               <Card className="border-orange-500/30 bg-gradient-to-b from-orange-950/40 to-slate-900/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(249,115,22,0.1)] relative overflow-hidden">
                 <Flame className="w-7 h-7 text-orange-500 fill-orange-500/30 mb-1.5 animate-bounce" />
                 <p className="text-2xl font-black text-orange-400">{stats?.streakDays || 0}</p>
-                <p className="text-[11px] text-orange-300 uppercase font-bold tracking-wider mt-1">Foguinho (Dias)</p>
+                <p className="text-[11px] text-orange-300 uppercase font-bold tracking-wider mt-1">Sequência (Dias)</p>
                 <span className="text-[9px] text-slate-400 mt-0.5">+100 pts/dia</span>
               </Card>
               <Card className="border-yellow-500/30 bg-gradient-to-b from-yellow-950/40 to-slate-900/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(234,179,8,0.1)] relative overflow-hidden">

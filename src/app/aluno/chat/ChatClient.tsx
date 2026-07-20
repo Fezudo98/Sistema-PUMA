@@ -434,7 +434,7 @@ export default function ChatClient({
                   <div className="flex items-center justify-between border-t border-slate-800/80 pt-2">
                     <div className="flex items-center gap-2">
                       <Flame className="w-4 h-4 text-orange-500 fill-orange-500/30 animate-pulse" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Foguinho (Diária)</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Sequência (Diária)</span>
                     </div>
                     <span className="text-xs font-black text-orange-400">{stats.streakDays} dias</span>
                   </div>

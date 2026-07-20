@@ -94,7 +94,7 @@ export function computeStudentPerformanceStats(
     ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100)
     : 0;
 
-  // Calculate Streak (Foguinho 🔥)
+  // Calculate Streak (Sequência 🔥)
   const todayStr = getLocalDayString(new Date());
   const yesterdayDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const yesterdayStr = getLocalDayString(yesterdayDate);
