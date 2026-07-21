@@ -147,35 +147,15 @@ async function runBadgesBackfill() {
         { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false, simId: "" },
         { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false, simId: "" },
         { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 25 && totalScore >= 60000, exclusive: false, simId: "" },
-        { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: true, simId: sniperSimuladoId },
-        { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: true, simId: raioSimuladoId },
-        { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: true, simId: lastAdvancedSimuladoId },
-        { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: true, simId: lastAdvancedSimuladoId },
+        { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: false, simId: sniperSimuladoId },
+        { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: false, simId: raioSimuladoId },
+        { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: false, simId: lastAdvancedSimuladoId },
+        { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: false, simId: lastAdvancedSimuladoId },
         { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false, simId: "" },
         { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false, simId: "" },
         { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false, simId: "" },
         { id: 'pepreto', name: 'Pé Preto', earned: hasPepreto, exclusive: false, simId: "" }
       ];
-
-      // Exclusividade
-      for (let i = 0; i < badges.length; i++) {
-        const b = badges[i];
-        if (b.exclusive && b.earned && b.simId) {
-          const existingExclusive = await prisma.exclusiveBadge.findFirst({
-            where: { badgeId: b.id }
-          });
-
-          if (existingExclusive) {
-            if (existingExclusive.userId !== student.id && existingExclusive.simuladoId !== b.simId) {
-              badges[i].earned = false;
-            }
-          } else {
-            await prisma.exclusiveBadge.create({
-              data: { badgeId: b.id, userId: student.id, simuladoId: b.simId }
-            });
-          }
-        }
-      }
 
       const earnedBadgeIds = badges.filter(b => b.earned).map(b => b.id);
       const previouslyUnlocked = student.unlockedBadges ? student.unlockedBadges.split(',').filter(Boolean) : [];

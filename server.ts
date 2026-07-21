@@ -230,36 +230,15 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
       { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
       { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 25 && totalScore >= 60000, exclusive: false },
-      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: true },
-      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: true },
-      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: true },
-      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: true },
+      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: false },
+      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: false },
+      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: false },
+      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: false },
       { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
       { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
       { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },
       { id: 'pepreto', name: 'Pé Preto', earned: hasPepreto, exclusive: false }
     ];
-
-    // Check exclusivity
-    for (let i = 0; i < badges.length; i++) {
-      if (badges[i].exclusive && badges[i].earned) {
-        const existingExclusive = await prisma.exclusiveBadge.findFirst({
-          where: { badgeId: badges[i].id }
-        });
-
-        if (existingExclusive) {
-          // If already claimed by someone else in a different simulado
-          if (existingExclusive.simuladoId !== currentSimuladoId) {
-            badges[i].earned = false;
-          }
-        } else {
-          // Claim it now for this simulado
-          await prisma.exclusiveBadge.create({
-            data: { badgeId: badges[i].id, userId: studentId, simuladoId: currentSimuladoId }
-          });
-        }
-      }
-    }
 
     const earnedBadgeIds = badges.filter(b => b.earned).map(b => b.id);
     const previouslyUnlocked = (student as any).unlockedBadges ? (student as any).unlockedBadges.split(',').filter(Boolean) : [];

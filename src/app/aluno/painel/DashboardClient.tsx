@@ -55,8 +55,9 @@ const getBadges = (stats: any) => {
       name: 'Atirador de Elite',
       icon: Crosshair,
       earned: false, 
-      exclusive: true,
-      desc: 'Atingir 100% de acerto em um simulado avançado de no mínimo 20 questões e ter 80.000 pontos totais.',
+      exclusive: false,
+      isElite: true,
+      desc: 'Atingir 100% de acerto em um simulado avançado de no mínimo 20 questões (naquele simulado) e ter 80.000 pontos totais.',
       color: 'text-emerald-500',
       bg: 'bg-emerald-900/20',
       border: 'border-emerald-500/50'
@@ -66,8 +67,9 @@ const getBadges = (stats: any) => {
       name: 'Pronto Resposta (Raio)',
       icon: Zap,
       earned: false,
-      exclusive: true,
-      desc: 'Concluir um simulado avançado com tempo médio máx de 15s, acertos mín 85% e ter 50.000 pontos.',
+      exclusive: false,
+      isElite: true,
+      desc: 'Concluir um simulado avançado com tempo médio máx de 15s e acertos mín 85% (naquele simulado), e ter 50.000 pontos totais.',
       color: 'text-amber-400',
       bg: 'bg-amber-900/20',
       border: 'border-amber-400/50'
@@ -77,8 +79,9 @@ const getBadges = (stats: any) => {
       name: 'Caveira',
       icon: Skull,
       earned: false,
-      exclusive: true,
-      desc: 'Concluir no mínimo 40 simulados avançados, taxa global de acertos mín 97% e ter 100.000 pontos.',
+      exclusive: false,
+      isElite: true,
+      desc: 'Concluir no mínimo 40 simulados avançados, ter taxa global de acertos (geral) mín 97% e 100.000 pontos totais.',
       color: 'text-purple-500',
       bg: 'bg-purple-900/20',
       border: 'border-purple-500/50'
@@ -88,8 +91,9 @@ const getBadges = (stats: any) => {
       name: 'Padrão PM',
       icon: Medal,
       earned: false,
-      exclusive: true,
-      desc: 'Alcançar 150.000 pontos totais e ter no mínimo taxa global de acertos em 92%.',
+      exclusive: false,
+      isElite: true,
+      desc: 'Alcançar 150.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 92%.',
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'
@@ -812,9 +816,9 @@ export default function StudentDashboardClient({
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className={`font-bold text-sm tracking-wide uppercase ${isUnlocked ? b.color : 'text-slate-400'}`}>{b.name}</h4>
-                          {b.exclusive && (
+                          {(b.isElite || b.exclusive) && (
                             <span className="text-[10px] font-black bg-amber-500/20 text-amber-500 border border-amber-500/30 px-1.5 py-0.5 rounded uppercase tracking-widest">
-                              Exclusivo
+                              Elite
                             </span>
                           )}
                         </div>
