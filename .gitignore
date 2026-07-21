@@ -55,3 +55,7 @@ dev.db
 # Logs
 /logs/
 *.log
+
+# Scripts locais com credenciais
+conectar_vps.bat
+*.bat
