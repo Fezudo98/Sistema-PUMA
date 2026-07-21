@@ -16,18 +16,32 @@ function generateCode() {
 }
 
 function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
-  if (!alternativas || alternativas.length === 0) {
-    return { alternativas: [], correta: 0 };
+  if (!alternativas || !Array.isArray(alternativas) || alternativas.length === 0) {
+    return { alternativas: ["A) Alternativa indisponível", "B) Alternativa indisponível", "C) Alternativa indisponível", "D) Alternativa indisponível", "E) Alternativa indisponível"], correta: 0 };
   }
 
   const idx = Math.max(0, Math.min(corretaIdx, alternativas.length - 1));
-  const correctText = alternativas[idx];
+  const correctText = alternativas[idx] || "";
   
-  const prefixRegex = /^[A-E][\s\)\-\.\:]+\s*/i;
-  const cleanedAlts = alternativas.map(alt => alt.replace(prefixRegex, ""));
-  const cleanedCorrectText = correctText.replace(prefixRegex, "");
+  const prefixRegex = /^[A-Z][\s\)\-\.\:]+\s*/i;
+  const cleanedAlts = alternativas.map(alt => (typeof alt === 'string' ? alt.replace(prefixRegex, "").trim() : String(alt)));
+  const cleanedCorrectText = (typeof correctText === 'string' ? correctText.replace(prefixRegex, "").trim() : String(correctText));
 
-  const shuffled = [...cleanedAlts];
+  let validAlts = cleanedAlts.filter(alt => alt.length > 0);
+  if (!validAlts.includes(cleanedCorrectText)) {
+    validAlts.unshift(cleanedCorrectText);
+  }
+
+  if (validAlts.length > 5) {
+    const wrongAlts = validAlts.filter(alt => alt !== cleanedCorrectText);
+    validAlts = [cleanedCorrectText, ...wrongAlts.slice(0, 4)];
+  }
+
+  while (validAlts.length < 5) {
+    validAlts.push(`Alternativa ${validAlts.length + 1}`);
+  }
+
+  const shuffled = [...validAlts];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -38,8 +52,10 @@ function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
     newCorreta = 0;
   }
 
-  const prefixes = ["A) ", "B) ", "C) ", "D) ", "E) "];
-  const finalAlts = shuffled.map((alt, index) => `${prefixes[index]}${alt}`);
+  const finalAlts = shuffled.map((alt, index) => {
+    const letter = String.fromCharCode(65 + index);
+    return `${letter}) ${alt}`;
+  });
 
   return {
     alternativas: finalAlts,
