@@ -155,6 +155,73 @@ export async function POST(req: NextRequest) {
     }
 
     const generateWithFallback = async (content: any[]) => {
+      const anthropicKey = process.env.ANTHROPIC_API_KEY;
+
+      if (anthropicKey) {
+        try {
+          const Anthropic = require("@anthropic-ai/sdk");
+          const anthropic = new Anthropic({ apiKey: anthropicKey });
+
+          let promptText = "";
+          let base64Pdf = "";
+
+          for (const item of content) {
+            if (typeof item === "string") {
+              promptText += item;
+            } else if (item?.inlineData?.data) {
+              base64Pdf = item.inlineData.data;
+            }
+          }
+
+          const fullPrompt = promptText + "\n\nIMPORTANTE: Sua resposta DEVE ser ÚNICA E EXCLUSIVAMENTE um array JSON válido sem marcações markdown ```json, sem texto antes ou depois, começando direto no colchete [ e terminando no fechar colchete ].";
+
+          const claudeModels = ["claude-sonnet-5", "claude-opus-4-8", "claude-fable-5"];
+          for (const model of claudeModels) {
+            try {
+              console.log(`[CLAUDE AI - LIVE GENERATE] Gerando questões com modelo ${model}...`);
+              const userContent: any[] = [];
+              if (base64Pdf) {
+                userContent.push({
+                  type: "document",
+                  source: {
+                    type: "base64",
+                    media_type: "application/pdf",
+                    data: base64Pdf
+                  }
+                });
+              }
+              userContent.push({
+                type: "text",
+                text: fullPrompt
+              });
+
+              const response = await anthropic.messages.create({
+                model: model,
+                max_tokens: 8192,
+                messages: [{ role: "user", content: userContent }]
+              });
+
+              let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+              let jsonText = rawText.trim();
+              if (jsonText.startsWith("```json")) {
+                jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+              } else if (jsonText.startsWith("```")) {
+                jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+              }
+
+              // Valida JSON antes de retornar
+              JSON.parse(jsonText);
+              console.log(`✅ [CLAUDE AI - LIVE GENERATE (${model})] Questões geradas e validadas com sucesso!`);
+              return { response: { text: () => jsonText } };
+            } catch (err: any) {
+              console.warn(`[CLAUDE AI - LIVE GENERATE] Falha com modelo ${model}:`, err.message || err);
+            }
+          }
+        } catch (sdkErr: any) {
+          console.warn(`[CLAUDE AI - LIVE GENERATE] Erro na inicialização do Claude SDK:`, sdkErr.message || sdkErr);
+        }
+      }
+
       const apiKeys = [
         { label: "principal", key: process.env.GEMINI_API_KEY || "" },
         { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
@@ -203,7 +270,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      throw new Error("Todas as versões do modelo Gemini atingiram o limite temporário (429) ou estão indisponíveis. Aguarde 30 segundos e tente novamente.");
+      throw new Error("Todas as versões do modelo Claude e Gemini atingiram limite ou falharam.");
     };
 
     // Envia o prompt de texto JUNTO com o arquivo PDF em base64 nativamente!
