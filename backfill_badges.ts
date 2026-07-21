@@ -10,7 +10,7 @@ async function runBadgesBackfill() {
 
   try {
     const students = await prisma.user.findMany({
-      where: { role: 'ALUNO' },
+      where: { role: { in: ['STUDENT', 'ALUNO'] } },
       include: {
         answers: {
           include: {
