@@ -19,11 +19,43 @@ const modelVersions = [
 
 // Helper to generate content with fallback keys and models
 async function generateWithFallback(content: any[]) {
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (anthropicKey) {
+    try {
+      console.log("[VADE MECUM AI] Tentando gerar com Claude Sonnet 5...");
+      const Anthropic = require("@anthropic-ai/sdk");
+      const anthropic = new Anthropic({ apiKey: anthropicKey });
+
+      let promptText = "";
+      for (const item of content) {
+        if (typeof item === "string") {
+          promptText += item + "\n\n";
+        } else if (item?.text) {
+          promptText += item.text + "\n\n";
+        }
+      }
+
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 8192,
+        messages: [{ role: "user", content: promptText.trim() }]
+      });
+
+      const rawText = response.content[0]?.type === "text" ? response.content[0].text : "";
+      if (rawText) {
+        console.log("✅ [VADE MECUM AI] Resumo gerado com sucesso pelo Claude Sonnet 5!");
+        return { response: { text: () => rawText } };
+      }
+    } catch (claudeErr: any) {
+      console.warn("[VADE MECUM AI] Falha ao gerar com Claude Sonnet 5. Recorrendo ao Gemini...", claudeErr.message || claudeErr);
+    }
+  }
+
   const primaryKey = process.env.GEMINI_API_KEY || "";
   const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
 
   if (!primaryKey) {
-    throw new Error("Chave do Gemini não configurada no servidor.");
+    throw new Error("Chave do Gemini e do Claude não configuradas no servidor.");
   }
 
   for (const modelVersion of modelVersions) {
@@ -47,7 +79,7 @@ async function generateWithFallback(content: any[]) {
     }
   }
 
-  throw new Error("Todas as chaves e modelos do Gemini falharam ou atingiram limite de cota.");
+  throw new Error("Todas as chaves e modelos do Claude e Gemini falharam ou atingiram limite de cota.");
 }
 
 // Generate the Vade Mecum summary using Gemini
