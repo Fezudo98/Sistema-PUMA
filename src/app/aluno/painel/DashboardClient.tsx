@@ -16,6 +16,39 @@ import { updateUserAvatar, updateUserName } from "@/app/actions/user";
 import { resetSimuladoAttempt } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 
+const LEIS_DA_SELVA = [
+  {
+    numero: "1ª LEI",
+    texto: "Tenha iniciativa, pois não receberá ordens para todas as situações. Tenha em vista o objetivo final.",
+    destaque: "Iniciativa & Objetivo"
+  },
+  {
+    numero: "2ª LEI",
+    texto: "Procure a surpresa por todos os modos.",
+    destaque: "Fator Surpresa"
+  },
+  {
+    numero: "3ª LEI",
+    texto: "Mantenha seu corpo, armamento e equipamento em boas condições.",
+    destaque: "Pronto Operacional"
+  },
+  {
+    numero: "4ª LEI",
+    texto: "Aprenda a suportar o desconforto e a fadiga sem queixar-se e seja moderado em suas necessidades.",
+    destaque: "Resiliência & Disciplina"
+  },
+  {
+    numero: "5ª LEI",
+    texto: "Pense e aja como caçador, não como caça.",
+    destaque: "Mentalidade de Caçador"
+  },
+  {
+    numero: "6ª LEI",
+    texto: "Combata sempre com inteligência e seja o mais ardiloso.",
+    destaque: "Inteligência Tática"
+  }
+];
+
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
   
@@ -173,6 +206,14 @@ export default function StudentDashboardClient({
   const [loadingResetId, setLoadingResetId] = useState<string | null>(null);
   const [generatedToday, setGeneratedToday] = useState<boolean>(false);
   const router = useRouter();
+  const [currentLeiIndex, setCurrentLeiIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentLeiIndex((prev) => (prev + 1) % LEIS_DA_SELVA.length);
+    }, 7000); // 7 segundos para cada lei
+    return () => clearInterval(timer);
+  }, []);
 
   const isAnalysisDoneToday = generatedToday || Boolean(
     user?.aiAnalysisDate &&
@@ -345,6 +386,54 @@ export default function StudentDashboardClient({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* Banner: Leis da Guerra na Selva (Tático / Dinâmico) */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-amber-950/90 border border-emerald-500/40 p-6 sm:p-7 shadow-[0_0_30px_rgba(16,185,129,0.15)] group transition-all duration-500">
+          <div className="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/25 transition-all"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-400 animate-pulse"></div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                <Flame className="w-6 h-6 text-emerald-400 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 px-2.5 py-0.5 rounded bg-emerald-950 border border-emerald-800 shadow-inner">
+                    {LEIS_DA_SELVA[currentLeiIndex].numero}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400/90">
+                    • LEIS DA GUERRA NA SELVA •
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-400 hidden md:inline">
+                    [{LEIS_DA_SELVA[currentLeiIndex].destaque}]
+                  </span>
+                </div>
+                <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-snug transition-all duration-500 min-h-[3.5rem] sm:min-h-[2.5rem] flex items-center">
+                  "{LEIS_DA_SELVA[currentLeiIndex].texto}"
+                </p>
+              </div>
+            </div>
+
+            {/* Controles do Banner (Dots interativos) */}
+            <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+              <div className="flex items-center gap-1.5 mr-2">
+                {LEIS_DA_SELVA.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentLeiIndex(idx)}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      idx === currentLeiIndex 
+                        ? "w-6 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" 
+                        : "w-1.5 bg-slate-700 hover:bg-slate-500"
+                    }`}
+                    title={`Ver ${LEIS_DA_SELVA[idx].numero}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Prominent Banner: Central de Inteligência & Chat com Mentor IA */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-950/90 via-slate-900/95 to-indigo-950/90 border border-blue-500/40 p-6 sm:p-8 shadow-2xl">
           <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
