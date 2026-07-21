@@ -155,9 +155,11 @@ export async function POST(req: NextRequest) {
     }
 
     const generateWithFallback = async (content: any[]) => {
+      // Claude permanece inativo/desativado por padrão ("A chave api Claude fica inativa por enquanto")
+      const useClaude = process.env.USE_CLAUDE_FOR_SIMULADOS === "true";
       const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-      if (anthropicKey) {
+      if (useClaude && anthropicKey) {
         try {
           const Anthropic = require("@anthropic-ai/sdk");
           const anthropic = new Anthropic({ apiKey: anthropicKey });
@@ -231,13 +233,26 @@ export async function POST(req: NextRequest) {
       ].filter(k => Boolean(k.key));
 
       const modelVersions = [
-        "gemini-pro-latest",
+        "gemini-3.6-flash",
         "gemini-3.5-flash",
-        "gemini-3.1-flash-lite",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
-        "gemini-flash-latest"
+        "gemini-1.5-pro",
+        "gemini-pro-latest"
       ];
+
+      const getLiveKeyIndex = () => {
+        if (typeof (global as any).liveKeyRoundRobinIndex !== "number") {
+          (global as any).liveKeyRoundRobinIndex = 0;
+        }
+        return (global as any).liveKeyRoundRobinIndex as number;
+      };
+      const setLiveKeyIndex = (idx: number) => {
+        (global as any).liveKeyRoundRobinIndex = idx;
+      };
+
+      const startIndex = getLiveKeyIndex() % apiKeys.length;
+      setLiveKeyIndex((startIndex + 1) % apiKeys.length);
 
       for (const modelVersion of modelVersions) {
         const dynamicGenConfig = {
@@ -247,12 +262,11 @@ export async function POST(req: NextRequest) {
         
         const now = Date.now();
 
-        for (const { label, key } of apiKeys) {
+        for (let i = 0; i < apiKeys.length; i++) {
+          const { label, key } = apiKeys[(startIndex + i) % apiKeys.length];
           const cooldownKey = `${label}_${modelVersion}`;
           if (!keyModelCooldowns.has(cooldownKey) || now > keyModelCooldowns.get(cooldownKey)!) {
-            if (label !== "principal") {
-              console.log(`Tentando chave ${label} com modelo ${modelVersion}...`);
-            }
+            console.log(`Tentando chave ${label} com modelo ${modelVersion}...`);
             try {
               const genAI = new GoogleGenerativeAI(key);
               const model = genAI.getGenerativeModel(dynamicGenConfig as any);

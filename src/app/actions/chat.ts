@@ -11,11 +11,11 @@ import { queueGenerationTask } from "./dailySimulado";
 const prisma = new PrismaClient();
 
 const modelVersions = [
-  "gemini-2.5-flash",
+  "gemini-3.6-flash",
   "gemini-3.5-flash",
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-flash-latest",
-  "gemini-3.1-flash-lite",
+  "gemini-1.5-pro",
   "gemini-pro-latest"
 ];
 

@@ -116,18 +116,43 @@ const genConfig = {
 };
 
 const modelVersions = [
-  "gemini-pro-latest",
+  "gemini-3.6-flash",
   "gemini-3.5-flash",
-  "gemini-3.1-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-flash-latest"
+  "gemini-1.5-pro",
+  "gemini-pro-latest"
 ];
 
+const getDailyKeyIndex = () => {
+  if (typeof (global as any).dailyKeyRoundRobinIndex !== "number") {
+    (global as any).dailyKeyRoundRobinIndex = 0;
+  }
+  return (global as any).dailyKeyRoundRobinIndex as number;
+};
+
+const setDailyKeyIndex = (idx: number) => {
+  (global as any).dailyKeyRoundRobinIndex = idx;
+};
+
+const dailyKeyModelCooldowns = (() => {
+  if (!(global as any).dailyKeyModelCooldownsMap) {
+    (global as any).dailyKeyModelCooldownsMap = new Map<string, number>();
+  }
+  return (global as any).dailyKeyModelCooldownsMap as Map<string, number>;
+})();
+
+function isRateLimitError(msg?: string): boolean {
+  if (!msg) return false;
+  return msg.includes("429") || msg.includes("Quota") || msg.includes("503") || msg.includes("high demand") || msg.includes("RESOURCE_EXHAUSTED");
+}
+
 async function generateWithFallback(content: any[]) {
+  // Claude permanece inativo/desativado por padrão ("A chave api Claude fica inativa por enquanto")
+  const useClaude = process.env.USE_CLAUDE_FOR_SIMULADOS === "true";
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  if (anthropicKey) {
+  if (useClaude && anthropicKey) {
     try {
       const Anthropic = require("@anthropic-ai/sdk");
       const anthropic = new Anthropic({ apiKey: anthropicKey });
@@ -192,12 +217,21 @@ async function generateWithFallback(content: any[]) {
     }
   }
 
-  const primaryKey = process.env.GEMINI_API_KEY || "";
-  const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
+  const apiKeys = [
+    { label: "principal", key: process.env.GEMINI_API_KEY || "" },
+    { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
+    { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" },
+    { label: "fallback_3", key: process.env.GEMINI_API_KEY_FALLBACK_3 || "" },
+    { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
+  ].filter(k => Boolean(k.key));
 
-  if (!primaryKey) {
-    throw new Error("Chave do Gemini e do Claude não configuradas/disponíveis no servidor.");
+  if (apiKeys.length === 0) {
+    throw new Error("Nenhuma chave do Gemini disponível no servidor.");
   }
+
+  // Round-robin: distribui as requisições de apostilas entre todas as chaves disponíveis para não sobrecarregar
+  const startIndex = getDailyKeyIndex() % apiKeys.length;
+  setDailyKeyIndex((startIndex + 1) % apiKeys.length);
 
   for (const modelVersion of modelVersions) {
     const dynamicGenConfig = {
@@ -205,26 +239,31 @@ async function generateWithFallback(content: any[]) {
       generationConfig: genConfig.generationConfig
     };
 
-    try {
-      const genAI = new GoogleGenerativeAI(primaryKey);
-      const model = genAI.getGenerativeModel(dynamicGenConfig as any);
-      return await model.generateContent(content);
-    } catch (error: any) {
-      console.warn(`[DAILY GENERATION] Chave principal falhou com modelo ${modelVersion}:`, error.message);
+    const now = Date.now();
 
-      if (fallbackKey) {
-        console.log(`[DAILY GENERATION] Tentando chave fallback com modelo ${modelVersion}...`);
+    for (let i = 0; i < apiKeys.length; i++) {
+      const keyObj = apiKeys[(startIndex + i) % apiKeys.length];
+      const cooldownKey = `${keyObj.label}_${modelVersion}`;
+
+      if (!dailyKeyModelCooldowns.has(cooldownKey) || now > dailyKeyModelCooldowns.get(cooldownKey)!) {
+        console.log(`[DAILY GENERATION] Tentando chave [${keyObj.label}] com modelo [${modelVersion}]...`);
         try {
-          const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-          const fallbackModel = fallbackGenAI.getGenerativeModel(dynamicGenConfig as any);
-          return await fallbackModel.generateContent(content);
-        } catch (fallbackError: any) {
-          console.warn(`[DAILY GENERATION] Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
+          const genAI = new GoogleGenerativeAI(keyObj.key);
+          const model = genAI.getGenerativeModel(dynamicGenConfig as any);
+          return await model.generateContent(content);
+        } catch (error: any) {
+          console.warn(`[DAILY GENERATION] Chave [${keyObj.label}] falhou com modelo [${modelVersion}]:`, error.message);
+          if (isRateLimitError(error.message)) {
+            console.warn(`[DAILY GENERATION Cooldown] Chave [${keyObj.label}] em repouso por 45s no modelo [${modelVersion}].`);
+            dailyKeyModelCooldowns.set(cooldownKey, Date.now() + 45_000);
+          }
         }
+      } else {
+        console.log(`[DAILY GENERATION Cooldown] Chave [${keyObj.label}] em repouso no modelo [${modelVersion}]. Pulando...`);
       }
     }
   }
-  throw new Error("Todas as versões do modelo Claude e Gemini falharam na geração diária.");
+  throw new Error("Todas as chaves e modelos do Gemini falharam na geração diária.");
 }
 
 // Global locks to persist across Next.js reloads
