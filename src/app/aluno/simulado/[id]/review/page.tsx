@@ -123,18 +123,21 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
       <div className="max-w-4xl mx-auto">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Link href="/aluno/painel">
-                <Button variant="ghost" size="icon" className="text-slate-500 hover:text-white hover:bg-slate-800">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <Link 
+                href="/aluno/painel"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-blue-500/50 text-slate-200 hover:text-white font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                title="Voltar para o Painel Principal"
+              >
+                <ArrowLeft className="w-5 h-5 text-blue-400" />
+                <span>Voltar ao Painel</span>
               </Link>
-              <h1 className="text-3xl font-black text-white uppercase tracking-tight">Correção do Simulado</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">Correção do Simulado</h1>
             </div>
             {simulado.tipo === "LIVE" ? (
-              <p className="text-slate-500 ml-12">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
+              <p className="text-slate-400 font-medium">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
             ) : (
-              <p className="text-slate-500 ml-12">Treinamento de Estudo Individual: <strong className="text-blue-500">IA Avançado</strong></p>
+              <p className="text-slate-400 font-medium">Treinamento de Estudo Individual: <strong className="text-blue-500">IA Avançado</strong></p>
             )}
           </div>
           
@@ -342,6 +345,27 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
               </Card>
             );
           })}
+        </div>
+
+        {/* Rodapé de Navegação Rápida ao final da Correção */}
+        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Link 
+            href="/aluno/painel"
+            className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm sm:text-base uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(59,130,246,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Voltar para o Painel Principal</span>
+          </Link>
+
+          {simulado.tipo === "DAILY" && (
+            <div className="w-full sm:w-auto">
+              <RefazerReviewButton 
+                simId={simulado.id} 
+                studentId={user.userId} 
+                simName={simulado.apostilaName || "Simulado de Estudo"} 
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

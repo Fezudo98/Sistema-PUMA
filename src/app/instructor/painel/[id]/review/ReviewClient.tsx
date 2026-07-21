@@ -39,15 +39,18 @@ export default function ReviewClient({
       <div className="w-full">
         <header className="flex justify-between items-center mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Link href="/instructor">
-                <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-800">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <Link 
+                href="/instructor"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+                title="Voltar para o Painel do Instrutor"
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-700" />
+                <span>Voltar ao Painel</span>
               </Link>
-              <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Relatório do Simulado</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight">Relatório do Simulado</h1>
             </div>
-            <p className="text-slate-500 ml-12">Sala <strong className="text-blue-600">{simulado.codigoSala}</strong> • Finalizado</p>
+            <p className="text-slate-500 font-medium">Sala <strong className="text-blue-600">{simulado.codigoSala}</strong> • Finalizado</p>
           </div>
           <div className="flex gap-3">
             <Link href="/instructor/simulado/new">
