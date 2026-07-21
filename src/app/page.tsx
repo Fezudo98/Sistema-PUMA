@@ -27,7 +27,7 @@ export default function Home() {
           alt="PMCE Simula Logo" 
           width={180} 
           height={180} 
-          className="mb-6 drop-shadow-[0_0_25px_rgba(245,158,11,0.4)] mix-blend-screen object-contain transition-transform hover:scale-105 duration-300"
+          className="mb-6 drop-shadow-[0_0_25px_rgba(245,158,11,0.4)] object-contain transition-transform hover:scale-105 duration-300"
         />
         
         <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)] text-center">
