@@ -90,6 +90,15 @@ export async function loginUser(formData: FormData) {
     return { error: "Todos os campos são obrigatórios." };
   }
 
+  if (role === "STUDENT") {
+    const maintenance = await prisma.systemSetting.findUnique({
+      where: { key: "MAINTENANCE_MODE" }
+    });
+    if (maintenance?.value === "true") {
+      return { error: "🔧 Servidor em Manutenção. Voltamos em breve com o sistema PUMA!" };
+    }
+  }
+
   const user = await prisma.user.findUnique({
     where: { username }
   });

@@ -36,6 +36,12 @@ export default async function InstructorDashboard() {
   });
   const isChatEnabled = chatSetting?.value !== "false";
 
+  // Fetch if maintenance mode is enabled globally
+  const maintenanceSetting = await prisma.systemSetting.findUnique({
+    where: { key: "MAINTENANCE_MODE" }
+  });
+  const isMaintenanceEnabled = maintenanceSetting?.value === "true";
+
   // Primeiro login do dia do instrutor: se houver apostilas ativas sem simulado gerado hoje, dispara em background
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -271,7 +277,7 @@ export default async function InstructorDashboard() {
           </TabsContent>
 
           <TabsContent value="config" className="mt-0">
-            <SettingsClient initialChatEnabled={isChatEnabled} />
+            <SettingsClient initialChatEnabled={isChatEnabled} initialMaintenanceEnabled={isMaintenanceEnabled} />
           </TabsContent>
         </Tabs>
       </div>
