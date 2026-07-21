@@ -36,7 +36,7 @@ export default function InstructorAuth() {
 
       <div className="w-full max-w-md z-10">
         <div className="flex flex-col items-center mb-8">
-          <Image src="/logo.png" alt="Sistema PUMA" width={110} height={110} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] object-contain mb-2 hover:scale-105 transition-transform duration-300" />
+          <Image src="/logo.png" alt="Sistema PUMA" width={110} height={110} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] mix-blend-screen object-contain mb-2 hover:scale-105 transition-transform duration-300" />
           <h1 className="text-3xl font-extrabold text-white mt-2">Sistema <span className="text-blue-500">PUMA</span></h1>
           <p className="text-slate-400 font-medium">Acesso Restrito: Instrutores</p>
         </div>

@@ -345,7 +345,7 @@ export default function StudentDashboardClient({
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Image src="/logo.png" alt="Logo PUMA" width={52} height={52} className="drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] object-contain hover:scale-105 transition-transform duration-300" />
+            <Image src="/logo.png" alt="Logo PUMA" width={52} height={52} className="drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] mix-blend-screen object-contain hover:scale-105 transition-transform duration-300" />
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">Sistema PUMA</h1>
               <p className="text-xs text-blue-400 font-medium uppercase tracking-wider">Painel do Aluno</p>
