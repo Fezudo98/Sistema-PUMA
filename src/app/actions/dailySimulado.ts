@@ -145,7 +145,7 @@ async function generateWithFallback(content: any[]) {
 
       const fullPrompt = promptText + "\n\nIMPORTANTE: Sua resposta DEVE ser ÚNICA E EXCLUSIVAMENTE um array JSON válido sem marcações markdown ```json, sem texto antes ou depois, começando direto no colchete [ e terminando no fechar colchete ].";
 
-      const claudeModels = ["claude-sonnet-5", "claude-opus-4-8", "claude-fable-5"];
+      const claudeModels = ["claude-sonnet-5"];
       for (const model of claudeModels) {
         try {
           console.log(`[CLAUDE AI - DAILY] Gerando questões com modelo ${model}...`);
