@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { QuemSomosModal } from "@/components/QuemSomosModal";
+import { Shield } from "lucide-react";
 
 export default function Home() {
   return (
@@ -39,7 +39,15 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col gap-4 w-full">
-          <QuemSomosModal />
+          <Link href="/quem-somos" className="w-full">
+            <Button 
+              variant="outline" 
+              className="w-full bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 hover:from-amber-500/20 hover:to-yellow-500/20 border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold tracking-wider uppercase py-6 shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Shield className="w-5 h-5 text-amber-400 animate-pulse" />
+              <span>Quem Somos Nós • 32º Pelotão</span>
+            </Button>
+          </Link>
 
           <Link href="/aluno" className="w-full">
             <Button size="lg" className="w-full h-15 text-base font-bold bg-blue-600 hover:bg-blue-500 border border-blue-500/50 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)]">

@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { getTakenNumbers, loginUser, registerUser } from "@/app/actions/auth";
-import { QuemSomosModal } from "@/components/QuemSomosModal";
+import Link from "next/link";
+import { Shield } from "lucide-react";
 
 export default function StudentAuth() {
   const [error, setError] = useState("");
@@ -55,7 +56,15 @@ export default function StudentAuth() {
           <p className="text-slate-400 font-medium text-sm">32º Pelotão • CFSD PMCE</p>
         </div>
         
-        <QuemSomosModal />
+        <Link href="/quem-somos" className="w-full block">
+          <Button 
+            variant="outline" 
+            className="w-full bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 hover:from-amber-500/20 hover:to-yellow-500/20 border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold tracking-wider uppercase py-6 shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Shield className="w-5 h-5 text-amber-400 animate-pulse" />
+            <span>Quem Somos Nós • 32º Pelotão</span>
+          </Button>
+        </Link>
 
         <Card className="border-slate-800 bg-slate-900/90 text-white shadow-2xl backdrop-blur-md">
           <CardHeader className="text-center pb-2 pt-4">
