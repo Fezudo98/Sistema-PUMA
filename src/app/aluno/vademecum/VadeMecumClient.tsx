@@ -158,12 +158,12 @@ export default function VadeMecumClient({
           );
 
           blocks.push(
-            <div key={`table-${blocks.length}`} className="my-6 overflow-x-auto rounded-2xl border border-slate-800/80 shadow-2xl bg-slate-950/90 backdrop-blur-md print:border-slate-400 print:shadow-none print:bg-white">
-              <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <div key={`table-${blocks.length}`} className="my-6 overflow-x-auto rounded-2xl border border-slate-800/80 shadow-2xl bg-slate-950/90 backdrop-blur-md print:border-none print:shadow-none print:bg-transparent print:overflow-visible print:my-4">
+              <table className="w-full text-left border-collapse text-xs sm:text-sm print:text-xs">
                 <thead>
-                  <tr className="bg-slate-900/95 border-b border-slate-800 text-blue-400 font-black uppercase tracking-wider print:bg-slate-200 print:text-black print:border-slate-400">
+                  <tr className="bg-slate-900/95 border-b border-slate-800 text-blue-400 font-black uppercase tracking-wider print:bg-slate-100 print:text-slate-900 print:border-slate-400">
                     {headerCells.map((headerText, hIdx) => (
-                      <th key={hIdx} className="p-3.5 sm:p-4 border-r border-slate-800/60 last:border-r-0 print:border-slate-400">
+                      <th key={hIdx} className="p-3.5 sm:p-4 border-r border-slate-800/60 last:border-r-0 print:border-slate-400 print:p-2.5 print:text-xs">
                         {parseInline(headerText)}
                       </th>
                     ))}
@@ -173,7 +173,7 @@ export default function VadeMecumClient({
                   {bodyRows.map((rowCells, rIdx) => (
                     <tr key={rIdx} className="hover:bg-slate-900/40 transition-colors print:hover:bg-transparent">
                       {rowCells.map((cellText, cIdx) => (
-                        <td key={cIdx} className="p-3.5 sm:p-4 text-slate-300 leading-relaxed border-r border-slate-800/40 last:border-r-0 align-top print:text-black print:border-slate-300">
+                        <td key={cIdx} className="p-3.5 sm:p-4 text-slate-300 leading-relaxed border-r border-slate-800/40 last:border-r-0 align-top print:text-black print:border-slate-300 print:p-2.5 print:text-xs">
                           {parseInline(cellText)}
                         </td>
                       ))}
@@ -213,7 +213,7 @@ export default function VadeMecumClient({
 
         if (asciiLines.length > 0) {
           blocks.push(
-            <div key={`ascii-${blocks.length}`} className="my-5 p-4 sm:p-5 bg-slate-950 border border-blue-500/30 rounded-2xl font-mono text-xs sm:text-sm text-blue-300 overflow-x-auto whitespace-pre leading-relaxed shadow-inner print:border-slate-400 print:bg-slate-50 print:text-black">
+            <div key={`ascii-${blocks.length}`} className="my-5 p-4 sm:p-5 bg-slate-950 border border-blue-500/30 rounded-2xl font-mono text-xs sm:text-sm text-blue-300 overflow-x-auto whitespace-pre leading-relaxed shadow-inner print-diagram print:border-slate-400 print:bg-slate-50 print:text-black print:overflow-visible print:whitespace-pre-wrap">
               {asciiLines.join("\n")}
             </div>
           );
@@ -324,33 +324,145 @@ export default function VadeMecumClient({
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Printable Style Tag (forces print formatting on select elements) */}
+      {/* Printable Style Tag (forces ultra-clean textbook print formatting without scrollbars or card borders) */}
       <style jsx global>{`
         @media print {
-          body {
+          @page {
+            size: A4;
+            margin: 1.5cm 1.5cm 2cm 1.5cm;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          html, body, div, main, section, article {
             background-color: white !important;
             color: black !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            position: static !important;
+            box-shadow: none !important;
           }
           .no-print {
             display: none !important;
           }
+          main {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
           .print-content {
+            display: block !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            box-shadow: none !important;
+          }
+          /* Remove all card backgrounds, borders, and scrollable constraints during print */
+          .print-content > div, .print-content [class*="bg-slate-"], .print-content [class*="border"] {
+            border: none !important;
             background: transparent !important;
-            color: black !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+          }
+          .print-header {
+            border-bottom: 3px solid #1e3a8a !important;
+            padding-bottom: 12pt !important;
+            margin-bottom: 20pt !important;
+          }
+          h1 {
+            color: #0f172a !important;
+            font-size: 20pt !important;
+            margin-top: 24pt !important;
+            margin-bottom: 12pt !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
           }
           h2 {
             color: #1e3a8a !important;
-            border-bottom: 2px solid #ddd !important;
+            font-size: 15pt !important;
+            margin-top: 20pt !important;
+            margin-bottom: 10pt !important;
+            border-bottom: 1.5px solid #cbd5e1 !important;
+            padding-bottom: 6pt !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
           }
-          h3, strong {
-            color: black !important;
+          h3 {
+            color: #1e293b !important;
+            font-size: 12pt !important;
+            margin-top: 14pt !important;
+            margin-bottom: 6pt !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
           }
-          p, li {
-            color: #333 !important;
+          h4 {
+            color: #334155 !important;
+            font-size: 11pt !important;
+            margin-top: 10pt !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+          }
+          p, li, td, th {
+            color: #1e293b !important;
+            font-size: 10.5pt !important;
+            line-height: 1.6 !important;
+          }
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin: 16pt 0 !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: auto !important;
+          }
+          thead {
+            display: table-header-group !important;
+          }
+          th {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            font-weight: bold !important;
+            border: 1px solid #94a3b8 !important;
+            padding: 8pt !important;
+          }
+          td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 8pt !important;
+          }
+          blockquote {
+            border-left: 4px solid #2563eb !important;
+            background-color: #f8fafc !important;
+            padding: 10pt 14pt !important;
+            margin: 14pt 0 !important;
+            border-radius: 4px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            color: #0f172a !important;
+          }
+          .print-diagram {
+            border: 1px solid #94a3b8 !important;
+            background-color: #f8fafc !important;
+            padding: 12pt !important;
+            border-radius: 6px !important;
+            margin: 14pt 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            font-size: 9pt !important;
+            color: #0f172a !important;
+            overflow: visible !important;
+            white-space: pre-wrap !important;
+          }
+          li {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
         }
       `}</style>
@@ -428,8 +540,8 @@ export default function VadeMecumClient({
         {/* Right Content Area (print-content) */}
         <section className="print-content lg:col-span-3 flex flex-col gap-4">
           {selectedApostila ? (
-            <Card className="bg-slate-900/40 border-slate-800 shadow-2xl relative overflow-hidden backdrop-blur-sm h-full flex flex-col">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            <Card className="bg-slate-900/40 border-slate-800 shadow-2xl relative overflow-hidden backdrop-blur-sm h-full flex flex-col print:border-none print:shadow-none print:bg-transparent print:overflow-visible print:h-auto print:block">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 no-print"></div>
               
               {/* Controls bar (no-print) */}
               <div className="no-print p-4 border-b border-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -479,15 +591,15 @@ export default function VadeMecumClient({
               </div>
 
               {/* Title Section (printed nicely) */}
-              <div className="p-6 border-b border-slate-800/40 bg-slate-950/10">
-                <div className="text-[10px] text-blue-500 font-black tracking-widest uppercase mb-1">VADE MECUM DO ALUNO</div>
-                <h2 className="text-xl font-black text-white">{formatApostilaTitle(selectedApostila.title)}</h2>
+              <div className="p-6 border-b border-slate-800/40 bg-slate-950/10 print-header print:p-0 print:border-none print:bg-transparent">
+                <div className="text-[10px] text-blue-500 font-black tracking-widest uppercase mb-1 print:text-blue-900 print:text-xs">VADE MECUM DO ALUNO - PMCE</div>
+                <h2 className="text-xl sm:text-2xl font-black text-white print:text-black print:text-2xl print:font-extrabold print:border-b-2 print:border-slate-800 print:pb-2 print:mb-6">{formatApostilaTitle(selectedApostila.title)}</h2>
               </div>
 
               {/* Markdown Content Area */}
-              <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 font-medium">
+              <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 font-medium print:overflow-visible print:h-auto print:p-0 print:block">
                 {selectedApostila.vadeMecum ? (
-                  <div className="prose prose-invert max-w-none">
+                  <div className="prose prose-invert max-w-none print:max-w-full print:block">
                     {renderMarkdown(selectedApostila.vadeMecum)}
                   </div>
                 ) : (
