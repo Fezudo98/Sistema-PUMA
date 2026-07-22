@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { getTakenNumbers, loginUser, registerUser } from "@/app/actions/auth";
+import { QuemSomosModal } from "@/components/QuemSomosModal";
 
 export default function StudentAuth() {
   const [error, setError] = useState("");
@@ -47,18 +48,20 @@ export default function StudentAuth() {
     >
       <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm pointer-events-none"></div>
 
-      <div className="w-full max-w-md z-10">
-        <div className="flex flex-col items-center mb-8">
-          <Image src="/logo.png" alt="Sistema PUMA" width={110} height={110} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] object-contain mb-2 hover:scale-105 transition-transform duration-300" />
-          <h1 className="text-3xl font-extrabold text-white mt-2">Sistema <span className="text-blue-500">PUMA</span></h1>
-          <p className="text-slate-400 font-medium">Área do Aluno</p>
+      <div className="w-full max-w-md z-10 space-y-4 my-6">
+        <div className="flex flex-col items-center mb-4">
+          <Image src="/logo.png" alt="Sistema PUMA" width={100} height={100} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] object-contain mb-2 hover:scale-105 transition-transform duration-300" />
+          <h1 className="text-3xl font-extrabold text-white mt-1">Sistema <span className="text-blue-500">PUMA</span></h1>
+          <p className="text-slate-400 font-medium text-sm">32º Pelotão • CFSD PMCE</p>
         </div>
         
+        <QuemSomosModal />
+
         <Card className="border-slate-800 bg-slate-900/90 text-white shadow-2xl backdrop-blur-md">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl font-bold">Acesso do Aluno</CardTitle>
-            <CardDescription className="text-slate-400">
-              Identifique-se para entrar no sistema
+          <CardHeader className="text-center pb-2 pt-4">
+            <CardTitle className="text-xl font-bold">Acesso do Aluno</CardTitle>
+            <CardDescription className="text-slate-400 text-xs">
+              Identifique-se com seu QRA para entrar no sistema
             </CardDescription>
           </CardHeader>
 

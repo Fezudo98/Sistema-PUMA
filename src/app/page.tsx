@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { QuemSomosModal } from "@/components/QuemSomosModal";
 
 export default function Home() {
   return (
@@ -20,29 +21,34 @@ export default function Home() {
       </div>
 
       {/* Right Side Panel */}
-      <div className="z-10 w-full md:w-[450px] bg-black/80 backdrop-blur-xl border-l border-slate-800 shadow-[-20px_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-center items-center px-12 py-8 relative">
+      <div className="z-10 w-full md:w-[450px] bg-black/80 backdrop-blur-xl border-l border-slate-800 shadow-[-20px_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-center items-center px-12 py-8 relative overflow-y-auto">
         
         <Image 
           src="/logo.png" 
           alt="PMCE Simula Logo" 
           width={180} 
           height={180} 
-          className="mb-6 drop-shadow-[0_0_25px_rgba(245,158,11,0.4)] object-contain transition-transform hover:scale-105 duration-300"
+          className="mb-4 drop-shadow-[0_0_25px_rgba(245,158,11,0.4)] object-contain transition-transform hover:scale-105 duration-300"
         />
         
-        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-12 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)] text-center">
+        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-2 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)] text-center">
           SISTEMA <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-300">PUMA</span>
         </h1>
+        <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-8 text-center">
+          32º Pelotão • CFSD PMCE
+        </p>
 
-        <div className="flex flex-col gap-6 w-full">
+        <div className="flex flex-col gap-4 w-full">
+          <QuemSomosModal />
+
           <Link href="/aluno" className="w-full">
-            <Button size="lg" className="w-full h-16 text-lg font-bold bg-blue-600 hover:bg-blue-500 border border-blue-500/50 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+            <Button size="lg" className="w-full h-15 text-base font-bold bg-blue-600 hover:bg-blue-500 border border-blue-500/50 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)]">
               Acessar como Aluno
             </Button>
           </Link>
           
           <Link href="/auth/login" className="w-full">
-            <Button size="lg" variant="outline" className="w-full h-16 text-lg font-bold border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800 hover:text-white transition-all">
+            <Button size="lg" variant="outline" className="w-full h-15 text-base font-bold border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800 hover:text-white transition-all">
               Acessar como Instrutor
             </Button>
           </Link>

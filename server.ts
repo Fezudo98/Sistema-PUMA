@@ -340,8 +340,56 @@ app.prepare().then(() => {
   const server = createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url!, true);
+      const pathname = parsedUrl.pathname || '';
+
+      // Se a requisição for para a área do aluno, verifica o modo manutenção antes do Next.js
+      if (pathname.startsWith('/aluno')) {
+        try {
+          const setting = await prisma.systemSetting.findUnique({
+            where: { key: "MAINTENANCE_MODE" }
+          });
+          if (setting?.value === "true") {
+            // Verifica nos cookies se é um instrutor logado
+            const cookieHeader = req.headers.cookie || '';
+            const tokenMatch = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
+            const token = tokenMatch ? tokenMatch[1] : null;
+            let isInstructor = false;
+            if (token) {
+              try {
+                // Tenta decodificar o payload JWT (formato base64url: header.payload.signature)
+                const parts = token.split('.');
+                if (parts.length === 3) {
+                  const base64Url = parts[1];
+                  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                  const payloadJson = Buffer.from(base64, 'base64').toString('utf8');
+                  const payload = JSON.parse(payloadJson);
+                  if (payload?.role === 'INSTRUCTOR') {
+                    isInstructor = true;
+                  }
+                }
+              } catch (e) {}
+            }
+
+            if (!isInstructor) {
+              res.writeHead(307, { Location: '/manutencao' });
+              return res.end();
+            }
+          }
+        } catch (mErr) {
+          console.error("Erro no check de manutenção no server.ts:", mErr);
+        }
+      }
+
       await handle(req, res, parsedUrl);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.digest?.includes('NEXT_REDIRECT') || err?.message?.includes('NEXT_REDIRECT')) {
+        const digest = err?.digest || err?.message || '';
+        const parts = digest.split(';');
+        const url = parts[2] || '/manutencao';
+        const status = parseInt(parts[3]) || 307;
+        res.writeHead(status, { Location: url });
+        return res.end();
+      }
       console.error('Error occurred handling', req.url, err);
       res.statusCode = 500;
       res.end('internal server error');
