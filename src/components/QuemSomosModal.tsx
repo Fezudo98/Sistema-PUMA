@@ -148,7 +148,7 @@ export function QuemSomosModal({ triggerButton }: { triggerButton?: React.ReactN
         }
       />
 
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-950/95 border-amber-500/40 text-white shadow-[0_0_60px_rgba(245,158,11,0.2)] p-0">
+      <DialogContent className="max-w-4xl w-[96vw] sm:w-[92vw] md:w-[85vw] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-slate-950/95 border-amber-500/40 text-white shadow-[0_0_60px_rgba(245,158,11,0.2)] p-0">
         {/* Banner com Efeito Visual de Fundo */}
         <div className="relative p-6 md:p-8 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-b border-amber-500/20 overflow-hidden">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
@@ -200,22 +200,22 @@ export function QuemSomosModal({ triggerButton }: { triggerButton?: React.ReactN
         {/* Abas de Navegação */}
         <div className="p-4 md:p-6">
           <Tabs defaultValue="heraldica" className="w-full space-y-6">
-            <TabsList className="grid grid-cols-3 w-full bg-slate-900 border border-slate-800 p-1 rounded-xl">
+            <TabsList className="flex flex-wrap md:grid md:grid-cols-3 h-auto w-full bg-slate-900 border border-slate-800 p-1 rounded-xl gap-1">
               <TabsTrigger 
                 value="heraldica" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg py-2.5 transition-all"
+                className="flex-1 min-w-[150px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg py-2.5 transition-all"
               >
                 🛡️ Heráldica da Bandeira
               </TabsTrigger>
               <TabsTrigger 
                 value="efetivo" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg py-2.5 transition-all"
+                className="flex-1 min-w-[150px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg py-2.5 transition-all"
               >
                 👥 Os 32 Alunos (QRAs)
               </TabsTrigger>
               <TabsTrigger 
                 value="lideranca" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg py-2.5 transition-all"
+                className="flex-1 min-w-[150px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-xs md:text-sm uppercase tracking-wider rounded-lg py-2.5 transition-all"
               >
                 ⭐ Comando & Origem
               </TabsTrigger>
