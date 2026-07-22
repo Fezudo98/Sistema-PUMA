@@ -89,12 +89,15 @@ export async function POST(req: NextRequest) {
       console.error("[APOSTILA UPLOAD] Falha ao importar gerador de simulado:", cronErr.message);
     }
 
-    // Trigger Vade Mecum generation for the new/updated booklet immediately in background
+    // Trigger Vade Mecum generation for the new/updated booklet safely inside the sequential background queue
     try {
       const { generateVadeMecumAction } = await import("@/app/actions/vadeMecum");
-      generateVadeMecumAction(apostila.id, true)
+      const { queueGenerationTask } = await import("@/app/actions/dailySimulado");
+      queueGenerationTask(async () => {
+        return generateVadeMecumAction(apostila.id, true);
+      })
         .then((res) => {
-          console.log(`[APOSTILA UPLOAD] Geração proativa de Vade Mecum para "${apostila.title}" concluída:`, res.success);
+          console.log(`[APOSTILA UPLOAD] Geração proativa sequencial de Vade Mecum para "${apostila.title}" concluída:`, res.success);
         })
         .catch((err) => {
           console.error(`[APOSTILA UPLOAD] Erro ao gerar Vade Mecum proativo para "${apostila.title}":`, err.message);

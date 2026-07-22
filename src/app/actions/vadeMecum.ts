@@ -5,6 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import { getCachedApostilaText } from "./chat";
+import { queueGenerationTask } from "./dailySimulado";
 
 const prisma = new PrismaClient();
 
@@ -121,24 +122,33 @@ export async function generateVadeMecumAction(apostilaId: string, bypassAuth = f
       }
 
       // 2. Prepare the prompt
-      const systemPrompt = `Você é um Professor e Instrutor Policial especialista, encarregado de criar um VADE MECUM didático, prático e completo (resumo estruturado de estudo) baseado EXCLUSIVAMENTE no texto da apostila fornecida.
+      const systemPrompt = `Você é um Professor e Instrutor Policial de elite da PMCE, encarregado de criar um VADE MECUM TÁTICO DIDÁTICO, prático e completo (resumo estruturado de estudo de alta definição) baseado EXCLUSIVAMENTE no texto da apostila fornecida.
 
-Seu objetivo é condensar a matéria em um formato Markdown de alta utilidade para memorização e revisão dos alunos.
-Rigorosamente inclua as seguintes seções estruturadas utilizando markdown limpo e elegante (títulos h2/h3, negritos, tabelas e marcadores):
+Seu objetivo é condensar a matéria com perfeição em formato Markdown elegante, focado em decoreba rápida, revisão pré-simulado e aplicação operacional na atividade policial militar.
+Utilize todos os recursos de formatação (títulos h2/h3, negritos intensos, tabelas comparativas '| Coluna | Coluna |' e blocos de citação '> 💡 / > ⚠️') para criar o resumo mais incrível que o combatente já viu.
 
-## 📘 Resumo Geral e Análise Temática
-(Uma introdução didática explicando do que se trata esta apostila e a importância do tema para a atividade policial militar.)
+Rigorosamente estruture o documento nas seguintes seções:
 
-## ⚖️ Legislação e Artigos Críticos
-(Extraia e liste todos os artigos de leis, incisos, regulamentos ou regras descritas na apostila. Explique brevemente e de forma clara a aplicação prática de cada artigo listado.)
+## 📘 Resumo Geral e Relevância Operacional
+(Uma introdução didática explicando claramente do que se trata a apostila e a sua importância prática para a atuação diária na rotina do policial militar.)
+
+## 📋 Quadro Resumo de Decoreba Rápida
+(Crie uma TABELA MARKDOWN obrigatória e bem estruturada sintetizando os principais pontos, prazos, penalidades, classificações ou conceitos centrais do documento para revisão visual rápida:
+| Tópico / Conceito | Regra / Definição Principal | Aplicação no Serviço Policial |)
+
+## ⚖️ Legislação, Normas e Artigos Críticos
+(Extraia, organize por ordem de relevância e explique todos os artigos de leis, incisos, parágrafos, estatutos ou regulamentos contidos na apostila. Explique de forma simples e direta a aplicação prática e jurídica de cada artigo listado, grifando em negrito os termos-chave.)
 
 ## 💡 Conceitos e Definições de Pronto Emprego
-(Uma listagem direta dos principais conceitos teóricos, termos técnicos, infrações, punições ou deveres explicados no texto. Defina-os de forma clara.)
+(Listagem clara dos principais conceitos teóricos, termos técnicos, infrações, punições, procedimentos táticos ou deveres explicados no texto.)
 
-## 🧠 Mnemônicos e Técnicas de Memorização
-(Crie ou cite técnicas de memorização, palavras-chaves ou mnemônicos táticos para ajudar o recruta a decorar e reter os tópicos mais complexos desta matéria.)
+## 🚨 Pegadinhas de Concurso e Pontos de Atenção
+(Utilize blocos de citação '> ⚠️ **Atenção:** ...' para apontar exatamente onde as bancas examinadoras costumam tentar confundir o candidato em simulados e provas sobre este tema. Exemplo: prazos, exceções às regras e confusões semânticas.)
 
-Foque exclusivamente nas informações fornecidas no documento abaixo:`;
+## 🧠 Mnemônicos e Esquemas Mentais
+(Crie ou cite técnicas de memorização, siglas táticas criativas, macetes de associação rápida e palavras-chave para ajudar o combatente a reter a matéria em tempo recorde.)
+
+Foque exclusivamente nas informações presentes no documento abaixo e entregue um resumo completo sem economizar nos detalhes essenciais:`;
 
       const response = await generateWithFallback([
         { text: systemPrompt },
@@ -218,10 +228,12 @@ export async function checkAndGenerateMissingVadeMecums() {
     console.log(`[VADE MECUM CHECK] Encontradas ${missingVades.length} apostilas ativas sem Vade Mecum. Gerando em background...`);
 
     for (const apostila of missingVades) {
-      // Run each generation sequentially in the background
-      generateVadeMecumAction(apostila.id, true)
+      // Enfileira cada geração sequencialmente no background para evitar concorrência e sobrecarga de API (Claude Sonnet 5)
+      queueGenerationTask(async () => {
+        return generateVadeMecumAction(apostila.id, true);
+      })
         .then((res) => {
-          console.log(`[VADE MECUM CHECK] Geração automática para "${apostila.title}" concluída:`, res.success);
+          console.log(`[VADE MECUM CHECK] Geração automática sequencial para "${apostila.title}" concluída:`, res.success);
         })
         .catch((err) => {
           console.error(`[VADE MECUM CHECK] Falha ao gerar Vade Mecum automático para "${apostila.title}":`, err.message);
