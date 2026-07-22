@@ -155,75 +155,6 @@ export async function POST(req: NextRequest) {
     }
 
     const generateWithFallback = async (content: any[]) => {
-      // Claude permanece inativo/desativado por padrão ("A chave api Claude fica inativa por enquanto")
-      const useClaude = process.env.USE_CLAUDE_FOR_SIMULADOS === "true";
-      const anthropicKey = process.env.ANTHROPIC_API_KEY;
-
-      if (useClaude && anthropicKey) {
-        try {
-          const Anthropic = require("@anthropic-ai/sdk");
-          const anthropic = new Anthropic({ apiKey: anthropicKey });
-
-          let promptText = "";
-          let base64Pdf = "";
-
-          for (const item of content) {
-            if (typeof item === "string") {
-              promptText += item;
-            } else if (item?.inlineData?.data) {
-              base64Pdf = item.inlineData.data;
-            }
-          }
-
-          const fullPrompt = promptText + "\n\nIMPORTANTE: Sua resposta DEVE ser ÚNICA E EXCLUSIVAMENTE um array JSON válido sem marcações markdown ```json, sem texto antes ou depois, começando direto no colchete [ e terminando no fechar colchete ].";
-
-          const claudeModels = ["claude-sonnet-5"];
-          for (const model of claudeModels) {
-            try {
-              console.log(`[CLAUDE AI - LIVE GENERATE] Gerando questões com modelo ${model}...`);
-              const userContent: any[] = [];
-              if (base64Pdf) {
-                userContent.push({
-                  type: "document",
-                  source: {
-                    type: "base64",
-                    media_type: "application/pdf",
-                    data: base64Pdf
-                  }
-                });
-              }
-              userContent.push({
-                type: "text",
-                text: fullPrompt
-              });
-
-              const response = await anthropic.messages.create({
-                model: model,
-                max_tokens: 8192,
-                messages: [{ role: "user", content: userContent }]
-              });
-
-              let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
-              let jsonText = rawText.trim();
-              if (jsonText.startsWith("```json")) {
-                jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-              } else if (jsonText.startsWith("```")) {
-                jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
-              }
-
-              // Valida JSON antes de retornar
-              JSON.parse(jsonText);
-              console.log(`✅ [CLAUDE AI - LIVE GENERATE (${model})] Questões geradas e validadas com sucesso!`);
-              return { response: { text: () => jsonText } };
-            } catch (err: any) {
-              console.warn(`[CLAUDE AI - LIVE GENERATE] Falha com modelo ${model}:`, err.message || err);
-            }
-          }
-        } catch (sdkErr: any) {
-          console.warn(`[CLAUDE AI - LIVE GENERATE] Erro na inicialização do Claude SDK:`, sdkErr.message || sdkErr);
-        }
-      }
-
       const apiKeys = [
         { label: "principal", key: process.env.GEMINI_API_KEY || "" },
         { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
@@ -232,13 +163,15 @@ export async function POST(req: NextRequest) {
         { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
       ].filter(k => Boolean(k.key));
 
+      if (apiKeys.length === 0) {
+        throw new Error("Nenhuma chave do Gemini disponível no servidor.");
+      }
+
+      // 1°: Definir como piso o modelo 3.1 flash para todas as chaves Geminis
       const modelVersions = [
         "gemini-3.6-flash",
         "gemini-3.5-flash",
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-pro",
-        "gemini-pro-latest"
+        "gemini-3.1-flash"
       ];
 
       const getLiveKeyIndex = () => {
@@ -266,13 +199,13 @@ export async function POST(req: NextRequest) {
           const { label, key } = apiKeys[(startIndex + i) % apiKeys.length];
           const cooldownKey = `${label}_${modelVersion}`;
           if (!keyModelCooldowns.has(cooldownKey) || now > keyModelCooldowns.get(cooldownKey)!) {
-            console.log(`Tentando chave ${label} com modelo ${modelVersion}...`);
+            console.log(`[GERADOR AO VIVO] Tentando chave ${label} com modelo ${modelVersion}...`);
             try {
               const genAI = new GoogleGenerativeAI(key);
               const model = genAI.getGenerativeModel(dynamicGenConfig as any);
               return await model.generateContent(content);
             } catch (error: any) {
-              console.warn(`Chave ${label} falhou com modelo ${modelVersion}:`, error.message);
+              console.warn(`[GERADOR AO VIVO] Chave ${label} falhou com modelo ${modelVersion}:`, error.message);
               if (isRateLimitError(error.message)) {
                 console.warn(`[Cooldown] Chave ${label} em repouso por 45s no modelo ${modelVersion}.`);
                 keyModelCooldowns.set(cooldownKey, Date.now() + 45_000);
@@ -284,7 +217,66 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      throw new Error("Todas as versões do modelo Claude e Gemini atingiram limite ou falharam.");
+      // 2°: Na hipótese de todas as chaves geminis falharem ao chegar no limite do 3.1 flash, usaremos a api da claude no modelo sonnet 5 de forma excepcional
+      const anthropicKey = process.env.ANTHROPIC_API_KEY;
+      if (anthropicKey) {
+        try {
+          console.warn("[FALLBACK EXCEPCIONAL] Todas as chaves Gemini falharam até o piso 3.1 flash. Acionando Claude Sonnet 5 de forma excepcional...");
+          const Anthropic = require("@anthropic-ai/sdk");
+          const anthropic = new Anthropic({ apiKey: anthropicKey });
+
+          let promptText = "";
+          let base64Pdf = "";
+
+          for (const item of content) {
+            if (typeof item === "string") {
+              promptText += item;
+            } else if (item?.inlineData?.data) {
+              base64Pdf = item.inlineData.data;
+            }
+          }
+
+          const fullPrompt = promptText + "\n\nIMPORTANTE: Sua resposta DEVE ser ÚNICA E EXCLUSIVAMENTE um array JSON válido sem marcações markdown ```json, sem texto antes ou depois, começando direto no colchete [ e terminando no fechar colchete ].";
+
+          const userContent: any[] = [];
+          if (base64Pdf) {
+            userContent.push({
+              type: "document",
+              source: {
+                type: "base64",
+                media_type: "application/pdf",
+                data: base64Pdf
+              }
+            });
+          }
+          userContent.push({
+            type: "text",
+            text: fullPrompt
+          });
+
+          const response = await anthropic.messages.create({
+            model: "claude-sonnet-5",
+            max_tokens: 8192,
+            messages: [{ role: "user", content: userContent }]
+          });
+
+          let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+          let jsonText = rawText.trim();
+          if (jsonText.startsWith("```json")) {
+            jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+          } else if (jsonText.startsWith("```")) {
+            jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+          }
+
+          JSON.parse(jsonText);
+          console.log(`✅ [CLAUDE AI EXCEPCIONAL (claude-sonnet-5)] Questões geradas e validadas com sucesso!`);
+          return { response: { text: () => jsonText } };
+        } catch (err: any) {
+          console.warn("[CLAUDE AI EXCEPCIONAL] Falha ao acionar Claude Sonnet 5 de forma excepcional:", err.message || err);
+        }
+      }
+
+      throw new Error("Todas as chaves do Gemini (até o piso 3.1 flash) e o fallback excepcional do Claude Sonnet 5 atingiram limite ou falharam.");
     };
 
     // Envia o prompt de texto JUNTO com o arquivo PDF em base64 nativamente!

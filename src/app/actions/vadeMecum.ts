@@ -12,18 +12,41 @@ const prisma = new PrismaClient();
 const modelVersions = [
   "gemini-3.6-flash",
   "gemini-3.5-flash",
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-pro",
-  "gemini-pro-latest"
+  "gemini-3.1-flash"
 ];
 
 // Helper to generate content with fallback keys and models
 async function generateWithFallback(content: any[]) {
+  const apiKeys = [
+    { label: "principal", key: process.env.GEMINI_API_KEY || "" },
+    { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
+    { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" },
+    { label: "fallback_3", key: process.env.GEMINI_API_KEY_FALLBACK_3 || "" },
+    { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
+  ].filter(k => Boolean(k.key));
+
+  if (apiKeys.length === 0) {
+    throw new Error("Nenhuma chave do Gemini disponível no servidor.");
+  }
+
+  for (const modelVersion of modelVersions) {
+    for (const keyObj of apiKeys) {
+      try {
+        console.log(`[VADE MECUM AI] Tentando chave [${keyObj.label}] com modelo [${modelVersion}]...`);
+        const genAI = new GoogleGenerativeAI(keyObj.key);
+        const model = genAI.getGenerativeModel({ model: modelVersion });
+        return await model.generateContent(content);
+      } catch (error: any) {
+        console.warn(`[VADE MECUM AI] Chave [${keyObj.label}] falhou com modelo ${modelVersion}:`, error.message);
+      }
+    }
+  }
+
+  // 2°: Na hipótese de todas as chaves geminis falharem ao chegar no limite do 3.1 flash, usaremos a api da claude no modelo sonnet 5 de forma excepcional
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (anthropicKey) {
     try {
-      console.log("[VADE MECUM AI] Tentando gerar com Claude Sonnet 5...");
+      console.warn("[VADE MECUM AI - FALLBACK EXCEPCIONAL] Todas as chaves Gemini falharam até o piso 3.1 flash. Acionando Claude Sonnet 5 de forma excepcional...");
       const Anthropic = require("@anthropic-ai/sdk");
       const anthropic = new Anthropic({ apiKey: anthropicKey });
 
@@ -44,43 +67,15 @@ async function generateWithFallback(content: any[]) {
 
       const rawText = response.content[0]?.type === "text" ? response.content[0].text : "";
       if (rawText) {
-        console.log("✅ [VADE MECUM AI] Resumo gerado com sucesso pelo Claude Sonnet 5!");
+        console.log("✅ [VADE MECUM AI - EXCEPCIONAL] Resumo gerado com sucesso pelo Claude Sonnet 5!");
         return { response: { text: () => rawText } };
       }
     } catch (claudeErr: any) {
-      console.warn("[VADE MECUM AI] Falha ao gerar com Claude Sonnet 5. Recorrendo ao Gemini...", claudeErr.message || claudeErr);
+      console.warn("[VADE MECUM AI - EXCEPCIONAL] Falha com Claude Sonnet 5:", claudeErr.message || claudeErr);
     }
   }
 
-  const primaryKey = process.env.GEMINI_API_KEY || "";
-  const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
-
-  if (!primaryKey) {
-    throw new Error("Chave do Gemini e do Claude não configuradas no servidor.");
-  }
-
-  for (const modelVersion of modelVersions) {
-    try {
-      const genAI = new GoogleGenerativeAI(primaryKey);
-      const model = genAI.getGenerativeModel({ model: modelVersion });
-      return await model.generateContent(content);
-    } catch (error: any) {
-      console.warn(`[VADE MECUM AI] Chave principal falhou com modelo ${modelVersion}:`, error.message);
-
-      if (fallbackKey) {
-        console.log(`[VADE MECUM AI] Tentando chave fallback com modelo ${modelVersion}...`);
-        try {
-          const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-          const fallbackModel = fallbackGenAI.getGenerativeModel({ model: modelVersion });
-          return await fallbackModel.generateContent(content);
-        } catch (fallbackError: any) {
-          console.warn(`[VADE MECUM AI] Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
-        }
-      }
-    }
-  }
-
-  throw new Error("Todas as chaves e modelos do Claude e Gemini falharam ou atingiram limite de cota.");
+  throw new Error("Todas as chaves do Gemini (até o piso 3.1 flash) e o fallback excepcional do Claude atingiram limite de cota.");
 }
 
 // Generate the Vade Mecum summary using Gemini

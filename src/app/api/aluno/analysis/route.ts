@@ -74,39 +74,62 @@ export async function POST(req: NextRequest) {
     `;
 
     const generateWithFallback = async (promptText: string) => {
-      const primaryKey = process.env.GEMINI_API_KEY || "";
-      const fallbackKey = process.env.GEMINI_API_KEY_FALLBACK || "";
+      const apiKeys = [
+        { label: "principal", key: process.env.GEMINI_API_KEY || "" },
+        { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
+        { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" },
+        { label: "fallback_3", key: process.env.GEMINI_API_KEY_FALLBACK_3 || "" },
+        { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
+      ].filter(k => Boolean(k.key));
+
+      if (apiKeys.length === 0) {
+        throw new Error("Nenhuma chave do Gemini disponível no servidor.");
+      }
+
       const modelVersions = [
         "gemini-3.6-flash",
         "gemini-3.5-flash",
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-pro",
-        "gemini-pro-latest"
+        "gemini-3.1-flash"
       ];
 
       for (const modelVersion of modelVersions) {
-        try {
-          const genAI = new GoogleGenerativeAI(primaryKey);
-          const model = genAI.getGenerativeModel({ model: modelVersion });
-          return await model.generateContent(promptText);
-        } catch (error: any) {
-          console.warn(`Chave principal falhou com modelo ${modelVersion}:`, error.message);
-          
-          if (fallbackKey) {
-            console.log(`Tentando chave fallback com modelo ${modelVersion}...`);
-            try {
-              const fallbackGenAI = new GoogleGenerativeAI(fallbackKey);
-              const fallbackModel = fallbackGenAI.getGenerativeModel({ model: modelVersion });
-              return await fallbackModel.generateContent(promptText);
-            } catch (fallbackError: any) {
-              console.warn(`Chave fallback falhou com modelo ${modelVersion}:`, fallbackError.message);
-            }
+        for (const keyObj of apiKeys) {
+          try {
+            console.log(`[ANALYSIS GENERATION] Tentando chave [${keyObj.label}] com modelo [${modelVersion}]...`);
+            const genAI = new GoogleGenerativeAI(keyObj.key);
+            const model = genAI.getGenerativeModel({ model: modelVersion });
+            return await model.generateContent(promptText);
+          } catch (error: any) {
+            console.warn(`[ANALYSIS GENERATION] Chave [${keyObj.label}] falhou com modelo ${modelVersion}:`, error.message);
           }
         }
       }
+
+      // 2°: Na hipótese de todas as chaves geminis falharem ao chegar no limite do 3.1 flash, usaremos a api da claude no modelo sonnet 5 de forma excepcional
+      const anthropicKey = process.env.ANTHROPIC_API_KEY;
+      if (anthropicKey) {
+        try {
+          console.warn("[ANALYSIS GENERATION - FALLBACK EXCEPCIONAL] Todas as chaves Gemini falharam até o piso 3.1 flash. Acionando Claude Sonnet 5 de forma excepcional...");
+          const Anthropic = require("@anthropic-ai/sdk");
+          const anthropic = new Anthropic({ apiKey: anthropicKey });
+
+          const response = await anthropic.messages.create({
+            model: "claude-sonnet-5",
+            max_tokens: 8192,
+            messages: [{ role: "user", content: promptText.trim() }]
+          });
+
+          const rawText = response.content[0]?.type === "text" ? response.content[0].text : "";
+          if (rawText) {
+            console.log("✅ [ANALYSIS AI - EXCEPCIONAL] Análise gerada com sucesso pelo Claude Sonnet 5!");
+            return { response: { text: () => rawText } };
+          }
+        } catch (claudeErr: any) {
+          console.warn("[ANALYSIS AI - EXCEPCIONAL] Falha com Claude Sonnet 5:", claudeErr.message || claudeErr);
+        }
+      }
       
-      throw new Error("Todas as versões do modelo Gemini falharam.");
+      throw new Error("Todas as chaves do Gemini (até piso 3.1 flash) e o fallback excepcional do Claude falharam.");
     };
 
     const result = await generateWithFallback(prompt);

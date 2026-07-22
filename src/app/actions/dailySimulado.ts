@@ -148,75 +148,6 @@ function isRateLimitError(msg?: string): boolean {
 }
 
 async function generateWithFallback(content: any[]) {
-  // Claude permanece inativo/desativado por padrão ("A chave api Claude fica inativa por enquanto")
-  const useClaude = process.env.USE_CLAUDE_FOR_SIMULADOS === "true";
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-
-  if (useClaude && anthropicKey) {
-    try {
-      const Anthropic = require("@anthropic-ai/sdk");
-      const anthropic = new Anthropic({ apiKey: anthropicKey });
-
-      let promptText = "";
-      let base64Pdf = "";
-
-      for (const item of content) {
-        if (typeof item === "string") {
-          promptText += item;
-        } else if (item?.inlineData?.data) {
-          base64Pdf = item.inlineData.data;
-        }
-      }
-
-      const fullPrompt = promptText + "\n\nIMPORTANTE: Sua resposta DEVE ser ÚNICA E EXCLUSIVAMENTE um array JSON válido sem marcações markdown ```json, sem texto antes ou depois, começando direto no colchete [ e terminando no fechar colchete ].";
-
-      const claudeModels = ["claude-sonnet-5"];
-      for (const model of claudeModels) {
-        try {
-          console.log(`[CLAUDE AI - DAILY] Gerando questões com modelo ${model}...`);
-          const userContent: any[] = [];
-          if (base64Pdf) {
-            userContent.push({
-              type: "document",
-              source: {
-                type: "base64",
-                media_type: "application/pdf",
-                data: base64Pdf
-              }
-            });
-          }
-          userContent.push({
-            type: "text",
-            text: fullPrompt
-          });
-
-          const response = await anthropic.messages.create({
-            model: model,
-            max_tokens: 8192,
-            messages: [{ role: "user", content: userContent }]
-          });
-
-          let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
-          let jsonText = rawText.trim();
-          if (jsonText.startsWith("```json")) {
-            jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-          } else if (jsonText.startsWith("```")) {
-            jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
-          }
-
-          // Valida JSON antes de retornar
-          JSON.parse(jsonText);
-          console.log(`✅ [CLAUDE AI - DAILY (${model})] Questões geradas e validadas com sucesso!`);
-          return { response: { text: () => jsonText } };
-        } catch (err: any) {
-          console.warn(`[CLAUDE AI - DAILY] Falha com modelo ${model}:`, err.message || err);
-        }
-      }
-    } catch (sdkErr: any) {
-      console.warn(`[CLAUDE AI - DAILY] Erro na inicialização do Claude SDK:`, sdkErr.message || sdkErr);
-    }
-  }
-
   const apiKeys = [
     { label: "principal", key: process.env.GEMINI_API_KEY || "" },
     { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
@@ -228,6 +159,13 @@ async function generateWithFallback(content: any[]) {
   if (apiKeys.length === 0) {
     throw new Error("Nenhuma chave do Gemini disponível no servidor.");
   }
+
+  // 1°: Definir como piso o modelo 3.1 flash para todas as chaves Geminis
+  const modelVersions = [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash"
+  ];
 
   // Round-robin: distribui as requisições de apostilas entre todas as chaves disponíveis para não sobrecarregar
   const startIndex = getDailyKeyIndex() % apiKeys.length;
@@ -263,7 +201,68 @@ async function generateWithFallback(content: any[]) {
       }
     }
   }
-  throw new Error("Todas as chaves e modelos do Gemini falharam na geração diária.");
+
+  // 2°: Na hipótese de todas as chaves geminis falharem ao chegar no limite do 3.1 flash, usaremos a api da claude no modelo sonnet 5 de forma excepcional
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (anthropicKey) {
+    try {
+      console.warn("[DAILY GENERATION - FALLBACK EXCEPCIONAL] Todas as chaves Gemini falharam até o piso 3.1 flash. Acionando Claude Sonnet 5 de forma excepcional...");
+      const Anthropic = require("@anthropic-ai/sdk");
+      const anthropic = new Anthropic({ apiKey: anthropicKey });
+
+      let promptText = "";
+      let base64Pdf = "";
+
+      for (const item of content) {
+        if (typeof item === "string") {
+          promptText += item;
+        } else if (item?.inlineData?.data) {
+          base64Pdf = item.inlineData.data;
+        }
+      }
+
+      const fullPrompt = promptText + "\n\nIMPORTANTE: Sua resposta DEVE ser ÚNICA E EXCLUSIVAMENTE um array JSON válido sem marcações markdown ```json, sem texto antes ou depois, começando direto no colchete [ e terminando no fechar colchete ].";
+
+      const userContent: any[] = [];
+      if (base64Pdf) {
+        userContent.push({
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf",
+            data: base64Pdf
+          }
+        });
+      }
+      userContent.push({
+        type: "text",
+        text: fullPrompt
+      });
+
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-5",
+        max_tokens: 8192,
+        messages: [{ role: "user", content: userContent }]
+      });
+
+      let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+      let jsonText = rawText.trim();
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+      }
+
+      // Valida JSON antes de retornar
+      JSON.parse(jsonText);
+      console.log(`✅ [CLAUDE AI - DAILY EXCEPCIONAL (claude-sonnet-5)] Questões geradas e validadas com sucesso!`);
+      return { response: { text: () => jsonText } };
+    } catch (err: any) {
+      console.warn(`[CLAUDE AI - DAILY EXCEPCIONAL] Falha ao acionar Claude Sonnet 5 de forma excepcional:`, err.message || err);
+    }
+  }
+
+  throw new Error("Todas as chaves e modelos do Gemini (até piso 3.1 flash) e o fallback excepcional do Claude falharam na geração diária.");
 }
 
 // Global locks to persist across Next.js reloads
