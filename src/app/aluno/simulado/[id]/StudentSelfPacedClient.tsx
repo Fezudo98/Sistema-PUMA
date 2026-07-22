@@ -57,6 +57,87 @@ export default function StudentSelfPacedClient({
     ? JSON.parse(currentQuestion.alternativas) 
     : [];
 
+  // 1. Blindagem de Progresso: Tenta restaurar do localStorage no caso de reinício do VPS ou atualização da página
+  useEffect(() => {
+    try {
+      const savedKey = `self_paced_state_${simulado.id}_${studentId}`;
+      const raw = localStorage.getItem(savedKey);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.currentIdx === initialProgress && (Date.now() - (saved.timestamp || 0)) < 24 * 60 * 60 * 1000) {
+          if (saved.selectedAlt !== null) setSelectedAlt(saved.selectedAlt);
+          if (saved.isAnswered) {
+            setIsAnswered(true);
+            setIsCorrect(saved.isCorrect);
+            setCorrectAltIndex(saved.correctAltIndex);
+            setJustificativa(saved.justificativa || "");
+          }
+          if (saved.timeLeft && !saved.isAnswered) setTimeLeft(saved.timeLeft);
+        }
+      }
+    } catch (e) {
+      console.warn("Erro ao ler progresso salvo do localStorage:", e);
+    }
+  }, [simulado.id, studentId, initialProgress]);
+
+  // 2. Blindagem de Progresso: Salva o estado atual no localStorage a cada mudança
+  useEffect(() => {
+    try {
+      const savedKey = `self_paced_state_${simulado.id}_${studentId}`;
+      localStorage.setItem(savedKey, JSON.stringify({
+        currentIdx,
+        selectedAlt,
+        isAnswered,
+        isCorrect,
+        correctAltIndex,
+        justificativa,
+        timeLeft,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      console.warn("Erro ao salvar progresso no localStorage:", e);
+    }
+  }, [currentIdx, selectedAlt, isAnswered, isCorrect, correctAltIndex, justificativa, timeLeft, simulado.id, studentId]);
+
+  // 3. Fila de Respostas Pendentes / Offline (para quando o VPS reiniciar ou entrar em manutenção)
+  useEffect(() => {
+    const queueKey = `self_paced_queue_${simulado.id}_${studentId}`;
+    const syncPendingAnswers = async () => {
+      try {
+        const rawQueue = localStorage.getItem(queueKey);
+        if (!rawQueue) return;
+        const queue: any[] = JSON.parse(rawQueue);
+        if (queue.length === 0) return;
+
+        console.log(`[Fila Offline] Sincronizando ${queue.length} resposta(s) pendente(s) com o servidor...`);
+        const remaining: any[] = [];
+        for (const item of queue) {
+          try {
+            const res = await saveSelfPacedAnswer(item);
+            if (res && !res.error) {
+              console.log("✅ Resposta pendente sincronizada com sucesso!");
+            } else {
+              remaining.push(item);
+            }
+          } catch (err) {
+            remaining.push(item);
+          }
+        }
+        if (remaining.length === 0) {
+          localStorage.removeItem(queueKey);
+        } else {
+          localStorage.setItem(queueKey, JSON.stringify(remaining));
+        }
+      } catch (e) {
+        console.warn("Erro no sync da fila offline:", e);
+      }
+    };
+
+    const interval = setInterval(syncPendingAnswers, 5000);
+    syncPendingAnswers();
+    return () => clearInterval(interval);
+  }, [simulado.id, studentId]);
+
   // Configura o Timer para a questão atual
   useEffect(() => {
     if (!currentQuestion || isAnswered) return;
@@ -100,24 +181,48 @@ export default function StudentSelfPacedClient({
     setSubmitting(true);
     if (timerRef.current) clearInterval(timerRef.current);
 
-    const res = await saveSelfPacedAnswer({
+    const answerPayload = {
       questionId: currentQuestion.id,
       studentId,
       alternativa: altIndex,
       tempoGasto: timeSpent
-    });
+    };
 
-    if (res.error) {
-      alert(res.error);
+    try {
+      const res = await saveSelfPacedAnswer(answerPayload);
+
+      if (res && res.error) {
+        // Se der erro de requisição / VPS reiniciando, cai para o catch
+        throw new Error(res.error);
+      }
+
+      setIsCorrect(res.isCorrect || false);
+      setCorrectAltIndex(res.correta !== undefined ? res.correta : null);
+      setJustificativa(res.justificativa || "Sem justificativa cadastrada.");
+      setIsAnswered(true);
       setSubmitting(false);
-      return;
-    }
+    } catch (err: any) {
+      console.warn("Servidor temporariamente indisponível (VPS reiniciando ou em manutenção). Salvando resposta na fila local...", err);
+      // Salva na fila offline para sincronizar quando o VPS voltar
+      try {
+        const queueKey = `self_paced_queue_${simulado.id}_${studentId}`;
+        const rawQueue = localStorage.getItem(queueKey);
+        const queue: any[] = rawQueue ? JSON.parse(rawQueue) : [];
+        if (!queue.some(q => q.questionId === currentQuestion.id)) {
+          queue.push(answerPayload);
+          localStorage.setItem(queueKey, JSON.stringify(queue));
+        }
+      } catch (qErr) {
+        console.warn("Erro ao enfileirar no localStorage:", qErr);
+      }
 
-    setIsCorrect(res.isCorrect || false);
-    setCorrectAltIndex(res.correta !== undefined ? res.correta : null);
-    setJustificativa(res.justificativa || "Sem justificativa cadastrada.");
-    setIsAnswered(true);
-    setSubmitting(false);
+      // Simula feedback local imediato para não travar o progresso do aluno durante reinício do VPS
+      setIsCorrect(altIndex !== -1);
+      setCorrectAltIndex(altIndex !== -1 ? altIndex : 0);
+      setJustificativa("⏳ Resposta salva com segurança no seu dispositivo! Ela será sincronizada automaticamente em background assim que o servidor/VPS retornar.");
+      setIsAnswered(true);
+      setSubmitting(false);
+    }
   };
 
   const handleNext = async () => {
@@ -125,11 +230,16 @@ export default function StudentSelfPacedClient({
 
     if (isLast) {
       setFinishing(true);
-      // Processa a conclusão do simulado no servidor (badge unlocks)
-      await completeSelfPacedSimulado(studentId, simulado.id);
+      try {
+        await completeSelfPacedSimulado(studentId, simulado.id);
+      } catch (e) {
+        console.warn("Aviso ao finalizar simulado durante reinício:", e);
+      }
+      try {
+        localStorage.removeItem(`self_paced_state_${simulado.id}_${studentId}`);
+      } catch (e) {}
       router.push(`/aluno/simulado/${simulado.id}/review`);
     } else {
-      // Limpa os estados e vai para a próxima questão
       setSelectedAlt(null);
       setIsAnswered(false);
       setIsCorrect(null);

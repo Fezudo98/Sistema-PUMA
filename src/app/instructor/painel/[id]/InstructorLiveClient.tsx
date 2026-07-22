@@ -66,9 +66,12 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
     });
 
     s.on("room_update", (data) => {
-      setStudents(data.students);
+      setStudents(data.students || []);
       if (data.status === "ACTIVE") {
         setStatus((prev: string) => prev === "WAITING" ? "ACTIVE" : prev);
+      }
+      if (data.status === "FINISHED") {
+        setStatus("FINISHED");
       }
       if (data.answeredStudentIds) {
         setAnsweredStudentIds(data.answeredStudentIds);
@@ -76,6 +79,20 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       if (data.isTeamCompetition !== undefined) setIsTeamCompetition(data.isTeamCompetition);
       if (data.teams) setTeams(data.teams);
       if (data.studentTeams) setStudentTeams(data.studentTeams);
+
+      // Sincroniza a questão ativa em andamento quando o instrutor reconecta ou o VPS volta do reinício
+      if (data.status === "ACTIVE" && data.currentQuestion) {
+        const idx = simulado.questions.findIndex((q: any) => q.id === data.currentQuestion.id);
+        if (idx !== -1) {
+          setCurrentQuestionIndex(idx);
+        }
+        setIsQuestionActive(true);
+        setTimeLeft(data.timeLeft || 0);
+        setIsPaused(data.isPaused || false);
+        setQuestionEndedData(data.questionEndedData || null);
+      } else if (data.questionEndedData) {
+        setQuestionEndedData(data.questionEndedData);
+      }
     });
     
     s.on("ranking_update", (data) => {

@@ -396,20 +396,83 @@ app.prepare().then(() => {
           }
         }
 
+        let restoredQuestion = null;
+        let restoredTimeLeft = 0;
+        let restoredAnsweredIds: string[] = [];
+        let restoredAnswersReceived = 0;
+        let restoredQuestionEndedData = null;
+
+        if (dbSimulado && dbSimulado.status === 'ACTIVE') {
+          try {
+            const activeQ = await prisma.question.findFirst({
+              where: { simuladoId: dbSimulado.id, status: 'ACTIVE' }
+            });
+            if (activeQ) {
+              restoredQuestion = {
+                id: activeQ.id,
+                enunciado: activeQ.enunciado,
+                alternativas: activeQ.alternativas,
+                tempoLimite: activeQ.tempoLimite
+              };
+              restoredTimeLeft = activeQ.tempoLimite;
+              const qAnswers = await prisma.answer.findMany({
+                where: { questionId: activeQ.id },
+                select: { studentId: true }
+              });
+              restoredAnsweredIds = qAnswers.map(a => a.studentId);
+              restoredAnswersReceived = restoredAnsweredIds.length;
+            } else {
+              // Se não tem questão ativa, checa se havia uma finalizada para manter o gráfico de respostas
+              const finishedQ = await prisma.question.findFirst({
+                where: { simuladoId: dbSimulado.id, status: 'FINISHED' }
+              });
+              if (finishedQ) {
+                const qAnswers = await prisma.answer.findMany({
+                  where: { questionId: finishedQ.id },
+                  include: { student: true }
+                });
+                const distribution = [0, 0, 0, 0, 0];
+                let totalAnswers = qAnswers.length;
+                const answersByAlt: Record<number, any[]> = { 0: [], 1: [], 2: [], 3: [], 4: [] };
+                qAnswers.forEach(ans => {
+                  if (ans.alternativa >= 0 && ans.alternativa < 5) {
+                    distribution[ans.alternativa]++;
+                    answersByAlt[ans.alternativa].push({
+                      studentId: ans.studentId,
+                      studentName: ans.student.name,
+                      avatarUrl: ans.student.avatarUrl
+                    });
+                  }
+                });
+                const percentages = distribution.map(count => totalAnswers > 0 ? Math.round((count / totalAnswers) * 100) : 0);
+                restoredQuestionEndedData = {
+                  correta: finishedQ.correta,
+                  justificativa: finishedQ.justificativa,
+                  percentages,
+                  unansweredPercentage: 0,
+                  answersByAlt
+                };
+              }
+            }
+          } catch (recoveryErr) {
+            console.error("[Socket] Erro ao recuperar questão do DB pós-reinício:", recoveryErr);
+          }
+        }
+
         rooms.set(roomCode, {
           simuladoId: dbSimulado ? dbSimulado.id : '',
           status: dbSimulado ? (dbSimulado.status as any) : 'WAITING',
-          currentQuestion: null,
-          timeLeft: 0,
+          currentQuestion: restoredQuestion,
+          timeLeft: restoredTimeLeft,
           timerInterval: null,
           isPaused: false,
           students: [],
           studentScores: {},
-          answersReceived: 0,
+          answersReceived: restoredAnswersReceived,
           raffleWinnerId: null,
-          questionEndedData: null,
+          questionEndedData: restoredQuestionEndedData,
           pendingNotifications: [],
-          answeredStudentIds: [],
+          answeredStudentIds: restoredAnsweredIds,
           maxConnectedCount: 0,
           isTeamCompetition,
           teams,
@@ -423,6 +486,21 @@ app.prepare().then(() => {
           ranking.forEach(r => {
             room.studentScores[r.id] = r;
           });
+
+          // Se há questão ativa com tempo rodando sem temporizador no Node, inicia o temporizador com segurança
+          if (room.currentQuestion && room.status === 'ACTIVE' && !room.timerInterval) {
+            room.timerInterval = setInterval(async () => {
+              room.timeLeft -= 1;
+              io.to(roomCode).emit('time_tick', { timeLeft: room.timeLeft });
+
+              if (room.timeLeft <= 0) {
+                if (room.timerInterval) clearInterval(room.timerInterval);
+                room.timerInterval = null;
+                room.isPaused = false;
+                io.to(roomCode).emit('time_up');
+              }
+            }, 1000);
+          }
         }
       }
 

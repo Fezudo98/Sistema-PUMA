@@ -108,6 +108,18 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
     s.on("connect", () => {
       s.emit("join_room", { roomCode: simulado.codigoSala, user });
+
+      // Se havia uma resposta ao vivo pendente durante reinício do VPS, reenvia assim que reconecta
+      try {
+        const pendingRaw = localStorage.getItem(`live_pending_answer_${simulado.codigoSala}`);
+        if (pendingRaw) {
+          const payload = JSON.parse(pendingRaw);
+          s.emit("submit_answer", payload);
+          localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
+        }
+      } catch (e) {
+        console.warn("Erro ao reenviar resposta ao vivo pendente:", e);
+      }
     });
 
     s.on("room_update", (data) => {
@@ -251,19 +263,26 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       if (selectedAltRef.current !== -1 && !hasConfirmedRef.current && currentQuestionRef.current && !isObserver) {
         setHasConfirmed(true);
         const timeGasto = Math.max(0, Math.floor((Date.now() - startTimeRef.current) / 1000));
-        s.emit("submit_answer", {
+        const payload = {
           roomCode: simulado.codigoSala,
           questionId: currentQuestionRef.current.id,
           studentId: user.userId,
           alternativa: selectedAltRef.current,
           tempoGasto: timeGasto
-        });
+        };
+        try {
+          localStorage.setItem(`live_pending_answer_${simulado.codigoSala}`, JSON.stringify(payload));
+        } catch (e) {}
+        s.emit("submit_answer", payload);
       }
     });
 
     s.on("question_ended", (data) => {
       setQuestionEndedData(data);
       setIsTimeUp(false);
+      try {
+        localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
+      } catch (e) {}
     });
 
     s.on("question_cancelled", () => {
@@ -276,6 +295,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setRaffleWinner(null);
       setIsRaffling(false);
       setAnsweredStudentIds([]);
+      try {
+        localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
+      } catch (e) {}
       alert("⚠️ A questão atual foi anulada pelo instrutor.");
     });
 
@@ -305,14 +327,17 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
     setHasConfirmed(true);
     const timeGasto = Math.floor((Date.now() - startTime) / 1000);
-    
-    socket?.emit("submit_answer", {
+    const payload = {
       roomCode: simulado.codigoSala,
       questionId: currentQuestion.id,
       studentId: user.userId,
       alternativa: selectedAlt,
       tempoGasto: timeGasto
-    });
+    };
+    try {
+      localStorage.setItem(`live_pending_answer_${simulado.codigoSala}`, JSON.stringify(payload));
+    } catch (e) {}
+    socket?.emit("submit_answer", payload);
   };
 
   const isObserver = !!(raffleWinner && raffleWinner.id !== user.userId);
