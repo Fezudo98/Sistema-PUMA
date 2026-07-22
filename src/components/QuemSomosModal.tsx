@@ -157,11 +157,9 @@ export function QuemSomosModal({ triggerButton }: { triggerButton?: React.ReactN
             <div className="relative group shrink-0">
               <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl blur-md opacity-40 group-hover:opacity-75 transition duration-500" />
               <div className="relative w-36 h-36 md:w-44 md:h-44 bg-slate-950 rounded-2xl border-2 border-amber-500/50 p-2 shadow-2xl flex items-center justify-center overflow-hidden">
-                <Image 
+                <img 
                   src="/bandeira_puma.png" 
                   alt="Bandeira do 32º Pelotão PUMA" 
-                  width={200} 
-                  height={200}
                   className="object-contain w-full h-full transform group-hover:scale-105 transition duration-500" 
                 />
               </div>
