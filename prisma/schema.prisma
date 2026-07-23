@@ -35,21 +35,27 @@ model Simulado {
   isTeamCompetition Boolean    @default(false)
   teamNames         String?    // JSON array com nomes das equipes
   studentTeams      String?    // JSON map { studentId: teamId }
+  hasAppealed       Boolean    @default(false)
   createdAt         DateTime   @default(now())
   questions         Question[]
 }
 
 model Question {
-  id            String   @id @default(uuid())
-  simuladoId    String
-  simulado      Simulado @relation(fields: [simuladoId], references: [id])
-  enunciado     String
-  alternativas  String   // JSON array
-  correta       Int      // Index
-  justificativa String
-  tempoLimite   Int      // Segundos
-  status        String   @default("PENDING") // PENDING | ACTIVE | FINISHED
-  answers       Answer[]
+  id             String   @id @default(uuid())
+  simuladoId     String
+  simulado       Simulado @relation(fields: [simuladoId], references: [id])
+  enunciado      String
+  alternativas   String   // JSON array
+  correta        Int      // Index
+  justificativa  String
+  tempoLimite    Int      // Segundos
+  status         String   @default("PENDING") // PENDING | ACTIVE | FINISHED
+  hasAppeal      Boolean  @default(false)
+  appealStatus   String?  // PENDING | ANNULLED | CORRECTED | REJECTED
+  appealReason   String?
+  appealedBy     String?
+  appealResponse String?
+  answers        Answer[]
 }
 
 model Answer {

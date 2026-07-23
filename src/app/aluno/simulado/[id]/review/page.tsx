@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import RefazerReviewButton from "./RefazerReviewButton";
+import ReportQuestionButton from "./ReportQuestionButton";
 import { formatApostilaTitle } from "@/lib/utils";
 
 const prisma = new PrismaClient();
@@ -344,6 +345,17 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                       </p>
                     </div>
                   </div>
+                  
+                  {simulado.tipo === "DAILY" && (
+                    <ReportQuestionButton 
+                      questionId={q.id}
+                      simuladoId={simulado.id}
+                      hasAppealedGlobal={simulado.hasAppealed}
+                      hasAppealLocal={q.hasAppeal}
+                      appealStatus={q.appealStatus}
+                      appealResponse={q.appealResponse}
+                    />
+                  )}
                 </CardContent>
               </Card>
             );
