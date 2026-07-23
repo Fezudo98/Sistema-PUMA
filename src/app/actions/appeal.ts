@@ -105,17 +105,18 @@ IMPORTANTE: Responda ÚNICA e EXCLUSIVAMENTE com um objeto JSON no seguinte form
 `;
 
     const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20240620", // The model they have
+      model: "claude-3-5-sonnet-latest",
       max_tokens: 1500,
       messages: [{ role: "user", content: prompt }]
     });
 
     let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
     let jsonText = rawText.trim();
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-    } else if (jsonText.startsWith("```")) {
-      jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+    
+    // Tenta extrair apenas o objeto JSON (ignorando conversa fiada)
+    const match = jsonText.match(/\{[\s\S]*\}/);
+    if (match) {
+      jsonText = match[0];
     }
 
     const result = JSON.parse(jsonText);
@@ -155,7 +156,7 @@ IMPORTANTE: Responda ÚNICA e EXCLUSIVAMENTE com um objeto JSON no seguinte form
       where: { id: questionId },
       data: {
         appealStatus: "REJECTED",
-        appealResponse: "Ocorreu uma falha sistêmica ao processar seu recurso com a Inteligência Artificial. Por favor, comunique ao instrutor."
+        appealResponse: `Falha técnica no julgamento da IA: ${err.message || "Erro desconhecido"}. Por favor, avise o instrutor.`
       }
     });
   }
