@@ -218,19 +218,19 @@ export default function QuemSomosPage() {
             <TabsList className="flex flex-wrap md:grid md:grid-cols-3 h-auto w-full bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl gap-2 shadow-lg">
               <TabsTrigger 
                 value="heraldica" 
-                className="flex-1 min-w-[180px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[180px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 🛡️ Heráldica da Bandeira
               </TabsTrigger>
               <TabsTrigger 
                 value="efetivo" 
-                className="flex-1 min-w-[180px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[180px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 👥 Os 32 Alunos (QRAs)
               </TabsTrigger>
               <TabsTrigger 
                 value="lideranca" 
-                className="flex-1 min-w-[180px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-yellow-600 data-[state=active]:text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[180px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 ⭐ Comando & Origem
               </TabsTrigger>
@@ -379,12 +379,13 @@ export default function QuemSomosPage() {
                   </p>
                 </div>
                 
-                <div className="shrink-0">
-                  <div className="px-6 py-4 bg-slate-950 rounded-xl border border-slate-800 text-center shadow-inner">
-                    <span className="block text-xs uppercase font-extrabold text-slate-500 tracking-widest">
+                <div className="shrink-0 flex items-center gap-4">
+                  <img src="/14bpm.png" alt="14º Batalhão" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-105 transition-transform" />
+                  <div className="px-5 py-4 bg-slate-950 rounded-xl border border-slate-800 text-center shadow-inner">
+                    <span className="block text-[10px] sm:text-xs uppercase font-extrabold text-slate-500 tracking-widest">
                       Ano de Formação
                     </span>
-                    <span className="block text-3xl font-black text-amber-400 tracking-tight mt-0.5">
+                    <span className="block text-2xl sm:text-3xl font-black text-amber-400 tracking-tight mt-0.5">
                       CFSD 2026
                     </span>
                   </div>
