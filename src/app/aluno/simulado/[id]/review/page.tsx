@@ -116,7 +116,10 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const ranking = Object.values(studentScores).map(s => ({
     ...s,
     avgTime: s.answers > 0 ? Math.round(s.totalTime / s.answers) : 0
-  })).sort((a, b) => b.score - a.score);
+  })).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.avgTime - b.avgTime;
+  });
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8">

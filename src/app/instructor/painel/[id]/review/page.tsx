@@ -54,7 +54,10 @@ export default async function SimuladoReviewPage({ params }: { params: { id: str
   const ranking = Object.values(studentScores).map(s => ({
     ...s,
     avgTime: s.answers > 0 ? Math.round(s.totalTime / s.answers) : 0
-  })).sort((a, b) => b.score - a.score);
+  })).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.avgTime - b.avgTime;
+  });
 
   const globalAccuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
 
