@@ -39,41 +39,24 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
     await fs.writeFile(filePath, buffer);
 
-    // Check if an apostila with the same name already exists globally
-    const existingApostila = await prisma.apostila.findFirst({
-      where: {
-        title: file.name
+    // Generate a unique title to avoid overwriting existing materials
+    let finalTitle = file.name;
+    let counter = 1;
+    while (await prisma.apostila.findFirst({ where: { title: finalTitle } })) {
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+      const ext = file.name.split('.').pop() || "pdf";
+      finalTitle = `${nameWithoutExt} (${counter}).${ext}`;
+      counter++;
+    }
+
+    // Create new record
+    const apostila = await prisma.apostila.create({
+      data: {
+        title: finalTitle,
+        filePath: `/uploads/${filename}`,
+        instructorId: user.userId
       }
     });
-
-    let apostila;
-    if (existingApostila) {
-      // Delete old file from disk to save space (optional, but good practice)
-      try {
-        const oldPath = path.join(process.cwd(), "public", existingApostila.filePath);
-        await fs.unlink(oldPath);
-      } catch (e) {
-        // Ignora erro se o arquivo antigo não existir
-      }
-
-      // Update existing record
-      apostila = await prisma.apostila.update({
-        where: { id: existingApostila.id },
-        data: {
-          filePath: `/uploads/${filename}`,
-          createdAt: new Date() // Bump to top
-        }
-      });
-    } else {
-      // Create new record
-      apostila = await prisma.apostila.create({
-        data: {
-          title: file.name,
-          filePath: `/uploads/${filename}`,
-          instructorId: user.userId
-        }
-      });
-    }
 
     // Trigger daily simulated exam generation for the new/updated booklet immediately in background
     try {

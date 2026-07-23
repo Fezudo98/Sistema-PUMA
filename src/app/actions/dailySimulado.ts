@@ -739,6 +739,28 @@ export async function generateDailySimuladoForSingleApostila(apostila: any) {
   activeGenerations.add(apostila.title);
 
   try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const alreadyGeneratedToday = await prisma.simulado.findFirst({
+      where: {
+        tipo: "DAILY",
+        apostilaName: apostila.title,
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
+      }
+    });
+
+    if (alreadyGeneratedToday) {
+      console.log(`[SINGLE GENERATION] Simulado diário para "${apostila.title}" já foi gerado hoje. Ignorando...`);
+      return { success: true, message: "Já existe um simulado diário para hoje." };
+    }
+
     console.log(`[SINGLE GENERATION] Gerando simulado diário para "${apostila.title}"...`);
 
     // 1. Ler o arquivo PDF físico
