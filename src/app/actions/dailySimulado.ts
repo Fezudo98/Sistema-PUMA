@@ -96,11 +96,11 @@ const responseSchema = {
       },
       correta: {
         type: SchemaType.INTEGER,
-        description: "O índice da alternativa correta (de 0 a 4)"
+        description: "O índice (0 a 4) da alternativa que resolve o enunciado. ATENÇÃO: se a questão pedir a alternativa INCORRETA/FALSA, este índice DEVE apontar para a alternativa incorreta."
       },
       justificativa: {
         type: SchemaType.STRING,
-        description: "A explicação do porquê a alternativa está correta baseada no texto base"
+        description: "A explicação do porquê a alternativa selecionada resolve a questão"
       }
     },
     required: ["enunciado", "alternativas", "correta", "justificativa"]
@@ -398,11 +398,12 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
 3. FOCO TÉCNICO: NUNCA elabore questões sobre metadados do documento (ignore nomes de autores, diretores, reitores, ficha catalográfica, histórico de edições ou índices). Foque apenas na matéria/teoria militar e policial.
 4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
 5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
-6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.`;
+6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
+7. ATENÇÃO À ALTERNATIVA CORRETA: Se o enunciado pedir para o aluno assinalar a alternativa INCORRETA/FALSA, a chave "correta" no seu JSON DEVE apontar para o índice dessa alternativa falsa que o aluno deverá marcar para acertar a questão. O campo "justificativa" deve explicar exatamente o porquê da alternativa selecionada estar incorreta no mundo real (o que a torna a resposta certa do exercício).`;
 
             if (studentNames.length > 0) {
               const shuffledNames = [...studentNames].sort(() => 0.5 - Math.random()).slice(0, 10);
-              prompt += `\n7. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 ou 2 questões deste simulado de 25 questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais do pelotão: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
+              prompt += `\n8. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 ou 2 questões deste simulado de 25 questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais do pelotão: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
             }
 
             prompt += `\n\nO nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
@@ -765,6 +766,7 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
 4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
 5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
 6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
+7. ATENÇÃO À ALTERNATIVA CORRETA: Se o enunciado pedir para o aluno assinalar a alternativa INCORRETA/FALSA, a chave "correta" no seu JSON DEVE apontar para o índice dessa alternativa falsa que o aluno deverá marcar para acertar a questão. O campo "justificativa" deve explicar exatamente o porquê da alternativa selecionada estar incorreta no mundo real (o que a torna a resposta certa do exercício).
 
 O nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
 Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;

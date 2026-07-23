@@ -121,7 +121,7 @@ export async function createSimulado(data: {
     return { success: true, simuladoId: simulado.id, codigoSala };
   } catch (error: any) {
     console.error("Erro ao salvar simulado:", error);
-    return { error: "Falha ao salvar simulado no banco de dados." };
+    return { error: `Falha ao salvar simulado no banco de dados. Motivo: ${error.message || "Erro desconhecido"}` };
   }
 }
 

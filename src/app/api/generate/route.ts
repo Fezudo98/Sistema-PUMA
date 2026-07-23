@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
           },
           correta: {
             type: SchemaType.INTEGER,
-            description: "O índice da alternativa correta (de 0 a 4)"
+            description: "O índice (0 a 4) da alternativa que resolve o enunciado. ATENÇÃO: se a questão pedir a alternativa INCORRETA/FALSA, este índice DEVE apontar para a alternativa incorreta."
           },
           justificativa: {
             type: SchemaType.STRING,
@@ -129,12 +129,13 @@ export async function POST(req: NextRequest) {
     3. FOCO TÉCNICO: NUNCA elabore questões sobre metadados do documento (ignore nomes de autores, diretores, reitores, ficha catalográfica, histórico de edições ou índices). Foque apenas na matéria/teoria militar e policial.
     4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
     5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
-    6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.`;
+    6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
+    7. ATENÇÃO À ALTERNATIVA CORRETA: Se o enunciado pedir para o aluno assinalar a alternativa INCORRETA/FALSA, a chave "correta" no seu JSON DEVE apontar para o índice dessa alternativa falsa que o aluno deverá marcar para acertar a questão. O campo "justificativa" deve explicar exatamente o porquê da alternativa selecionada estar incorreta no mundo real (o que a torna a resposta certa do exercício).`;
 
     if (studentNames.length > 0) {
       // Misturar e selecionar até 10 nomes aleatórios de alunos para não sobrecarregar
       const shuffledNames = [...studentNames].sort(() => 0.5 - Math.random()).slice(0, 10);
-      prompt += `\n    7. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 questão deste simulado de ${qtd} questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
+      prompt += `\n    8. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 questão deste simulado de ${qtd} questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
     }
     
     prompt += `\n    
