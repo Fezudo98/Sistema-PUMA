@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info, Trophy, Users } from "lucide-react";
 import Link from "next/link";
-import RefazerReviewButton from "./RefazerReviewButton";
 import ReportQuestionButton from "./ReportQuestionButton";
 import { formatApostilaTitle } from "@/lib/utils";
 
@@ -144,14 +143,6 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
               <p className="text-slate-400 font-medium">Treinamento de Estudo Individual: <strong className="text-blue-500">IA Avançado</strong></p>
             )}
           </div>
-          
-          {simulado.tipo === "DAILY" && (
-            <RefazerReviewButton 
-              simId={simulado.id} 
-              studentId={user.userId} 
-              simName={simulado.apostilaName || "Simulado de Estudo"} 
-            />
-          )}
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -371,16 +362,6 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
             <ArrowLeft className="w-5 h-5" />
             <span>Voltar para o Painel Principal</span>
           </Link>
-
-          {simulado.tipo === "DAILY" && (
-            <div className="w-full sm:w-auto">
-              <RefazerReviewButton 
-                simId={simulado.id} 
-                studentId={user.userId} 
-                simName={simulado.apostilaName || "Simulado de Estudo"} 
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

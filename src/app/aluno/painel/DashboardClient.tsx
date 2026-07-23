@@ -13,7 +13,6 @@ import HeaderAvatar from "@/components/HeaderAvatar";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
-import { resetSimuladoAttempt } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 
 const LEIS_DA_SELVA = [
@@ -203,7 +202,6 @@ export default function StudentDashboardClient({
   const [useTimer, setUseTimer] = useState<boolean>(true);
   const [timerSeconds, setTimerSeconds] = useState<string>("60");
   const [dailyTab, setDailyTab] = useState<"TODAY" | "HISTORY">("TODAY");
-  const [loadingResetId, setLoadingResetId] = useState<string | null>(null);
   const [generatedToday, setGeneratedToday] = useState<boolean>(false);
   const router = useRouter();
   const [currentLeiIndex, setCurrentLeiIndex] = useState(0);
@@ -219,27 +217,6 @@ export default function StudentDashboardClient({
     user?.aiAnalysisDate &&
     new Date(user.aiAnalysisDate).toDateString() === new Date().toDateString()
   );
-
-  const handleRefazer = async (simId: string, name: string) => {
-    if (!confirm(`Deseja realmente refazer o simulado de "${name}"? Suas respostas anteriores serão apagadas.`)) {
-      return;
-    }
-    
-    setLoadingResetId(simId);
-    const res = await resetSimuladoAttempt(user.id || user.userId, simId);
-    setLoadingResetId(null);
-    
-    if (res.error) {
-      alert(res.error);
-      return;
-    }
-
-    // Abre o modal de configuração de tempo para reiniciar
-    setSelectedDailySimId(simId);
-    setSelectedDailySimName(name);
-    setUseTimer(true);
-    setTimerSeconds("60");
-  };
 
   useEffect(() => {
     if (user?.name) {
@@ -627,19 +604,7 @@ export default function StudentDashboardClient({
                               <div className="flex items-center gap-2 shrink-0">
                                 {sim.isCompleted ? (
                                   <>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      disabled={loadingResetId === sim.id}
-                                      onClick={() => handleRefazer(sim.id, sim.apostilaName || "")}
-                                      className="h-9 px-3 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer"
-                                    >
-                                      {loadingResetId === sim.id ? (
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                      ) : (
-                                        "Refazer"
-                                      )}
-                                    </Button>
+
                                     <Link href={`/aluno/simulado/${sim.id}/review`}>
                                       <Button
                                         variant="ghost"
@@ -699,22 +664,15 @@ export default function StudentDashboardClient({
                             
                             <div className="shrink-0 flex items-center gap-1.5">
                               {sim.isCompleted ? (
-                                <>
-                                  <Link href={`/aluno/simulado/${sim.id}/review`}>
-                                    <Button size="sm" variant="ghost" className="h-9 px-2.5 bg-emerald-950/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-950/30 font-black text-[10px] uppercase tracking-wider cursor-pointer">
-                                      Revisar
-                                    </Button>
-                                  </Link>
+                                <Link href={`/aluno/simulado/${sim.id}/review`}>
                                   <Button 
                                     size="sm" 
                                     variant="ghost" 
-                                    disabled={loadingResetId === sim.id}
-                                    onClick={() => handleRefazer(sim.id, sim.apostilaName)}
-                                    className="h-9 px-2.5 bg-rose-950/20 text-rose-400 border border-rose-500/20 hover:bg-rose-950/30 font-black text-[10px] uppercase tracking-wider cursor-pointer disabled:opacity-50"
+                                    className="h-9 px-2.5 text-blue-400 bg-blue-900/10 hover:bg-blue-900/20 font-black text-[10px] uppercase tracking-wider cursor-pointer"
                                   >
-                                    {loadingResetId === sim.id ? <Loader2 className="w-3 h-3 animate-spin text-rose-400" /> : "Refazer"}
+                                    Revisar
                                   </Button>
-                                </>
+                                </Link>
                               ) : (
                                 <Button 
                                   size="sm" 

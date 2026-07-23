@@ -702,33 +702,6 @@ export async function completeSelfPacedSimulado(studentId: string, currentSimula
   }
 }
 
-export async function resetSimuladoAttempt(studentId: string, simuladoId: string) {
-  try {
-    const questions = await prisma.question.findMany({
-      where: { simuladoId },
-      select: { id: true }
-    });
-    
-    const questionIds = questions.map(q => q.id);
-
-    if (questionIds.length > 0) {
-      await prisma.answer.deleteMany({
-        where: {
-          studentId,
-          questionId: { in: questionIds }
-        }
-      });
-    }
-
-    revalidatePath(`/aluno/simulado/${simuladoId}`);
-    revalidatePath("/aluno/painel");
-
-    return { success: true };
-  } catch (error: any) {
-    console.error("Erro ao resetar tentativa de simulado:", error);
-    return { error: error.message || "Erro desconhecido ao resetar tentativa." };
-  }
-}
 
 export async function generateDailySimuladoForSingleApostila(apostila: any) {
   // Evitar chamadas simultâneas duplicadas (lock de memória por processo)
