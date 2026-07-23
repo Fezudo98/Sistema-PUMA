@@ -454,6 +454,12 @@ export default function StudentDashboardClient({
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full md:w-auto shrink-0 flex-wrap justify-end">
+              <Link href="/quem-somos" className="w-full sm:w-auto">
+                <Button className="w-full h-14 px-5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 hover:border-amber-700 text-amber-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-400" />
+                  Quem Somos Nós
+                </Button>
+              </Link>
               <Link href="/aluno/inventario" className="w-full sm:w-auto">
                 <Button className="w-full h-14 px-5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <Package className="w-4 h-4 text-emerald-400" />

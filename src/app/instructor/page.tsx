@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import Image from "next/image";
-import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy } from "lucide-react";
+import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy, Shield } from "lucide-react";
 import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
@@ -162,7 +162,13 @@ export default async function InstructorDashboard() {
               <p className="text-blue-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs mt-1">Painel do Instrutor • Sistema PUMA</p>
             </div>
           </div>
-          <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-slate-900 pt-4 sm:border-0 sm:pt-0">
+          <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-slate-900 pt-4 sm:border-0 sm:pt-0 flex-wrap">
+            <Link href="/quem-somos">
+              <Button variant="outline" size="sm" className="border-amber-500/40 text-amber-400 bg-amber-950/20 hover:bg-amber-900/50 hover:text-amber-200 font-bold text-xs uppercase tracking-wider h-10 px-4 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+                <Shield className="w-4 h-4 mr-2" />
+                Quem Somos Nós
+              </Button>
+            </Link>
             <div className="flex items-center gap-3">
               <HeaderAvatar 
                 initials={user.name.substring(0, 2).toUpperCase()} 
