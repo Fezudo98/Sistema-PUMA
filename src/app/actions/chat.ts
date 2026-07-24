@@ -64,11 +64,10 @@ export async function getCachedApostilaText(apostila: { id: string; title: strin
     console.log(`[PDF PARSE] Cache miss para "${apostila.title}". Extraindo texto...`);
     ensureNodeCanvasPolyfills();
     try {
-      const { PDFParse } = require("pdf-parse");
+      const pdfParse = require("pdf-parse/lib/pdf-parse.js");
       const filePath = path.join(process.cwd(), "public", apostila.filePath);
       const buffer = await fs.readFile(filePath);
-      const parser = new PDFParse({ data: new Uint8Array(buffer) });
-      const parsed = await parser.getText();
+      const parsed = await pdfParse(buffer);
       
       // Save to cache
       await fs.writeFile(cachePath, parsed.text, "utf-8");
