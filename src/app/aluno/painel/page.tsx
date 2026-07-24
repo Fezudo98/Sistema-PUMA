@@ -220,6 +220,8 @@ export default async function AlunoPainel() {
     });
   }
 
+  const apostilasAtivas = await prisma.apostila.findMany({ where: { isActive: true } });
+
   const dailySimuladosWithStatus = await Promise.all(
     dailySimulados.map(async (sim) => {
       const questionIds = sim.questions.map((q: { id: string }) => q.id);
@@ -232,9 +234,12 @@ export default async function AlunoPainel() {
       
       const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
       
+      const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
+      
       return {
         id: sim.id,
         apostilaName: sim.apostilaName || "Simulado de Estudo",
+        apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
         questionsCount: questionIds.length,
         isCompleted
       };
@@ -269,9 +274,12 @@ export default async function AlunoPainel() {
       
       const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
       
+      const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
+      
       return {
         id: sim.id,
         apostilaName: sim.apostilaName || "Simulado de Estudo",
+        apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
         questionsCount: questionIds.length,
         isCompleted,
         createdAt: sim.createdAt.toISOString()

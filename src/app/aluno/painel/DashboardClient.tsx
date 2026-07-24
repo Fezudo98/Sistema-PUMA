@@ -593,7 +593,10 @@ export default function StudentDashboardClient({
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          {dailySimulados.map((sim: any) => (
+                          {dailySimulados.map((sim: any) => {
+                            const isNew = sim.apostilaCreatedAt ? (new Date().getTime() - new Date(sim.apostilaCreatedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
+                            
+                            return (
                             <div
                               key={sim.id}
                               className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/40 flex items-center justify-between gap-3 text-left"
@@ -601,6 +604,7 @@ export default function StudentDashboardClient({
                               <div className="min-w-0 flex-1">
                                 <span className="text-xs font-black text-slate-300 block line-clamp-2 leading-snug" title={sim.apostilaName}>
                                   {formatApostilaTitle(sim.apostilaName)}
+                                  {isNew && <span className="ml-2 inline-block bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-black animate-pulse">Novo</span>}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-500 block uppercase mt-0.5">
                                   {sim.questionsCount} Alvos • Dificuldade Máxima
@@ -637,7 +641,8 @@ export default function StudentDashboardClient({
                                 )}
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -648,7 +653,10 @@ export default function StudentDashboardClient({
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                        {pastDailySimulados.map((sim: any) => (
+                        {pastDailySimulados.map((sim: any) => {
+                          const isNew = sim.apostilaCreatedAt ? (new Date().getTime() - new Date(sim.apostilaCreatedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
+                          
+                          return (
                           <div
                             key={sim.id}
                             className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/40 flex items-center justify-between gap-3 text-left"
@@ -656,6 +664,7 @@ export default function StudentDashboardClient({
                             <div className="min-w-0 flex-1">
                               <span className="text-xs font-black text-slate-300 block line-clamp-2 leading-snug" title={sim.apostilaName}>
                                 {formatApostilaTitle(sim.apostilaName)}
+                                {isNew && <span className="ml-2 inline-block bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-black animate-pulse">Novo</span>}
                               </span>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-[9px] font-bold text-slate-500 uppercase">
@@ -695,7 +704,8 @@ export default function StudentDashboardClient({
                               )}
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )
                   )}

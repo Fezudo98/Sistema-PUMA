@@ -65,9 +65,17 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredApostilas.map(apostila => (
+            {filteredApostilas.map(apostila => {
+              const isNew = (new Date().getTime() - new Date(apostila.createdAt).getTime()) < 24 * 60 * 60 * 1000;
+              
+              return (
               <Link href={`/aluno/biblioteca/${apostila.id}`} key={apostila.id}>
-                <div className="bg-slate-900/50 border border-slate-800 hover:border-blue-500/50 rounded-2xl p-6 transition-all hover:bg-slate-900 shadow-lg group h-full flex flex-col">
+                <div className="bg-slate-900/50 border border-slate-800 hover:border-blue-500/50 rounded-2xl p-6 transition-all hover:bg-slate-900 shadow-lg group h-full flex flex-col relative">
+                  {isNew && (
+                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-lg animate-pulse">
+                      Novo
+                    </div>
+                  )}
                   <div className="w-12 h-12 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 mb-4 group-hover:scale-110 transition-transform">
                     <BookOpen className="w-6 h-6" />
                   </div>
@@ -85,7 +93,8 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
