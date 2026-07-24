@@ -215,24 +215,30 @@ export default function QuemSomosPage() {
         {/* Seção de Abas Em Tela Cheia */}
         <div className="space-y-6">
           <Tabs defaultValue="heraldica" className="w-full space-y-8">
-            <TabsList className="flex flex-wrap md:grid md:grid-cols-3 h-auto w-full bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl gap-2 shadow-lg">
+            <TabsList className="flex flex-wrap md:grid md:grid-cols-4 h-auto w-full bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl gap-2 shadow-lg">
               <TabsTrigger 
                 value="heraldica" 
-                className="flex-1 min-w-[180px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
-                🛡️ Heráldica da Bandeira
+                🛡️ Heráldica
               </TabsTrigger>
               <TabsTrigger 
                 value="efetivo" 
-                className="flex-1 min-w-[180px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
-                👥 Os 32 Alunos (QRAs)
+                👥 Efetivo (QRAs)
+              </TabsTrigger>
+              <TabsTrigger 
+                value="brado" 
+                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+              >
+                🔥 Brado
               </TabsTrigger>
               <TabsTrigger 
                 value="lideranca" 
-                className="flex-1 min-w-[180px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-sm sm:text-base uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
-                ⭐ Comando & Origem
+                ⭐ Origem
               </TabsTrigger>
             </TabsList>
 
@@ -380,7 +386,7 @@ export default function QuemSomosPage() {
                 </div>
                 
                 <div className="shrink-0 flex items-center gap-4">
-                  <img src="/14bpm.png" alt="14º Batalhão" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-105 transition-transform" />
+                  <img src="/14_bpm.png" alt="14º Batalhão" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-105 transition-transform" />
                   <div className="px-5 py-4 bg-slate-950 rounded-xl border border-slate-800 text-center shadow-inner">
                     <span className="block text-[10px] sm:text-xs uppercase font-extrabold text-slate-500 tracking-widest">
                       Ano de Formação
@@ -389,6 +395,30 @@ export default function QuemSomosPage() {
                       CFSD 2026
                     </span>
                   </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* ABA 4: BRADO DO PELOTÃO */}
+            <TabsContent value="brado" className="space-y-8 animate-in fade-in-50 duration-300">
+              <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 border border-amber-500/30 rounded-2xl p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col items-center justify-center text-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl" />
+                
+                <Flame className="w-12 h-12 text-amber-500 mb-6 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+                
+                <h3 className="text-2xl md:text-3xl font-black uppercase text-white tracking-widest mb-8 border-b-2 border-amber-500/40 pb-4 inline-block">
+                  Brado do 32º Pelotão
+                </h3>
+
+                <div className="space-y-4 text-lg md:text-2xl font-black uppercase tracking-wider text-slate-200 italic font-serif relative z-10 leading-relaxed">
+                  <p className="hover:text-amber-400 transition-colors duration-300">"Forjados no sol, na garra e na dor.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300">O 32 avança com fé e destemor.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300">Muralha de aço, prontos para a luta.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300">Aqui não se recua, esse é o pelotão PUMA.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300">Servir e proteger, com brio varonil.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300 text-3xl md:text-4xl mt-6 text-amber-500 font-extrabold not-italic">Polícia Militar.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300 text-3xl md:text-4xl text-amber-500 font-extrabold not-italic">Ceará.</p>
+                  <p className="hover:text-amber-400 transition-colors duration-300 text-4xl md:text-5xl text-yellow-400 font-extrabold not-italic drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] pt-2">Brasil."</p>
                 </div>
               </div>
             </TabsContent>
