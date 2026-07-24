@@ -129,7 +129,8 @@ async function chatWithFallback(content: any[]) {
         messages: [{ role: "user", content: promptText.trim() }]
       });
 
-      const rawText = response.content[0]?.type === "text" ? response.content[0].text : "";
+      const textBlock = response.content.find((b: any) => b.type === "text");
+      const rawText = textBlock?.text || "";
       if (rawText) {
         console.log("✅ [CHAT AI - EXCEPCIONAL] Resposta gerada com sucesso pelo Claude Sonnet 5!");
         return { response: { text: () => rawText } };

@@ -245,7 +245,8 @@ async function generateWithFallback(content: any[]) {
         messages: [{ role: "user", content: userContent }]
       });
 
-      let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+      const textBlock = response.content.find((b: any) => b.type === 'text');
+      let rawText = textBlock?.text || '';
       let jsonText = rawText.trim();
       if (jsonText.startsWith("```json")) {
         jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");

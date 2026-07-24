@@ -110,7 +110,8 @@ IMPORTANTE: Responda ÚNICA e EXCLUSIVAMENTE com um objeto JSON no seguinte form
       messages: [{ role: "user", content: prompt }]
     });
 
-    let rawText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+    const textBlock = response.content.find((b: any) => b.type === 'text');
+    let rawText = textBlock?.text || '';
     let jsonText = rawText.trim();
     
     // Tenta extrair apenas o objeto JSON (ignorando conversa fiada)

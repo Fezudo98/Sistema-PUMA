@@ -59,3 +59,4 @@ dev.db
 # Scripts locais com credenciais
 conectar_vps.bat
 *.bat
+test-claude.ts

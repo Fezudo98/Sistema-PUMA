@@ -119,7 +119,8 @@ export async function POST(req: NextRequest) {
             messages: [{ role: "user", content: promptText.trim() }]
           });
 
-          const rawText = response.content[0]?.type === "text" ? response.content[0].text : "";
+          const textBlock = response.content.find((b: any) => b.type === "text");
+          const rawText = textBlock?.text || "";
           if (rawText) {
             console.log("✅ [ANALYSIS AI - EXCEPCIONAL] Análise gerada com sucesso pelo Claude Sonnet 5!");
             return { response: { text: () => rawText } };
