@@ -19,7 +19,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   };
 
-  // Se não tem token, bloqueia e manda pro login adequado
+  // Se for uma rota pública de login, tenta redirecionar pro painel se já estiver logado
+  if (path === '/aluno' || path === '/auth/login' || path === '/') {
+    if (token) {
+      try {
+        const verified = await jwtVerify(token, JWT_SECRET);
+        const role = verified.payload.role as string;
+        if (role === 'STUDENT' && path !== '/') return NextResponse.redirect(new URL('/aluno/painel', request.url));
+        if (role === 'INSTRUCTOR' && path !== '/') return NextResponse.redirect(new URL('/instructor', request.url));
+      } catch (error) {
+        // Token inválido, ignora e deixa a pessoa ver a tela de login
+      }
+    }
+    return NextResponse.next();
+  }
+
+  // Se não tem token nas rotas protegidas, bloqueia
   if (!token) {
     return redirectToLogin();
   }
@@ -45,14 +60,17 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-// O Middleware intercepta APENAS as rotas privadas.
-// As telas de login (/auth/login e /aluno) ficam de fora para evitar loop infinito.
+// O Middleware intercepta APENAS as rotas declaradas.
 export const config = {
   matcher: [
+    '/',
+    '/auth/login',
+    '/aluno',
     '/instructor/:path*', 
     '/instructor', 
     '/aluno/painel/:path*', 
     '/aluno/sala/:path*', 
-    '/aluno/simulado/:path*'
+    '/aluno/simulado/:path*',
+    '/aluno/biblioteca/:path*'
   ],
 };
