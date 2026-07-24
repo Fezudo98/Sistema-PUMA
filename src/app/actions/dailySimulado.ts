@@ -100,7 +100,7 @@ const responseSchema = {
       },
       justificativa: {
         type: SchemaType.STRING,
-        description: "A explicação do porquê a alternativa selecionada resolve a questão"
+        description: "A explicação do porquê a alternativa selecionada resolve a questão. ATENÇÃO: NUNCA mencione letras (ex: 'A alternativa A', 'Letra C'), pois as opções serão embaralhadas. Refira-se como 'A alternativa correta' ou cite o texto da opção."
       }
     },
     required: ["enunciado", "alternativas", "correta", "justificativa"]
@@ -399,7 +399,8 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
 4. Não use NENHUM conhecimento prévio ou externo. Se a resposta não estiver no texto, não crie a questão.
 5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
 6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
-7. ATENÇÃO À ALTERNATIVA CORRETA: Se o enunciado pedir para o aluno assinalar a alternativa INCORRETA/FALSA, a chave "correta" no seu JSON DEVE apontar para o índice dessa alternativa falsa que o aluno deverá marcar para acertar a questão. O campo "justificativa" deve explicar exatamente o porquê da alternativa selecionada estar incorreta no mundo real (o que a torna a resposta certa do exercício).`;
+7. ATENÇÃO À ALTERNATIVA CORRETA: Se o enunciado pedir para o aluno assinalar a alternativa INCORRETA/FALSA, a chave "correta" no seu JSON DEVE apontar para o índice dessa alternativa falsa que o aluno deverá marcar para acertar a questão. O campo "justificativa" deve explicar exatamente o porquê da alternativa selecionada estar incorreta no mundo real (o que a torna a resposta certa do exercício).
+8. JUSTIFICATIVA SEM LETRAS: Como as alternativas serão embaralhadas no momento da prova, é ESTRITAMENTE PROIBIDO usar referências a letras (ex: "A alternativa B", "A letra C") na sua justificativa. Utilize expressões como "A alternativa correta" ou "A opção que afirma...".`;
 
             if (studentNames.length > 0) {
               const shuffledNames = [...studentNames].sort(() => 0.5 - Math.random()).slice(0, 10);
@@ -762,6 +763,7 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
 5. SEM AMBIGUIDADES: É proibido haver ambiguidades ou múltiplas interpretações plausíveis. O aluno deve ser testado através da troca inteligente de conceitos, mas a alternativa correta precisa estar clara e fielmente ancorada na apostila, de forma incontestável.
 6. ENUNCIADO COMPLETO: Ainda que objetivo, o enunciado não pode ser omisso. Deve apresentar todos os elementos e contextos necessários para a elucidação da questão de forma independente.
 7. ATENÇÃO À ALTERNATIVA CORRETA: Se o enunciado pedir para o aluno assinalar a alternativa INCORRETA/FALSA, a chave "correta" no seu JSON DEVE apontar para o índice dessa alternativa falsa que o aluno deverá marcar para acertar a questão. O campo "justificativa" deve explicar exatamente o porquê da alternativa selecionada estar incorreta no mundo real (o que a torna a resposta certa do exercício).
+8. JUSTIFICATIVA SEM LETRAS: Como as alternativas serão embaralhadas no momento da prova, é ESTRITAMENTE PROIBIDO usar referências a letras (ex: "A alternativa B", "A letra C") na sua justificativa. Utilize expressões como "A alternativa correta" ou "A opção que afirma...".
 
 O nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
 Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
