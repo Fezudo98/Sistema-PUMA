@@ -130,3 +130,16 @@ model InventoryHistory {
   changeDetail String        // Detalhe da mudança ("Alterou Estado de Bom para Danificado", etc.)
   createdAt    DateTime      @default(now())
 }
+
+model ApostilaAnnotation {
+  id           String   @id @default(uuid())
+  userId       String
+  apostilaId   String
+  content      String // O comentário do aluno (post-it)
+  highlightData String // JSON contendo o texto marcado, áreas, página etc.
+  color        String? // Opcional, para permitir escolher cores (ex: yellow, green, red)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([userId, apostilaId])
+}

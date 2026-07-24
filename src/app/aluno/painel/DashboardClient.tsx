@@ -443,6 +443,12 @@ export default function StudentDashboardClient({
                   Inventário 32º PEL
                 </Button>
               </Link>
+              <Link href="/aluno/biblioteca" className="w-full sm:w-auto">
+                <Button className="w-full h-14 px-5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800 hover:border-blue-700 text-blue-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                  <BookOpen className="w-4 h-4 text-blue-400" />
+                  Biblioteca
+                </Button>
+              </Link>
               <Link href="/aluno/vademecum" className="w-full sm:w-auto">
                 <Button className="w-full h-14 px-6 bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4 text-blue-400" />
