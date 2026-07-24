@@ -35,7 +35,7 @@ async function generateWithFallback(content: any[]) {
       }
 
       const response = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-latest",
+        model: "claude-sonnet-5",
         max_tokens: 8192,
         messages: [{ role: "user", content: promptText.trim() }]
       });
@@ -44,9 +44,11 @@ async function generateWithFallback(content: any[]) {
       if (rawText) {
         console.log("✅ [VADE MECUM AI - PRIORIDADE 1] Resumo tático gerado com sucesso pelo Claude Sonnet 5!");
         return { response: { text: () => rawText } };
+      } else {
+        console.log("⚠️ [VADE MECUM AI] Resposta do Claude Sonnet 5 não continha texto. Resposta bruta:", JSON.stringify(response, null, 2));
       }
     } catch (claudeErr: any) {
-      console.warn("[VADE MECUM AI] Falha ou limite no Claude Sonnet 5. Recorrendo à frota de chaves Gemini (piso 3.1 flash)...", claudeErr.message || claudeErr);
+      console.warn("[VADE MECUM AI] Falha ou limite no Claude Sonnet 5. Recorrendo à frota de chaves Gemini...", claudeErr.message || claudeErr);
     }
   }
 
