@@ -49,12 +49,7 @@ function ensureNodeCanvasPolyfills() {
     (globalThis as any).Path2D = class Path2D {};
   }
 
-  // Pre-load pdfjs worker statically to bypass any dynamic require/import issue inside Next.js/Turbopack
-  try {
-    (globalThis as any).pdfjsWorker = require("pdfjs-dist/legacy/build/pdf.worker.js");
-  } catch (err) {
-    console.warn("[ensureNodeCanvasPolyfills] Could not statically pre-load pdfjs worker:", err);
-  }
+  // Removed globalThis.pdfjsWorker override to prevent version mismatch with pdf-parse
 }
 
 // Helper to cache booklet PDF texts on disk
