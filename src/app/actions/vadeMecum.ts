@@ -36,7 +36,7 @@ async function generateWithFallback(content: any[]) {
 
       const response = await anthropic.messages.create({
         model: "claude-sonnet-5",
-        max_tokens: 8192,
+        max_tokens: 4096,
         messages: [{ role: "user", content: promptText.trim() }]
       });
 
