@@ -51,7 +51,7 @@ function ensureNodeCanvasPolyfills() {
 
   // Pre-load pdfjs worker statically to bypass any dynamic require/import issue inside Next.js/Turbopack
   try {
-    (globalThis as any).pdfjsWorker = require("pdfjs-dist/legacy/build/pdf.worker.mjs");
+    (globalThis as any).pdfjsWorker = require("pdfjs-dist/legacy/build/pdf.worker.js");
   } catch (err) {
     console.warn("[ensureNodeCanvasPolyfills] Could not statically pre-load pdfjs worker:", err);
   }
