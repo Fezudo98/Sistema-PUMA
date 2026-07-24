@@ -5,7 +5,8 @@ import PdfReaderClient from "./PdfReaderClient";
 
 const prisma = new PrismaClient();
 
-export default async function ApostilaReaderPage({ params }: { params: { id: string } }) {
+export default async function ApostilaReaderPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getUser();
   if (!user || user.role !== "STUDENT") {
     redirect("/");
