@@ -36,16 +36,20 @@ async function generateWithFallback(content: any[]) {
 
       const response = await anthropic.messages.create({
         model: "claude-sonnet-5",
-        max_tokens: 4096,
+        max_tokens: 16000,
         messages: [{ role: "user", content: promptText.trim() }]
       });
 
-      const rawText = response.content[0]?.type === "text" ? response.content[0].text : "";
+      // Claude Sonnet 5 é um modelo com "Extended Thinking" — a resposta vem com
+      // blocos [0] = {type: "thinking"} e [1] = {type: "text"}.
+      // Precisamos encontrar o bloco de texto correto em vez de assumir que é o índice 0.
+      const textBlock = response.content.find((block: any) => block.type === "text");
+      const rawText = textBlock?.text || "";
       if (rawText) {
-        console.log("✅ [VADE MECUM AI - PRIORIDADE 1] Resumo tático gerado com sucesso pelo Claude Sonnet 5!");
+        console.log(`✅ [VADE MECUM AI - PRIORIDADE 1] Resumo tático gerado com sucesso pelo Claude Sonnet 5! (stop_reason: ${response.stop_reason}, tokens: ${response.usage?.output_tokens})`);
         return { response: { text: () => rawText } };
       } else {
-        console.log("⚠️ [VADE MECUM AI] Resposta do Claude Sonnet 5 não continha texto. Resposta bruta:", JSON.stringify(response, null, 2));
+        console.log("⚠️ [VADE MECUM AI] Resposta do Claude Sonnet 5 não continha bloco de texto. Blocos recebidos:", response.content.map((b: any) => b.type));
       }
     } catch (claudeErr: any) {
       console.warn("[VADE MECUM AI] Falha ou limite no Claude Sonnet 5. Recorrendo à frota de chaves Gemini...", claudeErr.message || claudeErr);
