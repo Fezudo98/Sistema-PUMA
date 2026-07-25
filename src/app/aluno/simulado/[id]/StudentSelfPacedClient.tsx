@@ -8,6 +8,7 @@ import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, AlertTriangle, Help
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveSelfPacedAnswer, completeSelfPacedSimulado } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
+import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
 
 interface Question {
   id: string;
@@ -25,11 +26,13 @@ interface Simulado {
 export default function StudentSelfPacedClient({
   simulado,
   studentId,
-  initialProgress = 0
+  initialProgress = 0,
+  apostilaFilePath = null
 }: {
   simulado: Simulado;
   studentId: string;
   initialProgress?: number;
+  apostilaFilePath?: string | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -427,8 +430,8 @@ export default function StudentSelfPacedClient({
                   {/* Justificativa */}
                   <div className="bg-slate-950/60 p-4 border border-slate-800 rounded-xl space-y-2 flex-1 overflow-y-auto max-h-[300px] custom-scrollbar">
                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Análise Didática da IA</span>
-                    <p className="text-xs leading-relaxed text-slate-300 font-medium italic">
-                      "{justificativa}"
+                    <p className="text-sm font-medium text-slate-300">
+                      <JustificativaWithCitation text={justificativa} apostilaFilePath={apostilaFilePath} />
                     </p>
                   </div>
 

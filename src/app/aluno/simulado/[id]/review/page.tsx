@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle, XCircle, Clock, Target, Info, Trophy, Users } f
 import Link from "next/link";
 import ReportQuestionButton from "./ReportQuestionButton";
 import { formatApostilaTitle } from "@/lib/utils";
+import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +30,16 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   });
 
   if (!simulado) redirect("/aluno/painel");
+
+  let apostilaFilePath = null;
+  if (simulado.apostilaName) {
+    const apostila = await prisma.apostila.findFirst({
+      where: { title: simulado.apostilaName }
+    });
+    if (apostila) {
+      apostilaFilePath = apostila.filePath;
+    }
+  }
 
   // Buscar respostas específicas deste aluno para este simulado
   const answers = await prisma.answer.findMany({
@@ -331,9 +342,9 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                       <p className="text-sm font-bold text-blue-400 mb-1">
                         Justificativa da IA:
                       </p>
-                      <p className="text-sm text-slate-300 leading-relaxed">
-                        {q.justificativa}
-                      </p>
+                      <div className="text-sm text-slate-300 leading-relaxed">
+                        <JustificativaWithCitation text={q.justificativa} apostilaFilePath={apostilaFilePath} />
+                      </div>
                     </div>
                   </div>
                   

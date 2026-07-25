@@ -49,11 +49,23 @@ export default async function StudentSelfPacedPage({
     }
   }
 
+  // 3. Buscar o filePath da apostila para o visualizador de PDF
+  let apostilaFilePath = null;
+  if (simulado.apostilaName) {
+    const apostila = await prisma.apostila.findFirst({
+      where: { title: simulado.apostilaName }
+    });
+    if (apostila) {
+      apostilaFilePath = apostila.filePath;
+    }
+  }
+
   return (
     <StudentSelfPacedClient 
       simulado={simulado} 
       studentId={user.userId} 
       initialProgress={studentAnswersCount}
+      apostilaFilePath={apostilaFilePath}
     />
   );
 }
