@@ -65,6 +65,7 @@ const HighlightContentEditor = ({ props, addAnnotation }: { props: RenderHighlig
 export default function PdfReaderClient({ apostila, userId }: { apostila: Apostila; userId: string }) {
   const [annotations, setAnnotations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTooltip, setActiveTooltip] = useState<{ x: number, y: number, content: string, id: string } | null>(null);
 
   useEffect(() => {
     fetch(`/api/apostilas/${apostila.id}/annotations`)
@@ -156,7 +157,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
             .map((area: any, idx: number) => (
               <div
                 key={idx}
-                className="group relative cursor-pointer"
+                className="group relative cursor-pointer hover:bg-yellow-400/50 transition-colors"
                 style={Object.assign(
                   {},
                   {
@@ -168,19 +169,18 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
                     width: `${area.width}%`,
                   }
                 )}
-              >
-                {/* Tooltip for existing annotation */}
-                <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-900 text-white text-xs p-2 rounded shadow-xl border border-slate-700 z-50">
-                  <p className="font-semibold text-blue-300 mb-1">Sua anotação:</p>
-                  <p>{note.content}</p>
-                  <button 
-                    onClick={() => deleteAnnotation(note.id)}
-                    className="mt-2 text-red-400 hover:text-red-300 underline"
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </div>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setActiveTooltip({
+                    x: rect.left + rect.width / 2,
+                    y: rect.top,
+                    content: note.content,
+                    id: note.id
+                  });
+                }}
+              />
             ))}
         </React.Fragment>
       ))}
@@ -212,7 +212,41 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
         </div>
       </header>
 
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-hidden relative" onClick={() => setActiveTooltip(null)}>
+        {activeTooltip && (
+          <div 
+            className="fixed bg-slate-900 text-white p-4 rounded-xl shadow-2xl border border-slate-700 z-[99999] w-72 transform -translate-x-1/2 -translate-y-full flex flex-col gap-3 cursor-default"
+            style={{ left: activeTooltip.x, top: activeTooltip.y - 12 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <p className="text-xs font-black text-blue-400 uppercase tracking-wider mb-1">Sua anotação</p>
+              <p className="text-sm text-slate-200 leading-relaxed">{activeTooltip.content}</p>
+            </div>
+            
+            <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-800">
+              <button 
+                onClick={() => {
+                  deleteAnnotation(activeTooltip.id);
+                  setActiveTooltip(null);
+                }}
+                className="text-red-400 hover:text-red-300 hover:underline text-xs font-semibold px-2 py-1 -ml-2 rounded hover:bg-red-500/10 transition-colors"
+              >
+                Excluir anotação
+              </button>
+              <button 
+                onClick={() => setActiveTooltip(null)}
+                className="text-slate-400 hover:text-white text-xs font-semibold px-2 py-1 -mr-2 rounded hover:bg-slate-800 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+            
+            {/* Seta do Tooltip */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-slate-900"></div>
+          </div>
+        )}
+        
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin mb-4" />
