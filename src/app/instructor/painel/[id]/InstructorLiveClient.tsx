@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { endSimulado } from "@/app/actions/simulado";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { getPatentByScore } from "@/lib/patents";
 
 export default function InstructorLiveClient({ user, simulado }: { user: any, simulado: any }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -672,8 +673,17 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                 {aluno.name.substring(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <span className="font-bold text-slate-200 text-sm md:text-base lg:text-lg truncate flex items-center">
+                            <span className="font-bold text-slate-200 text-sm md:text-base lg:text-lg truncate flex items-center gap-1.5">
                               {aluno.name}
+                              {(() => {
+                                const p = getPatentByScore(aluno.score || 0);
+                                const PIcon = p.icon;
+                                return (
+                                  <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
+                                    <PIcon className="w-4 h-4 md:w-5 md:h-5" />
+                                  </span>
+                                );
+                              })()}
                               {isQuestionActive && !questionEndedData && (
                                 answeredStudentIds.includes(aluno.id) ? (
                                   <span className="text-[9px] md:text-xs bg-emerald-500/20 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 ml-1.5 animate-pulse">Respondeu</span>

@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
+import { getPatentByScore } from "@/lib/patents";
 
 const LEIS_DA_SELVA = [
   {
@@ -113,7 +114,7 @@ const getBadges = (stats: any) => {
       earned: false,
       exclusive: false,
       isElite: true,
-      desc: 'Concluir no mínimo 40 simulados avançados, ter taxa global de acertos (geral) mín 97% e 100.000 pontos totais.',
+      desc: 'Concluir no mínimo 40 simulados avançados, ter taxa global de acertos (geral) mín 92% e 200.000 pontos totais.',
       color: 'text-purple-500',
       bg: 'bg-purple-900/20',
       border: 'border-purple-500/50'
@@ -125,7 +126,7 @@ const getBadges = (stats: any) => {
       earned: false,
       exclusive: false,
       isElite: true,
-      desc: 'Alcançar 150.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 92%.',
+      desc: 'Alcançar 300.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 92%.',
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'
@@ -331,7 +332,19 @@ export default function StudentDashboardClient({
           
           <div className="flex items-center gap-6">
             <div className="text-right hidden sm:block">
-              <p className="text-sm text-slate-400">QRA</p>
+              <div className="flex items-center justify-end gap-2 mb-0.5">
+                <p className="text-sm text-slate-400">QRA</p>
+                {(() => {
+                  const patent = getPatentByScore(stats?.totalScore || 0);
+                  const PatentIcon = patent.icon;
+                  return (
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${patent.color} ${patent.bg} ${patent.border} border ${patent.glow || ''}`} title="Sua Patente PUMA">
+                      <PatentIcon className="w-3 h-3" />
+                      {patent.name}
+                    </span>
+                  );
+                })()}
+              </div>
               <div className="flex items-center justify-end gap-1.5 group">
                 <p className="text-lg font-bold text-white uppercase">
                   {user?.numero ? `${String(user.numero).padStart(2, '0')} - ${user.name}` : user?.name || "Aluno"}
@@ -834,9 +847,20 @@ export default function StudentDashboardClient({
                                 {aluno.name.substring(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <span className={`font-bold text-sm uppercase leading-snug ${isMe ? 'text-blue-400' : 'text-slate-200'}`} title={aluno.name}>
-                              {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`font-bold text-sm uppercase leading-snug ${isMe ? 'text-blue-400' : 'text-slate-200'}`} title={aluno.name}>
+                                {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
+                              </span>
+                              {(() => {
+                                const p = getPatentByScore(aluno.totalScore || 0);
+                                const PIcon = p.icon;
+                                return (
+                                  <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
+                                    <PIcon className="w-4 h-4" />
+                                  </span>
+                                );
+                              })()}
+                            </div>
                           </div>
                           <div className="flex items-center justify-between gap-2 pl-9">
                             <div className="flex items-center gap-1.5 flex-wrap">

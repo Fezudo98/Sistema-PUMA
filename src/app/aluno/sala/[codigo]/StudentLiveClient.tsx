@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useSearchParams } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { getPatentByScore } from "@/lib/patents";
 
 export default function StudentLiveClient({ user, simulado }: { user: any, simulado: any }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -952,7 +953,18 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                               {aluno.name.substring(0,2).toUpperCase()}
                             </div>
                           )}
-                          <span className="font-bold text-slate-200">{aluno.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-200">{aluno.name}</span>
+                            {(() => {
+                              const p = getPatentByScore(aluno.score || 0);
+                              const PIcon = p.icon;
+                              return (
+                                <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
+                                  <PIcon className="w-3.5 h-3.5" />
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">{aluno.score} pts</td>
                       </tr>

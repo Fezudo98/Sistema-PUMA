@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
+import { getPatentByScore } from "@/lib/patents";
 
 type StudentPerformance = {
   id: string;
@@ -242,8 +243,18 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                               </div>
                             )}
                             <div className="flex flex-col gap-1">
-                              <span className="font-bold text-white uppercase tracking-wider">
+                              <span className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
                                 {student.numero ? `${String(student.numero).padStart(2, '0')} - ${student.name}` : student.name}
+                                {(() => {
+                                  const p = getPatentByScore(student.totalScore || 0);
+                                  const PIcon = p.icon;
+                                  return (
+                                    <span className={`inline-flex items-center gap-0.5 px-1 rounded text-[9px] font-black uppercase tracking-wider ${p.color} ${p.bg} border ${p.border} ${p.glow || ''}`} title={p.name}>
+                                      <PIcon className="w-2.5 h-2.5" />
+                                      {p.name}
+                                    </span>
+                                  );
+                                })()}
                               </span>
                               <div className="flex items-center gap-2">
                                 {typeof student.streakDays === 'number' && student.streakDays > 0 && (
