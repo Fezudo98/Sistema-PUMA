@@ -436,8 +436,8 @@ export default function StudentDashboardClient({
           <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400"></div>
 
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
-            <div className="space-y-2.5 max-w-2xl">
+          <div className="flex flex-col gap-6 relative z-10">
+            <div className="space-y-2.5 max-w-3xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-widest">
                 <Bot className="w-3.5 h-3.5 animate-pulse text-blue-400" />
                 PUMA • Acesso Integral às Apostilas
@@ -450,32 +450,32 @@ export default function StudentDashboardClient({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full md:w-auto shrink-0 flex-wrap justify-end">
-              <Link href="/quem-somos" className="w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full">
+              <Link href="/quem-somos" className="flex-1 sm:flex-none">
                 <Button className="w-full h-14 px-5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 hover:border-amber-700 text-amber-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <Shield className="w-4 h-4 text-amber-400" />
                   Quem Somos Nós
                 </Button>
               </Link>
-              <Link href="/aluno/inventario" className="w-full sm:w-auto">
+              <Link href="/aluno/inventario" className="flex-1 sm:flex-none">
                 <Button className="w-full h-14 px-5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <Package className="w-4 h-4 text-emerald-400" />
                   Inventário 32º PEL
                 </Button>
               </Link>
-              <Link href="/aluno/biblioteca" className="w-full sm:w-auto">
+              <Link href="/aluno/biblioteca" className="flex-1 sm:flex-none">
                 <Button className="w-full h-14 px-5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800 hover:border-blue-700 text-blue-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
                   <BookOpen className="w-4 h-4 text-blue-400" />
                   Biblioteca
                 </Button>
               </Link>
-              <Link href="/aluno/vademecum" className="w-full sm:w-auto">
+              <Link href="/aluno/vademecum" className="flex-1 sm:flex-none">
                 <Button className="w-full h-14 px-6 bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4 text-blue-400" />
                   Vade Mecum
                 </Button>
               </Link>
-              <Link href="/aluno/chat" className="w-full sm:w-auto">
+              <Link href="/aluno/chat" className="flex-1 sm:flex-none">
                 <Button className="w-full h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <MessageSquare className="w-4 h-4" />
                   Abrir Chat IA
