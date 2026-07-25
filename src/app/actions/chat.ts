@@ -1,14 +1,12 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
 import path from "path";
 import { queueGenerationTask } from "./dailySimulado";
-
-const prisma = new PrismaClient();
 
 const modelVersions = [
   "gemini-3.6-flash",

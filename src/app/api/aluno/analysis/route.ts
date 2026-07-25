@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/app/actions/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
+import { prisma } from '@/lib/prisma';
 // Initialize Gemini SDK is done locally in the handler to allow fallback
 
 export async function POST(req: NextRequest) {

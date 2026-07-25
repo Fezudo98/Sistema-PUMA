@@ -1,11 +1,8 @@
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from '@/lib/prisma';
 import { getUser } from "@/app/actions/auth";
 import ChatClient from "./ChatClient";
 import { computeStudentPerformanceStats } from "@/lib/stats";
-
-const prisma = new PrismaClient();
-
 export default async function AlunoChatPage() {
   const user = await getUser();
   if (!user || user.role !== "STUDENT") {

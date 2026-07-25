@@ -1,11 +1,9 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
 
 export async function updateUserAvatar(avatarUrl: string) {
   const user = await getUser();

@@ -1,12 +1,10 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "./auth";
 import { revalidatePath } from "next/cache";
 import { promises as fs } from "fs";
 import path from "path";
-
-const prisma = new PrismaClient();
 
 export async function toggleApostilaStatus(id: string, currentStatus: boolean) {
   const user = await getUser();

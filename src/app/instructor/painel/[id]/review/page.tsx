@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import ReviewClient from "./ReviewClient";
-
-const prisma = new PrismaClient();
 
 export default async function SimuladoReviewPage({ params }: { params: { id: string } }) {
   const user = await getUser();

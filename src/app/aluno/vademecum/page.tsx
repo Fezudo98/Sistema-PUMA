@@ -1,10 +1,7 @@
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from '@/lib/prisma';
 import VadeMecumClient from "./VadeMecumClient";
-
-const prisma = new PrismaClient();
-
 export default async function AlunoVadeMecumPage() {
   const user = await getUser();
   

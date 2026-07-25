@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import PdfReaderClient from "./PdfReaderClient";
-
-const prisma = new PrismaClient();
 
 export default async function ApostilaReaderPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

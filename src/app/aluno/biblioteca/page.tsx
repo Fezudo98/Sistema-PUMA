@@ -1,10 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from '@/lib/prisma';
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import BibliotecaClient from "./BibliotecaClient";
-
-const prisma = new PrismaClient();
-
 export default async function BibliotecaPage() {
   const user = await getUser();
   if (!user || user.role !== "STUDENT") {

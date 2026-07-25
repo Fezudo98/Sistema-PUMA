@@ -1,13 +1,11 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
 import { revalidatePath } from "next/cache";
-
-const prisma = new PrismaClient();
 
 function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
   if (!alternativas || !Array.isArray(alternativas) || alternativas.length === 0) {

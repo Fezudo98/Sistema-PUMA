@@ -1,9 +1,7 @@
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import StudentLiveClient from "./StudentLiveClient";
-
-const prisma = new PrismaClient();
 
 export default async function StudentLiveRoom({ params }: { params: Promise<{ codigo: string }> }) {
   const user = await getUser();

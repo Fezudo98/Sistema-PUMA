@@ -1,13 +1,11 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import { getCachedApostilaText } from "./chat";
 import { queueGenerationTask } from "./dailySimulado";
-
-const prisma = new PrismaClient();
 
 const modelVersions = [
   "gemini-3.6-flash",

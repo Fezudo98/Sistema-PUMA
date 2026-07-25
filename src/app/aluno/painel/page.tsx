@@ -1,11 +1,8 @@
 import { getUser } from "@/app/actions/auth";
 import StudentDashboardClient from "./DashboardClient";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
-
-
-const prisma = new PrismaClient();
 
 export default async function AlunoPainel() {
   const user = await getUser();
@@ -152,16 +149,27 @@ export default async function AlunoPainel() {
     history
   };
 
-  // Buscar ranking geral da sala (todos os alunos com suas sequências, pontos de hoje e totais)
+  // Buscar ranking geral da sala (selecionando apenas o estritamente necessário para reduzir peso)
   const dbStudents = await prisma.user.findMany({
     where: { role: "STUDENT" },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      numero: true,
+      avatarUrl: true,
       answers: {
-        include: {
+        select: {
+          createdAt: true,
+          pontuacao: true,
+          isCorrect: true,
           question: {
-            include: {
+            select: {
+              simuladoId: true,
               simulado: {
-                include: {
+                select: {
+                  tipo: true,
+                  status: true,
+                  createdAt: true,
                   _count: { select: { questions: true } }
                 }
               }
@@ -222,29 +230,22 @@ export default async function AlunoPainel() {
 
   const apostilasAtivas = await prisma.apostila.findMany({ where: { isActive: true } });
 
-  const dailySimuladosWithStatus = await Promise.all(
-    dailySimulados.map(async (sim) => {
-      const questionIds = sim.questions.map((q: { id: string }) => q.id);
-      const studentAnswersCount = await prisma.answer.count({
-        where: {
-          studentId: user.userId,
-          questionId: { in: questionIds }
-        }
-      });
-      
-      const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
-      
-      const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
-      
-      return {
-        id: sim.id,
-        apostilaName: sim.apostilaName || "Simulado de Estudo",
-        apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
-        questionsCount: questionIds.length,
-        isCompleted
-      };
-    })
-  );
+  const dailySimuladosWithStatus = dailySimulados.map((sim) => {
+    const questionIds = sim.questions.map((q: { id: string }) => q.id);
+    const studentAnswersCount = answers.filter(a => questionIds.includes(a.questionId)).length;
+    
+    const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
+    
+    const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
+    
+    return {
+      id: sim.id,
+      apostilaName: sim.apostilaName || "Simulado de Estudo",
+      apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
+      questionsCount: questionIds.length,
+      isCompleted
+    };
+  });
 
   // 3. Fetch past daily simulados (before today)
   const pastDailySimulados = await prisma.simulado.findMany({
@@ -262,30 +263,23 @@ export default async function AlunoPainel() {
     orderBy: { createdAt: "desc" }
   });
 
-  const pastDailySimuladosWithStatus = await Promise.all(
-    pastDailySimulados.map(async (sim) => {
-      const questionIds = sim.questions.map((q: { id: string }) => q.id);
-      const studentAnswersCount = await prisma.answer.count({
-        where: {
-          studentId: user.userId,
-          questionId: { in: questionIds }
-        }
-      });
-      
-      const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
-      
-      const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
-      
-      return {
-        id: sim.id,
-        apostilaName: sim.apostilaName || "Simulado de Estudo",
-        apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
-        questionsCount: questionIds.length,
-        isCompleted,
-        createdAt: sim.createdAt.toISOString()
-      };
-    })
-  );
+  const pastDailySimuladosWithStatus = pastDailySimulados.map((sim) => {
+    const questionIds = sim.questions.map((q: { id: string }) => q.id);
+    const studentAnswersCount = answers.filter(a => questionIds.includes(a.questionId)).length;
+    
+    const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
+    
+    const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
+    
+    return {
+      id: sim.id,
+      apostilaName: sim.apostilaName || "Simulado de Estudo",
+      apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
+      questionsCount: questionIds.length,
+      isCompleted,
+      createdAt: sim.createdAt.toISOString()
+    };
+  });
 
   // Buscar simulados ativos (WAITING ou ACTIVE) e apenas do tipo LIVE
   const activeRooms = await prisma.simulado.findMany({

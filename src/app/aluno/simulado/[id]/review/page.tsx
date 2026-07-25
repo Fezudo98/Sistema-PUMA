@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,8 +8,6 @@ import Link from "next/link";
 import ReportQuestionButton from "./ReportQuestionButton";
 import { formatApostilaTitle } from "@/lib/utils";
 import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
-
-const prisma = new PrismaClient();
 
 export default async function StudentSimuladoReview({ params }: { params: { id: string } }) {
   const user = await getUser();

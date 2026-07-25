@@ -1,9 +1,7 @@
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import InstructorLiveClient from "./InstructorLiveClient";
-
-const prisma = new PrismaClient();
 
 export default async function InstructorLivePanel({ params }: { params: Promise<{ id: string }> }) {
   const user = await getUser();

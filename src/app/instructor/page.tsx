@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy, Shield } from "lucide-react";
 import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from '@/lib/prisma';
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import EndSimuladoButton from "./EndSimuladoButton";
@@ -16,9 +16,6 @@ import ApostilaManagerClient from "./ApostilaManagerClient";
 import SettingsClient from "./SettingsClient";
 import InventoryClient from "@/components/InventoryClient";
 import { formatApostilaTitle } from "@/lib/utils";
-
-const prisma = new PrismaClient();
-
 export default async function InstructorDashboard() {
   const user = await getUser();
   if (!user || user.role !== "INSTRUCTOR") {
@@ -93,16 +90,27 @@ export default async function InstructorDashboard() {
   // Fetch Students and aggregate their performance
   const students = await prisma.user.findMany({
     where: { role: "STUDENT" },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      numero: true,
+      avatarUrl: true,
+      suspendedUntil: true,
       answers: {
-        include: {
+        select: {
+          createdAt: true,
+          pontuacao: true,
+          tempoGasto: true,
+          isCorrect: true,
           question: {
-            include: {
+            select: {
+              simuladoId: true,
               simulado: {
-                include: {
-                  _count: {
-                    select: { questions: true }
-                  }
+                select: {
+                  tipo: true,
+                  status: true,
+                  createdAt: true,
+                  _count: { select: { questions: true } }
                 }
               }
             }

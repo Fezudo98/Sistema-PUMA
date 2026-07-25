@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import StudentSelfPacedClient from "./StudentSelfPacedClient";
-
-const prisma = new PrismaClient();
 
 export default async function StudentSelfPacedPage({
   params

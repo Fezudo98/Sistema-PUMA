@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
     const topics = formData.get("topics") as string | null;
 
     const { PrismaClient } = require("@prisma/client");
-    const prisma = new PrismaClient();
     let studentNames: string[] = [];
     try {
       const students = await prisma.user.findMany({
@@ -55,8 +54,6 @@ export async function POST(req: NextRequest) {
       const fs = require("fs").promises;
       const path = require("path");
       const { PrismaClient } = require("@prisma/client");
-      const prisma = new PrismaClient();
-      
       const apostila = await prisma.apostila.findUnique({ where: { id: apostilaId } });
       if (!apostila) {
          return NextResponse.json({ error: "Apostila não encontrada." }, { status: 404 });
