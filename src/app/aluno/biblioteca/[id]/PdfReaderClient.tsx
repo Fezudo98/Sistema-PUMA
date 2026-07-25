@@ -26,6 +26,42 @@ interface Apostila {
   filePath: string;
 }
 
+const HighlightContentEditor = ({ props, addAnnotation }: { props: RenderHighlightContentProps, addAnnotation: (content: string, areas: any[]) => void }) => {
+  const [message, setMessage] = useState("");
+
+  return (
+    <div className="bg-white border border-gray-300 rounded-md p-3 shadow-lg flex flex-col gap-2 w-64 absolute z-50 text-slate-800"
+      style={{
+        left: `${props.selectionRegion.left}%`,
+        top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
+      }}
+    >
+      <textarea
+        rows={3}
+        className="border p-2 rounded text-sm w-full outline-none focus:border-blue-500"
+        placeholder="Escreva sua anotação aqui..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <div className="flex gap-2 justify-end mt-1">
+        <Button variant="ghost" size="sm" onClick={props.cancel} className="text-slate-500">
+          Cancelar
+        </Button>
+        <Button 
+          size="sm" 
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          onClick={() => {
+            addAnnotation(message, props.highlightAreas);
+            props.cancel();
+          }}
+        >
+          Salvar
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export default function PdfReaderClient({ apostila, userId }: { apostila: Apostila; userId: string }) {
   const [annotations, setAnnotations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,39 +144,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
   );
 
   const renderHighlightContent = (props: RenderHighlightContentProps) => {
-    const [message, setMessage] = useState("");
-
-    return (
-      <div className="bg-white border border-gray-300 rounded-md p-3 shadow-lg flex flex-col gap-2 w-64 absolute z-50 text-slate-800"
-        style={{
-          left: `${props.selectionRegion.left}%`,
-          top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
-        }}
-      >
-        <textarea
-          rows={3}
-          className="border p-2 rounded text-sm w-full outline-none focus:border-blue-500"
-          placeholder="Escreva sua anotação aqui..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <div className="flex gap-2 justify-end mt-1">
-          <Button variant="ghost" size="sm" onClick={props.cancel} className="text-slate-500">
-            Cancelar
-          </Button>
-          <Button 
-            size="sm" 
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={() => {
-              addAnnotation(message, props.highlightAreas);
-              props.cancel();
-            }}
-          >
-            Salvar
-          </Button>
-        </div>
-      </div>
-    );
+    return <HighlightContentEditor props={props} addAnnotation={addAnnotation} />;
   };
 
   const renderHighlights = (props: RenderHighlightsProps) => (
