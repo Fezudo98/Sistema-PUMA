@@ -666,22 +666,31 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                             }`}>
                               {index + 1}
                             </span>
-                            {aluno.avatarUrl ? (
-                              <img src={aluno.avatarUrl} alt="Avatar" className="w-7 h-7 md:w-9 md:h-9 rounded-full object-cover border border-slate-700 shrink-0" />
-                            ) : (
-                              <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] md:text-xs font-bold shrink-0 border border-slate-700">
-                                {aluno.name.substring(0, 2).toUpperCase()}
-                              </div>
-                            )}
+                            {(() => {
+                              const p = getPatentByScore(aluno.score || 0);
+                              return (
+                                <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
+                                  {aluno.avatarUrl ? (
+                                    <img src={aluno.avatarUrl} alt="Avatar" className="w-7 h-7 md:w-9 md:h-9 rounded-full object-cover border border-slate-700 shrink-0" />
+                                  ) : (
+                                    <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] md:text-xs font-bold shrink-0 border border-slate-700">
+                                      {aluno.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             <span className="font-bold text-slate-200 text-sm md:text-base lg:text-lg truncate flex items-center gap-1.5">
-                              {aluno.name}
                               {(() => {
                                 const p = getPatentByScore(aluno.score || 0);
                                 const PIcon = p.icon;
                                 return (
-                                  <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
-                                    <PIcon className="w-4 h-4 md:w-5 md:h-5" />
-                                  </span>
+                                  <>
+                                    <span className={`${p.nameEffect || ''}`}>{aluno.name}</span>
+                                    <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
+                                      <PIcon className={`w-4 h-4 md:w-5 md:h-5 ${p.iconAnimation || ''}`} />
+                                    </span>
+                                  </>
                                 );
                               })()}
                               {isQuestionActive && !questionEndedData && (

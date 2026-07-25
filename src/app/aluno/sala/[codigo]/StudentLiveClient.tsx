@@ -946,22 +946,31 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                           {idx + 1}º
                         </td>
                         <td className="px-4 py-3 flex items-center gap-3">
-                          {aluno.avatarUrl ? (
-                            <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-700" />
-                          ) : (
-                            <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-700">
-                              {aluno.name.substring(0,2).toUpperCase()}
-                            </div>
-                          )}
+                          {(() => {
+                            const p = getPatentByScore(aluno.score || 0);
+                            return (
+                              <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
+                                {aluno.avatarUrl ? (
+                                  <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-700" />
+                                ) : (
+                                  <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-700">
+                                    {aluno.name.substring(0,2).toUpperCase()}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-slate-200">{aluno.name}</span>
                             {(() => {
                               const p = getPatentByScore(aluno.score || 0);
                               const PIcon = p.icon;
                               return (
-                                <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
-                                  <PIcon className="w-3.5 h-3.5" />
-                                </span>
+                                <>
+                                  <span className={`font-bold text-slate-200 ${p.nameEffect || ''}`}>{aluno.name}</span>
+                                  <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
+                                    <PIcon className={`w-3.5 h-3.5 ${p.iconAnimation || ''}`} />
+                                  </span>
+                                </>
                               );
                             })()}
                           </div>

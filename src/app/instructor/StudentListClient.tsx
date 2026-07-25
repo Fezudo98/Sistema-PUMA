@@ -235,24 +235,35 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                             {rankIndex + 1}º
                           </div>
                           <div className="flex items-center gap-3">
-                            {student.avatarUrl ? (
-                              <img src={student.avatarUrl} alt={student.name} className="w-8 h-8 rounded-full object-cover border border-slate-700" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
-                                <UserIcon className="w-4 h-4" />
-                              </div>
-                            )}
+                            {(() => {
+                              const p = getPatentByScore(student.totalScore || 0);
+                              return (
+                                <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
+                                  {student.avatarUrl ? (
+                                    <img src={student.avatarUrl} alt={student.name} className="w-8 h-8 rounded-full object-cover border border-slate-700" />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                                      <UserIcon className="w-4 h-4" />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             <div className="flex flex-col gap-1">
                               <span className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                                {student.numero ? `${String(student.numero).padStart(2, '0')} - ${student.name}` : student.name}
                                 {(() => {
                                   const p = getPatentByScore(student.totalScore || 0);
                                   const PIcon = p.icon;
                                   return (
-                                    <span className={`inline-flex items-center gap-0.5 px-1 rounded text-[9px] font-black uppercase tracking-wider ${p.color} ${p.bg} border ${p.border} ${p.glow || ''}`} title={p.name}>
-                                      <PIcon className="w-2.5 h-2.5" />
-                                      {p.name}
-                                    </span>
+                                    <>
+                                      <span className={p.nameEffect || ''}>
+                                        {student.numero ? `${String(student.numero).padStart(2, '0')} - ${student.name}` : student.name}
+                                      </span>
+                                      <span className={`inline-flex items-center gap-0.5 px-1 rounded text-[9px] font-black uppercase tracking-wider ${p.color} ${p.bg} border ${p.border} ${p.glow || ''}`} title={p.name}>
+                                        <PIcon className={`w-2.5 h-2.5 ${p.iconAnimation || ''}`} />
+                                        {p.name}
+                                      </span>
+                                    </>
                                   );
                                 })()}
                               </span>

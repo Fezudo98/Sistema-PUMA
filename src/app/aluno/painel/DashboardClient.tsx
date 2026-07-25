@@ -339,7 +339,7 @@ export default function StudentDashboardClient({
                   const PatentIcon = patent.icon;
                   return (
                     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${patent.color} ${patent.bg} ${patent.border} border ${patent.glow || ''}`} title="Sua Patente PUMA">
-                      <PatentIcon className="w-3 h-3" />
+                      <PatentIcon className={`w-3 h-3 ${patent.iconAnimation || ''}`} />
                       {patent.name}
                     </span>
                   );
@@ -362,11 +362,18 @@ export default function StudentDashboardClient({
               </div>
             </div>
             <button onClick={() => setIsArmariaOpen(true)} className="hover:scale-105 transition-transform" title="Abrir Armaria de Ícones">
-              <HeaderAvatar 
-                initials={user?.name?.substring(0, 2).toUpperCase() || "AL"} 
-                avatarUrl={user?.avatarUrl || null} 
-                disableModal={true}
-              />
+              {(() => {
+                const patent = getPatentByScore(stats?.totalScore || 0);
+                return (
+                  <div className={`rounded-full ${patent.avatarRing || ''}`}>
+                    <HeaderAvatar 
+                      initials={user?.name?.substring(0, 2).toUpperCase() || "AL"} 
+                      avatarUrl={user?.avatarUrl || null} 
+                      disableModal={true}
+                    />
+                  </div>
+                );
+              })()}
             </button>
             <Button variant="ghost" onClick={handleSair} className="text-slate-500 hover:text-red-400">
               <LogOut className="w-5 h-5" />
@@ -840,24 +847,33 @@ export default function StudentDashboardClient({
                             }`}>
                               {index + 1}
                             </span>
-                            {aluno.avatarUrl ? (
-                              <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700 shrink-0" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0 border border-slate-700">
-                                {aluno.name.substring(0, 2).toUpperCase()}
-                              </div>
-                            )}
+                            {(() => {
+                              const p = getPatentByScore(aluno.totalScore || 0);
+                              return (
+                                <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
+                                  {aluno.avatarUrl ? (
+                                    <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-700" />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold border border-slate-700">
+                                      {aluno.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             <div className="flex items-center gap-1.5">
-                              <span className={`font-bold text-sm uppercase leading-snug ${isMe ? 'text-blue-400' : 'text-slate-200'}`} title={aluno.name}>
-                                {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
-                              </span>
                               {(() => {
                                 const p = getPatentByScore(aluno.totalScore || 0);
                                 const PIcon = p.icon;
                                 return (
-                                  <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
-                                    <PIcon className="w-4 h-4" />
-                                  </span>
+                                  <>
+                                    <span className={`font-bold text-sm uppercase leading-snug ${p.nameEffect || (isMe ? 'text-blue-400' : 'text-slate-200')}`} title={aluno.name}>
+                                      {aluno.numero ? `${String(aluno.numero).padStart(2, '0')} - ${aluno.name}` : aluno.name}
+                                    </span>
+                                    <span className={`${p.color} ${p.glow || ''}`} title={p.name}>
+                                      <PIcon className={`w-4 h-4 ${p.iconAnimation || ''}`} />
+                                    </span>
+                                  </>
                                 );
                               })()}
                             </div>
