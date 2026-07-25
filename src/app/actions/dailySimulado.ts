@@ -486,7 +486,8 @@ export async function saveSelfPacedAnswer(data: {
 
     // 2. Buscar a questão para validar
     const question = await prisma.question.findUnique({
-      where: { id: questionId }
+      where: { id: questionId },
+      include: { simulado: true }
     });
 
     if (!question) {
@@ -497,7 +498,15 @@ export async function saveSelfPacedAnswer(data: {
     
     let pontuacao = 0;
     if (isCorrect) {
-      pontuacao = 100; // Sem pontos de bônus por velocidade em simulados individuais
+      // Verifica se o simulado foi criado hoje
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
+      const simuladoDate = question.simulado?.createdAt || new Date(0);
+      const isHoje = simuladoDate >= hoje;
+
+      // Hoje ganha 100, Histórico (antigo) ganha 50
+      pontuacao = isHoje ? 100 : 50; 
     }
 
     let safeTempoGasto = Number(tempoGasto) || 0;
