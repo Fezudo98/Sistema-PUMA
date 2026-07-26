@@ -71,8 +71,8 @@ const getBadges = (stats: any) => {
       earned: s.simuladosCount >= 10 && s.totalScore >= 25000, 
       desc: 'Completar 10 simulados avançados com no mínimo 70% de acertos e alcançar 25.000 pontos.',
       color: 'text-muted-foreground',
-      bg: 'bg-slate-700/30',
-      border: 'border-slate-400/50'
+      bg: 'bg-muted/30',
+      border: 'border-border'
     },
     {
       id: 'veterano',
@@ -326,7 +326,7 @@ export default function StudentDashboardClient({
           <div className="flex items-center gap-4">
             <Image src="/logo.png" alt="Logo PUMA" width={52} height={52} className="drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] object-contain hover:scale-105 transition-transform duration-300" />
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Sistema PUMA</h1>
+              <h1 className="text-xl font-bold text-heading tracking-tight">Sistema PUMA</h1>
               <p className="text-xs text-blue-400 font-medium uppercase tracking-wider">Painel do Aluno</p>
             </div>
           </div>
@@ -347,7 +347,7 @@ export default function StudentDashboardClient({
                 })()}
               </div>
               <div className="flex items-center justify-end gap-1.5 group">
-                <p className="text-lg font-bold text-white uppercase">
+                <p className="text-lg font-bold text-heading uppercase">
                   {user?.numero ? `${String(user.numero).padStart(2, '0')} - ${user.name}` : user?.name || "Aluno"}
                 </p>
                 <button 
@@ -355,7 +355,7 @@ export default function StudentDashboardClient({
                     setNameError("");
                     setIsArmariaOpen(true);
                   }}
-                  className="text-muted-foreground hover:text-blue-400 transition-colors p-1 rounded hover:bg-slate-800"
+                  className="text-muted-foreground hover:text-blue-400 transition-colors p-1 rounded hover:bg-muted"
                   title="Alterar Identificação (QRA)"
                 >
                   <Edit className="w-3.5 h-3.5" />
@@ -407,7 +407,7 @@ export default function StudentDashboardClient({
                     [{LEIS_DA_SELVA[currentLeiIndex].destaque}]
                   </span>
                 </div>
-                <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-snug transition-all duration-500 min-h-[3.5rem] sm:min-h-[2.5rem] flex items-center">
+                <p className="text-base sm:text-lg font-bold text-heading tracking-wide leading-snug transition-all duration-500 min-h-[3.5rem] sm:min-h-[2.5rem] flex items-center">
                   "{LEIS_DA_SELVA[currentLeiIndex].texto}"
                 </p>
               </div>
@@ -423,7 +423,7 @@ export default function StudentDashboardClient({
                     className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                       idx === currentLeiIndex 
                         ? "w-6 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" 
-                        : "w-1.5 bg-slate-700 hover:bg-slate-500"
+                        : "w-1.5 bg-muted hover:bg-muted"
                     }`}
                     title={`Ver ${LEIS_DA_SELVA[idx].numero}`}
                   />
@@ -444,7 +444,7 @@ export default function StudentDashboardClient({
                 <Bot className="w-3.5 h-3.5 animate-pulse text-blue-400" />
                 PUMA • Acesso Integral às Apostilas
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+              <h2 className="text-2xl sm:text-3xl font-black text-heading tracking-tight uppercase">
                 Central de Dúvidas & Mentor IA PUMA
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed font-medium">
@@ -454,31 +454,31 @@ export default function StudentDashboardClient({
 
             <div className="flex flex-wrap items-center gap-3 w-full">
               <Link href="/quem-somos" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 hover:border-amber-700 text-amber-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                <Button className="w-full h-14 px-5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 hover:border-amber-700 text-amber-300 hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <Shield className="w-4 h-4 text-amber-400" />
                   Quem Somos Nós
                 </Button>
               </Link>
               <Link href="/aluno/inventario" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                <Button className="w-full h-14 px-5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-300 hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <Package className="w-4 h-4 text-emerald-400" />
                   Inventário 32º PEL
                 </Button>
               </Link>
               <Link href="/aluno/biblioteca" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800 hover:border-blue-700 text-blue-300 hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                <Button className="w-full h-14 px-5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800 hover:border-blue-700 text-blue-300 hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
                   <BookOpen className="w-4 h-4 text-blue-400" />
                   Biblioteca
                 </Button>
               </Link>
               <Link href="/aluno/vademecum" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-6 bg-background/80 hover:bg-slate-900 border border-border hover:border-slate-700 text-muted-foreground hover:text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                <Button className="w-full h-14 px-6 bg-background/80 hover:bg-card border border-border hover:border-border text-muted-foreground hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4 text-blue-400" />
                   Vade Mecum
                 </Button>
               </Link>
               <Link href="/aluno/chat" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+                <Button className="w-full h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-heading font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <MessageSquare className="w-4 h-4" />
                   Abrir Chat IA
                 </Button>
@@ -496,7 +496,7 @@ export default function StudentDashboardClient({
              <Card className="border-blue-900/50 bg-blue-950/20 shadow-2xl overflow-hidden relative">
                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                <CardHeader>
-                 <CardTitle className="text-xl text-white flex items-center gap-2">
+                 <CardTitle className="text-xl text-heading flex items-center gap-2">
                    <Play className="w-5 h-5 text-blue-400" />
                    Entrar em Simulado
                  </CardTitle>
@@ -512,7 +512,7 @@ export default function StudentDashboardClient({
                      placeholder="CÓDIGO DA SALA" 
                      value={codigo}
                      onChange={(e) => setCodigo(e.target.value)}
-                     className="bg-card/50 border-border h-14 text-center text-2xl uppercase tracking-[0.3em] font-bold text-white"
+                     className="bg-card/50 border-border h-14 text-center text-2xl uppercase tracking-[0.3em] font-bold text-heading"
                      maxLength={6}
                    />
                    <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-bold" disabled={!codigo.trim()}>
@@ -563,7 +563,7 @@ export default function StudentDashboardClient({
               <Card className="border-border bg-card/40 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-500"></div>
                 <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                  <CardTitle className="text-lg text-heading flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-blue-500" />
                     Missões do Dia: Estudo Individual
                   </CardTitle>
@@ -580,7 +580,7 @@ export default function StudentDashboardClient({
                       className={`flex-1 pb-2 border-b-2 text-center transition-all cursor-pointer ${
                         dailyTab === "TODAY" 
                           ? "border-blue-500 text-blue-400 font-black" 
-                          : "border-transparent text-muted-foreground hover:text-slate-300"
+                          : "border-transparent text-muted-foreground hover:text-muted-foreground"
                       }`}
                     >
                       Hoje ({dailySimulados.length})
@@ -590,7 +590,7 @@ export default function StudentDashboardClient({
                       className={`flex-1 pb-2 border-b-2 text-center transition-all cursor-pointer ${
                         dailyTab === "HISTORY" 
                           ? "border-blue-500 text-blue-400 font-black" 
-                          : "border-transparent text-muted-foreground hover:text-slate-300"
+                          : "border-transparent text-muted-foreground hover:text-muted-foreground"
                       }`}
                     >
                       Histórico ({pastDailySimulados.length})
@@ -626,7 +626,7 @@ export default function StudentDashboardClient({
                               <div className="min-w-0 flex-1">
                                 <span className="text-xs font-black text-muted-foreground block line-clamp-2 leading-snug" title={sim.apostilaName}>
                                   {formatApostilaTitle(sim.apostilaName)}
-                                  {isNew && <span className="ml-2 inline-block bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-black animate-pulse">Novo</span>}
+                                  {isNew && <span className="ml-2 inline-block bg-blue-600 text-heading text-[9px] px-1.5 py-0.5 rounded uppercase font-black animate-pulse">Novo</span>}
                                 </span>
                                 <span className="text-[10px] font-bold text-muted-foreground block uppercase mt-0.5">
                                   {sim.questionsCount} Alvos • Dificuldade Máxima
@@ -656,7 +656,7 @@ export default function StudentDashboardClient({
                                       setUseTimer(true);
                                       setTimerSeconds("60");
                                     }}
-                                    className="h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg cursor-pointer"
+                                    className="h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-heading font-bold text-xs uppercase tracking-wider rounded-lg cursor-pointer"
                                   >
                                     Iniciar
                                   </Button>
@@ -686,13 +686,13 @@ export default function StudentDashboardClient({
                             <div className="min-w-0 flex-1">
                               <span className="text-xs font-black text-muted-foreground block line-clamp-2 leading-snug" title={sim.apostilaName}>
                                 {formatApostilaTitle(sim.apostilaName)}
-                                {isNew && <span className="ml-2 inline-block bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-black animate-pulse">Novo</span>}
+                                {isNew && <span className="ml-2 inline-block bg-blue-600 text-heading text-[9px] px-1.5 py-0.5 rounded uppercase font-black animate-pulse">Novo</span>}
                               </span>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">
                                   {new Date(sim.createdAt).toLocaleDateString("pt-BR")}
                                 </span>
-                                <span className="text-slate-700 text-[9px] font-bold">•</span>
+                                <span className="text-muted-foreground text-[9px] font-bold">•</span>
                                 <span className="text-[9px] font-bold text-blue-500 uppercase">
                                   {sim.questionsCount} Alvos
                                 </span>
@@ -719,7 +719,7 @@ export default function StudentDashboardClient({
                                     setUseTimer(true);
                                     setTimerSeconds("60");
                                   }}
-                                  className="h-9 px-3 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-wider shadow-md cursor-pointer"
+                                  className="h-9 px-3 bg-blue-600 hover:bg-blue-500 text-heading font-black text-[10px] uppercase tracking-wider shadow-md cursor-pointer"
                                 >
                                   Iniciar
                                 </Button>
@@ -738,7 +738,7 @@ export default function StudentDashboardClient({
             <Card className="border-border bg-card/40 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-blue-500"></div>
               <CardHeader>
-                <CardTitle className="text-lg text-white flex items-center gap-2">
+                <CardTitle className="text-lg text-heading flex items-center gap-2">
                   <Target className="w-5 h-5 text-emerald-400" />
                   Análise do Mentor Policial
                 </CardTitle>
@@ -749,7 +749,7 @@ export default function StudentDashboardClient({
                     <p>Responda simulados para gerar o seu perfil de desempenho tático.</p>
                     <Link href="/aluno/chat" className="inline-block mt-2">
                       <Button 
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg cursor-pointer transition-colors"
+                        className="bg-blue-600 hover:bg-blue-500 text-heading font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg cursor-pointer transition-colors"
                       >
                         Tirar Dúvidas das Apostilas
                       </Button>
@@ -781,7 +781,7 @@ export default function StudentDashboardClient({
                         ) : (
                           <Button 
                             onClick={handleGenerateAnalysis}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider h-8 px-3 cursor-pointer"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-heading font-bold text-[10px] uppercase tracking-wider h-8 px-3 cursor-pointer"
                           >
                             Atualizar Análise do Dia
                           </Button>
@@ -789,7 +789,7 @@ export default function StudentDashboardClient({
                         <Link href="/aluno/chat">
                           <Button 
                             variant="outline"
-                            className="border-border text-muted-foreground hover:text-white hover:bg-slate-800 text-[10px] font-bold uppercase tracking-wider h-8 px-3 cursor-pointer flex items-center gap-1.5"
+                            className="border-border text-muted-foreground hover:text-heading hover:bg-muted text-[10px] font-bold uppercase tracking-wider h-8 px-3 cursor-pointer flex items-center gap-1.5"
                           >
                             <MessageSquare className="w-3 h-3 text-blue-400" />
                             Ir para o Chat
@@ -805,7 +805,7 @@ export default function StudentDashboardClient({
                       <Button 
                         onClick={handleGenerateAnalysis}
                         disabled={isAnalysisDoneToday}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg cursor-pointer transition-colors flex-1"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-heading font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-lg cursor-pointer transition-colors flex-1"
                       >
                         {isAnalysisDoneToday ? "Análise Diária Concluída" : "Solicitar Análise do Dia (1x/dia)"}
                       </Button>
@@ -819,7 +819,7 @@ export default function StudentDashboardClient({
             <Card className="border-border bg-card/40 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg text-white flex items-center gap-2">
+                <CardTitle className="text-lg text-heading flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-yellow-500" />
                   Ranking Geral da Sala
                 </CardTitle>
@@ -829,7 +829,7 @@ export default function StudentDashboardClient({
                 {generalRanking.length === 0 ? (
                   <div className="p-6 text-center text-muted-foreground text-sm">Nenhum combatente ativo.</div>
                 ) : (
-                  <div className="divide-y divide-slate-800/50">
+                  <div className="divide-y divide-border">
                     {generalRanking.map((aluno, index) => {
                       const isMe = aluno.id === user.userId;
                       return (
@@ -838,13 +838,13 @@ export default function StudentDashboardClient({
                           className={`flex flex-col gap-2 p-3.5 transition-colors ${
                             isMe 
                               ? 'bg-blue-950/20 border-y border-blue-500/20 shadow-[inset_0_0_15px_rgba(59,130,246,0.05)]' 
-                              : 'hover:bg-slate-800/30'
+                              : 'hover:bg-muted/30'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <span className={`flex items-center justify-center shrink-0 w-6 h-6 rounded-full text-xs font-black ${
                               index === 0 ? 'bg-yellow-500 text-yellow-950 shadow-[0_0_10px_rgba(234,179,8,0.3)]' : 
-                              index === 1 ? 'bg-slate-300 text-slate-800' :
+                              index === 1 ? 'bg-secondary text-foreground' :
                               index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-muted text-muted-foreground'
                             }`}>
                               {index + 1}
@@ -909,7 +909,7 @@ export default function StudentDashboardClient({
             <Card className="border-border bg-card/40 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-amber-600"></div>
               <CardHeader>
-                <CardTitle className="text-lg text-white flex items-center gap-2">
+                <CardTitle className="text-lg text-heading flex items-center gap-2">
                   <Award className="w-5 h-5 text-yellow-500" />
                   Mural de Brevês
                 </CardTitle>
@@ -950,12 +950,12 @@ export default function StudentDashboardClient({
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               <Card className="border-border bg-card/60 p-3.5 flex flex-col items-center justify-center text-center">
                 <Award className="w-7 h-7 text-yellow-500 mb-1.5" />
-                <p className="text-2xl font-black text-white">{stats?.simuladosCount || 0}</p>
+                <p className="text-2xl font-black text-heading">{stats?.simuladosCount || 0}</p>
                 <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Simulados</p>
               </Card>
               <Card className="border-border bg-card/60 p-3.5 flex flex-col items-center justify-center text-center">
                 <Target className="w-7 h-7 text-blue-500 mb-1.5" />
-                <p className="text-2xl font-black text-white">{stats?.accuracy || 0}%</p>
+                <p className="text-2xl font-black text-heading">{stats?.accuracy || 0}%</p>
                 <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Taxa Global</p>
               </Card>
               <Card className="border-border bg-card/60 p-3.5 flex flex-col items-center justify-center text-center">
@@ -965,16 +965,16 @@ export default function StudentDashboardClient({
               </Card>
               <Card className="border-border bg-card/60 p-3.5 flex flex-col items-center justify-center text-center">
                 <AlertTriangle className="w-7 h-7 text-orange-500 mb-1.5" />
-                <p className="text-2xl font-black text-white">{stats?.avgTime || 0}s</p>
+                <p className="text-2xl font-black text-heading">{stats?.avgTime || 0}s</p>
                 <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Tempo Médio</p>
               </Card>
-              <Card className="border-orange-500/30 bg-gradient-to-b from-orange-950/40 to-slate-900/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(249,115,22,0.1)] relative overflow-hidden">
+              <Card className="border-orange-500/30 bg-gradient-to-b from-orange-950/40 to-card/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(249,115,22,0.1)] relative overflow-hidden">
                 <Flame className="w-7 h-7 text-orange-500 fill-orange-500/30 mb-1.5 animate-bounce" />
                 <p className="text-2xl font-black text-orange-400">{stats?.streakDays || 0}</p>
                 <p className="text-[11px] text-orange-300 uppercase font-bold tracking-wider mt-1">Sequência (Dias)</p>
                 <span className="text-[9px] text-muted-foreground mt-0.5">+100 pts/dia</span>
               </Card>
-              <Card className="border-yellow-500/30 bg-gradient-to-b from-yellow-950/40 to-slate-900/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(234,179,8,0.1)] relative overflow-hidden">
+              <Card className="border-yellow-500/30 bg-gradient-to-b from-yellow-950/40 to-card/80 p-3.5 flex flex-col items-center justify-center text-center shadow-[0_0_15px_rgba(234,179,8,0.1)] relative overflow-hidden">
                 <Zap className="w-7 h-7 text-yellow-400 fill-yellow-400/30 mb-1.5" />
                 <p className="text-2xl font-black text-yellow-400">+{stats?.todayPoints || 0}</p>
                 <p className="text-[11px] text-yellow-300 uppercase font-bold tracking-wider mt-1">Pontos Hoje</p>
@@ -985,7 +985,7 @@ export default function StudentDashboardClient({
             {/* History Table */}
             <Card className="border-border bg-card/40">
               <CardHeader>
-                <CardTitle className="text-lg text-white">Histórico de Combate</CardTitle>
+                <CardTitle className="text-lg text-heading">Histórico de Combate</CardTitle>
                 <CardDescription>Seus resultados nos últimos simulados realizados.</CardDescription>
               </CardHeader>
               <CardContent>
@@ -1006,15 +1006,15 @@ export default function StudentDashboardClient({
                           <th className="px-4 py-3 font-medium rounded-tr-lg text-right">Ações</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800/50">
+                      <tbody className="divide-y divide-border">
                         {stats.history.map((h: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-slate-800/30 transition-colors">
+                          <tr key={idx} className="hover:bg-muted/30 transition-colors">
                             <td className="px-4 py-4 font-mono font-bold text-blue-400">{h.codigoSala}</td>
                             <td className="px-4 py-4 text-muted-foreground">{h.totalQuestions} resolvidas</td>
                             <td className="px-4 py-4 text-emerald-400 font-bold">{h.correctAnswers} corretas</td>
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-white">{h.accuracy}%</span>
+                                <span className="font-bold text-heading">{h.accuracy}%</span>
                                 <Progress value={h.accuracy} className="w-16 h-1.5 bg-muted [&>div]:bg-emerald-500" />
                               </div>
                             </td>
@@ -1046,7 +1046,7 @@ export default function StudentDashboardClient({
       <Dialog open={isArmariaOpen} onOpenChange={setIsArmariaOpen}>
         <DialogContent className="bg-background border-border text-foreground sm:max-w-2xl max-h-[80vh] overflow-y-auto custom-scrollbar">
           <DialogHeader className="border-b border-border pb-4">
-            <DialogTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+            <DialogTitle className="text-xl font-black uppercase tracking-widest text-heading flex items-center gap-3">
               <Target className="w-6 h-6 text-blue-500" />
               Armaria: Ícones de Perfil
             </DialogTitle>
@@ -1070,7 +1070,7 @@ export default function StudentDashboardClient({
                       setNameError("");
                     }}
                     placeholder="Nome de Guerra (QRA)"
-                    className="bg-background border-border h-10 font-bold uppercase text-white"
+                    className="bg-background border-border h-10 font-bold uppercase text-heading"
                     maxLength={30}
                   />
                 </div>
@@ -1091,7 +1091,7 @@ export default function StudentDashboardClient({
             {/* Ícone Padrão (Sem Foto) */}
             <button 
               onClick={() => handleChangeAvatar("")}
-              className="flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-card/50 hover:bg-slate-800 transition-all gap-3 h-40"
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-card/50 hover:bg-muted transition-all gap-3 h-40"
             >
               <div className="w-16 h-16 rounded-full bg-muted border-2 border-border flex items-center justify-center text-muted-foreground font-bold text-xl">
                 {user?.name?.substring(0, 2).toUpperCase() || "AL"}
@@ -1104,7 +1104,7 @@ export default function StudentDashboardClient({
               <button 
                 key={avatarId}
                 onClick={() => handleChangeAvatar(`predefined/${avatarId}`)}
-                className="flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-muted/30 hover:bg-slate-800 transition-all gap-3 h-40 group"
+                className="flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted transition-all gap-3 h-40 group"
               >
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border group-hover:border-blue-500 transition-colors">
                   <img src={`/avatars/predefined/${avatarId}.png`} alt={`Avatar ${avatarId}`} className="w-full h-full object-cover" />
@@ -1150,7 +1150,7 @@ export default function StudentDashboardClient({
       <Dialog open={selectedDailySimId !== null} onOpenChange={(open) => { if (!open) setSelectedDailySimId(null); }}>
         <DialogContent className="bg-background border-border text-foreground w-[92vw] max-w-md sm:max-w-md rounded-xl">
           <DialogHeader className="border-b border-border pb-4">
-            <DialogTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+            <DialogTitle className="text-xl font-black uppercase tracking-widest text-heading flex items-center gap-3">
               <BookOpen className="w-6 h-6 text-blue-500" />
               Configurar Simulado
             </DialogTitle>
@@ -1163,7 +1163,7 @@ export default function StudentDashboardClient({
             {/* Informações da apostila */}
             <div className="p-4 bg-card/60 border border-border rounded-xl">
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block">Material Base</span>
-              <span className="text-sm font-bold text-white block mt-0.5 break-words whitespace-normal">{selectedDailySimName}</span>
+              <span className="text-sm font-bold text-heading block mt-0.5 break-words whitespace-normal">{selectedDailySimName}</span>
               <span className="text-[9px] font-bold text-blue-400 block uppercase mt-1">25 Alvos (Questões Avançadas)</span>
             </div>
 
@@ -1171,7 +1171,7 @@ export default function StudentDashboardClient({
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-card/40">
                 <div>
-                  <label htmlFor="use-timer-toggle" className="text-sm font-bold text-white block cursor-pointer">
+                  <label htmlFor="use-timer-toggle" className="text-sm font-bold text-heading block cursor-pointer">
                     Limite de Tempo por Questão
                   </label>
                   <span className="text-[10px] text-muted-foreground uppercase font-medium">Ativa um timer regressivo para cada alvo</span>
@@ -1193,7 +1193,7 @@ export default function StudentDashboardClient({
                   <select
                     value={timerSeconds}
                     onChange={(e) => setTimerSeconds(e.target.value)}
-                    className="flex h-11 w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-600 font-bold"
+                    className="flex h-11 w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-blue-600 font-bold"
                   >
                     <option value="30">30 Segundos</option>
                     <option value="45">45 Segundos</option>
@@ -1211,7 +1211,7 @@ export default function StudentDashboardClient({
             <Button 
               variant="ghost" 
               onClick={() => setSelectedDailySimId(null)}
-              className="w-full sm:flex-1 h-12 font-bold uppercase tracking-wider text-xs border border-border text-muted-foreground hover:text-white cursor-pointer"
+              className="w-full sm:flex-1 h-12 font-bold uppercase tracking-wider text-xs border border-border text-muted-foreground hover:text-heading cursor-pointer"
             >
               Cancelar
             </Button>
@@ -1220,7 +1220,7 @@ export default function StudentDashboardClient({
                 router.push(`/aluno/simulado/${selectedDailySimId}?timer=${useTimer}&seconds=${timerSeconds}`);
                 setSelectedDailySimId(null);
               }}
-              className="w-full sm:flex-1 h-12 bg-blue-600 hover:bg-blue-500 font-bold uppercase tracking-wider text-xs text-white cursor-pointer"
+              className="w-full sm:flex-1 h-12 bg-blue-600 hover:bg-blue-500 font-bold uppercase tracking-wider text-xs text-heading cursor-pointer"
             >
               Iniciar Combate
             </Button>

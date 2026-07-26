@@ -109,11 +109,11 @@ export default function SettingsClient({
       <Card className={`border-border backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors ${
         maintenanceEnabled ? "bg-amber-950/20 border-amber-500/40" : "bg-card/40"
       }`}>
-        <CardHeader className="border-b border-slate-850 pb-4">
+        <CardHeader className="border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <Wrench className={`w-6 h-6 ${maintenanceEnabled ? "text-amber-400 animate-spin" : "text-amber-500"}`} style={{ animationDuration: "8s" }} />
             <div>
-              <CardTitle className="text-xl font-black uppercase tracking-wider text-white">
+              <CardTitle className="text-xl font-black uppercase tracking-wider text-heading">
                 Controle do Servidor em Manutenção
               </CardTitle>
               <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
@@ -125,10 +125,10 @@ export default function SettingsClient({
         
         <CardContent className="pt-6 space-y-6">
           <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-4 border rounded-xl ${
-            maintenanceEnabled ? "bg-amber-950/30 border-amber-500/30" : "bg-background/60 border-slate-850"
+            maintenanceEnabled ? "bg-amber-950/30 border-amber-500/30" : "bg-background/60 border-border"
           }`}>
             <div className="space-y-1 max-w-lg">
-              <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-sm font-black text-heading uppercase tracking-wider flex items-center gap-2">
                 Status do Acesso do Aluno
                 <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
                   maintenanceEnabled 
@@ -148,8 +148,8 @@ export default function SettingsClient({
               disabled={updatingMaintenance}
               className={`h-11 px-6 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
                 maintenanceEnabled 
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
-                  : "bg-amber-600 hover:bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+                  ? "bg-emerald-600 hover:bg-emerald-500 text-heading shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                  : "bg-amber-600 hover:bg-amber-500 text-foreground shadow-[0_0_15px_rgba(245,158,11,0.3)]"
               }`}
             >
               {updatingMaintenance ? (
@@ -184,11 +184,11 @@ export default function SettingsClient({
 
       {/* Control AI Card */}
       <Card className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-        <CardHeader className="border-b border-slate-850 pb-4">
+        <CardHeader className="border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-blue-500" />
             <div>
-              <CardTitle className="text-xl font-black uppercase tracking-wider text-white">
+              <CardTitle className="text-xl font-black uppercase tracking-wider text-heading">
                 Controles do Mentor de IA
               </CardTitle>
               <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
@@ -199,9 +199,9 @@ export default function SettingsClient({
         </CardHeader>
         
         <CardContent className="pt-6 space-y-6">
-          <div className="flex items-center justify-between gap-6 p-4 bg-background/60 border border-slate-850 rounded-xl">
+          <div className="flex items-center justify-between gap-6 p-4 bg-background/60 border border-border rounded-xl">
             <div className="space-y-1 max-w-lg">
-              <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-sm font-black text-heading uppercase tracking-wider flex items-center gap-2">
                 Chat Geral com IA
                 <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border ${
                   chatEnabled 
@@ -222,7 +222,7 @@ export default function SettingsClient({
               className={`h-11 px-6 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
                 chatEnabled 
                   ? "bg-red-900/30 border border-red-500/30 text-red-400 hover:bg-red-950/50" 
-                  : "bg-emerald-600 hover:bg-emerald-500 text-white"
+                  : "bg-emerald-600 hover:bg-emerald-500 text-heading"
               }`}
             >
               {updating ? (
@@ -257,11 +257,11 @@ export default function SettingsClient({
 
       {/* Cadastrar Novo Instrutor Card */}
       <Card className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-        <CardHeader className="border-b border-slate-850 pb-4">
+        <CardHeader className="border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <UserPlus className="w-6 h-6 text-blue-500" />
             <div>
-              <CardTitle className="text-xl font-black uppercase tracking-wider text-white">
+              <CardTitle className="text-xl font-black uppercase tracking-wider text-heading">
                 Cadastrar Novo Instrutor
               </CardTitle>
               <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
@@ -282,7 +282,7 @@ export default function SettingsClient({
                   onChange={(e) => setNewInstName(e.target.value)} 
                   placeholder="Nome do Instrutor" 
                   required 
-                  className="w-full h-11 bg-background border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
                 />
               </div>
 
@@ -294,7 +294,7 @@ export default function SettingsClient({
                   onChange={(e) => setNewInstUsername(e.target.value)} 
                   placeholder="QRA ou usuário de login" 
                   required 
-                  className="w-full h-11 bg-background border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium uppercase" 
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium uppercase" 
                 />
               </div>
 
@@ -306,7 +306,7 @@ export default function SettingsClient({
                   onChange={(e) => setNewInstPassword(e.target.value)} 
                   placeholder="Senha de acesso" 
                   required 
-                  className="w-full h-11 bg-background border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
                 />
               </div>
             </div>
@@ -332,7 +332,7 @@ export default function SettingsClient({
               <Button
                 type="submit"
                 disabled={instCreating}
-                className="h-11 px-8 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+                className="h-11 px-8 bg-blue-600 hover:bg-blue-500 text-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
               >
                 {instCreating ? (
                   <>

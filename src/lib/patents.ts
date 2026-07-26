@@ -44,7 +44,7 @@ const PATENTS: PatentInfo[] = [
     border: "border-blue-500/30",
     glow: "shadow-[0_0_10px_rgba(59,130,246,0.1)]",
     requiredScore: 50000,
-    avatarRing: "ring-1 ring-blue-500/50 ring-offset-1 ring-offset-slate-950",
+    avatarRing: "ring-1 ring-blue-500/50 ring-offset-1 ring-offset-background",
     nameEffect: "text-blue-200"
   },
   {
@@ -56,7 +56,7 @@ const PATENTS: PatentInfo[] = [
     border: "border-emerald-500/30",
     glow: "shadow-[0_0_10px_rgba(16,185,129,0.1)]",
     requiredScore: 100000,
-    avatarRing: "ring-2 ring-emerald-500/60 ring-offset-1 ring-offset-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.2)]",
+    avatarRing: "ring-2 ring-emerald-500/60 ring-offset-1 ring-offset-background shadow-[0_0_10px_rgba(16,185,129,0.2)]",
     nameEffect: "text-emerald-300"
   },
   {
@@ -68,7 +68,7 @@ const PATENTS: PatentInfo[] = [
     border: "border-yellow-500/30",
     glow: "shadow-[0_0_15px_rgba(234,179,8,0.2)]",
     requiredScore: 200000,
-    avatarRing: "ring-2 ring-yellow-500/80 ring-offset-2 ring-offset-slate-950 shadow-[0_0_15px_rgba(234,179,8,0.3)]",
+    avatarRing: "ring-2 ring-yellow-500/80 ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(234,179,8,0.3)]",
     nameEffect: "text-yellow-300 drop-shadow-[0_0_5px_rgba(234,179,8,0.3)]",
     iconAnimation: "animate-pulse"
   },
@@ -81,7 +81,7 @@ const PATENTS: PatentInfo[] = [
     border: "border-orange-500/30",
     glow: "shadow-[0_0_15px_rgba(249,115,22,0.2)]",
     requiredScore: 350000,
-    avatarRing: "ring-2 ring-orange-500 ring-offset-2 ring-offset-slate-950 shadow-[0_0_20px_rgba(249,115,22,0.4)]",
+    avatarRing: "ring-2 ring-orange-500 ring-offset-2 ring-offset-background shadow-[0_0_20px_rgba(249,115,22,0.4)]",
     nameEffect: "text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)] font-black",
     iconAnimation: "animate-pulse"
   },

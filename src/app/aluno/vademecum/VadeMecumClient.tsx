@@ -83,19 +83,19 @@ export default function VadeMecumClient({
         const matchText = match[0];
         if (matchText.startsWith("**") && matchText.endsWith("**")) {
           parts.push(
-            <strong key={`${lineIndex}-${matchIndex}`} className="font-extrabold text-white sm:text-slate-100 print:text-black">
+            <strong key={`${lineIndex}-${matchIndex}`} className="font-extrabold text-heading sm:text-foreground print:text-black">
               {matchText.slice(2, -2)}
             </strong>
           );
         } else if (matchText.startsWith("`") && matchText.endsWith("`")) {
           parts.push(
-            <code key={`${lineIndex}-${matchIndex}`} className="bg-card/90 px-1.5 py-0.5 rounded text-blue-400 font-mono text-xs border border-border print:border-slate-300 print:bg-slate-100 print:text-black">
+            <code key={`${lineIndex}-${matchIndex}`} className="bg-card/90 px-1.5 py-0.5 rounded text-blue-400 font-mono text-xs border border-border print:border-border print:bg-muted print:text-black">
               {matchText.slice(1, -1)}
             </code>
           );
         } else if (matchText.startsWith("*") && matchText.endsWith("*") && matchText.length > 2) {
           parts.push(
-            <em key={`${lineIndex}-${matchIndex}`} className="italic text-muted-foreground font-medium print:text-slate-700">
+            <em key={`${lineIndex}-${matchIndex}`} className="italic text-muted-foreground font-medium print:text-muted-foreground">
               {matchText.slice(1, -1)}
             </em>
           );
@@ -161,19 +161,19 @@ export default function VadeMecumClient({
             <div key={`table-${blocks.length}`} className="my-6 overflow-x-auto rounded-2xl border border-border/80 shadow-2xl bg-background/90 backdrop-blur-md print:border-none print:shadow-none print:bg-transparent print:overflow-visible print:my-4">
               <table className="w-full text-left border-collapse text-xs sm:text-sm print:text-xs">
                 <thead>
-                  <tr className="bg-card/95 border-b border-border text-blue-400 font-black uppercase tracking-wider print:bg-slate-100 print:text-slate-900 print:border-slate-400">
+                  <tr className="bg-card/95 border-b border-border text-blue-400 font-black uppercase tracking-wider print:bg-muted print:text-foreground print:border-border">
                     {headerCells.map((headerText, hIdx) => (
-                      <th key={hIdx} className="p-3.5 sm:p-4 border-r border-border/60 last:border-r-0 print:border-slate-400 print:p-2.5 print:text-xs">
+                      <th key={hIdx} className="p-3.5 sm:p-4 border-r border-border/60 last:border-r-0 print:border-border print:p-2.5 print:text-xs">
                         {parseInline(headerText)}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 print:divide-slate-300">
+                <tbody className="divide-y divide-border print:divide-border">
                   {bodyRows.map((rowCells, rIdx) => (
-                    <tr key={rIdx} className="hover:bg-slate-900/40 transition-colors print:hover:bg-transparent">
+                    <tr key={rIdx} className="hover:bg-card/40 transition-colors print:hover:bg-transparent">
                       {rowCells.map((cellText, cIdx) => (
-                        <td key={cIdx} className="p-3.5 sm:p-4 text-muted-foreground leading-relaxed border-r border-border/40 last:border-r-0 align-top print:text-black print:border-slate-300 print:p-2.5 print:text-xs">
+                        <td key={cIdx} className="p-3.5 sm:p-4 text-muted-foreground leading-relaxed border-r border-border/40 last:border-r-0 align-top print:text-black print:border-border print:p-2.5 print:text-xs">
                           {parseInline(cellText)}
                         </td>
                       ))}
@@ -213,7 +213,7 @@ export default function VadeMecumClient({
 
         if (asciiLines.length > 0) {
           blocks.push(
-            <div key={`ascii-${blocks.length}`} className="my-5 p-4 sm:p-5 bg-background border border-blue-500/30 rounded-2xl font-mono text-xs sm:text-sm text-blue-300 overflow-x-auto whitespace-pre leading-relaxed shadow-inner print-diagram print:border-slate-400 print:bg-slate-50 print:text-black print:overflow-visible print:whitespace-pre-wrap">
+            <div key={`ascii-${blocks.length}`} className="my-5 p-4 sm:p-5 bg-background border border-blue-500/30 rounded-2xl font-mono text-xs sm:text-sm text-blue-300 overflow-x-auto whitespace-pre leading-relaxed shadow-inner print-diagram print:border-border print:bg-background print:text-black print:overflow-visible print:whitespace-pre-wrap">
               {asciiLines.join("\n")}
             </div>
           );
@@ -224,7 +224,7 @@ export default function VadeMecumClient({
       // 3. Headings
       if (trimmed.startsWith("# ")) {
         blocks.push(
-          <h1 key={`h1-${blocks.length}`} className="text-xl sm:text-2xl font-black text-white mt-8 mb-4 uppercase tracking-wider border-b-2 border-blue-600 pb-3 print:text-black print:border-black">
+          <h1 key={`h1-${blocks.length}`} className="text-xl sm:text-2xl font-black text-heading mt-8 mb-4 uppercase tracking-wider border-b-2 border-blue-600 pb-3 print:text-black print:border-black">
             {parseInline(trimmed.replace(/^#\s+/, ""))}
           </h1>
         );
@@ -233,7 +233,7 @@ export default function VadeMecumClient({
       }
       if (trimmed.startsWith("## ")) {
         blocks.push(
-          <h2 key={`h2-${blocks.length}`} className="text-base sm:text-lg font-black text-blue-400 mt-7 mb-3.5 uppercase tracking-wider flex items-center border-b border-border/80 pb-2.5 print:text-blue-900 print:border-slate-400">
+          <h2 key={`h2-${blocks.length}`} className="text-base sm:text-lg font-black text-blue-400 mt-7 mb-3.5 uppercase tracking-wider flex items-center border-b border-border/80 pb-2.5 print:text-blue-900 print:border-border">
             {parseInline(trimmed.replace(/^##\s+/, ""))}
           </h2>
         );
@@ -261,7 +261,7 @@ export default function VadeMecumClient({
 
       // 4. Horizontal Rules
       if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
-        blocks.push(<hr key={`hr-${blocks.length}`} className="my-8 border-border/80 print:border-slate-400" />);
+        blocks.push(<hr key={`hr-${blocks.length}`} className="my-8 border-border/80 print:border-border" />);
         i++;
         continue;
       }
@@ -269,7 +269,7 @@ export default function VadeMecumClient({
       // 5. Blockquotes
       if (trimmed.startsWith("> ")) {
         blocks.push(
-          <blockquote key={`quote-${blocks.length}`} className="border-l-4 border-blue-500 bg-card/50 px-4 py-3 my-4 text-muted-foreground text-xs sm:text-sm italic rounded-r-xl shadow-sm print:bg-slate-100 print:border-slate-600 print:text-black">
+          <blockquote key={`quote-${blocks.length}`} className="border-l-4 border-blue-500 bg-card/50 px-4 py-3 my-4 text-muted-foreground text-xs sm:text-sm italic rounded-r-xl shadow-sm print:bg-muted print:border-border print:text-black">
             {parseInline(trimmed.replace(/^>\s*/, ""))}
           </blockquote>
         );
@@ -471,7 +471,7 @@ export default function VadeMecumClient({
       <header className="no-print bg-card/60 border-b border-border/80 px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/aluno/painel">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white border border-border bg-background/40 hover:bg-slate-900 rounded-lg cursor-pointer h-9 w-9 sm:h-10 sm:w-10">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-heading border border-border bg-background/40 hover:bg-card rounded-lg cursor-pointer h-9 w-9 sm:h-10 sm:w-10">
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </Link>
@@ -480,7 +480,7 @@ export default function VadeMecumClient({
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h1 className="text-sm sm:text-lg font-black uppercase tracking-wider text-white">Vade Mecum PUMA</h1>
+              <h1 className="text-sm sm:text-lg font-black uppercase tracking-wider text-heading">Vade Mecum PUMA</h1>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest hidden sm:block">Resumo Temático & Doutrina de Estudos</p>
             </div>
           </div>
@@ -503,7 +503,7 @@ export default function VadeMecumClient({
           <Card className="bg-card/40 border-border shadow-xl relative overflow-hidden backdrop-blur-sm h-full flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-500"></div>
             <CardHeader className="pb-3 border-b border-border/40">
-              <CardTitle className="text-sm font-black uppercase tracking-wider text-white">Materiais Disponíveis</CardTitle>
+              <CardTitle className="text-sm font-black uppercase tracking-wider text-heading">Materiais Disponíveis</CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Selecione uma apostila para carregar o resumo doutrinário.</CardDescription>
             </CardHeader>
             <CardContent className="p-2 flex-1 overflow-y-auto space-y-1">
@@ -522,14 +522,14 @@ export default function VadeMecumClient({
                     className={`w-full text-left p-3.5 rounded-xl border font-bold flex items-center justify-between transition-all group cursor-pointer ${
                       selectedId === apo.id
                         ? "bg-blue-600/10 border-blue-500/30 text-blue-300"
-                        : "bg-background/40 border-slate-900 hover:border-slate-800 text-muted-foreground hover:text-slate-300 hover:bg-slate-900/30"
+                        : "bg-background/40 border-border hover:border-border text-muted-foreground hover:text-muted-foreground hover:bg-card/30"
                     }`}
                   >
                     <div className="min-w-0 flex items-start gap-2.5 flex-1 pr-2" title={apo.title}>
-                      <FileText className={`w-4 h-4 mt-0.5 shrink-0 ${selectedId === apo.id ? "text-blue-400" : "text-muted-foreground group-hover:text-slate-400"}`} />
+                      <FileText className={`w-4 h-4 mt-0.5 shrink-0 ${selectedId === apo.id ? "text-blue-400" : "text-muted-foreground group-hover:text-muted-foreground"}`} />
                       <span className="text-xs font-bold leading-snug line-clamp-2">{formatApostilaTitle(apo.title)}</span>
                     </div>
-                    <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-transform ${selectedId === apo.id ? "translate-x-0.5 text-blue-400" : "text-muted-foreground group-hover:text-slate-500"}`} />
+                    <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-transform ${selectedId === apo.id ? "translate-x-0.5 text-blue-400" : "text-muted-foreground group-hover:text-foreground0"}`} />
                   </button>
                 ))
               )}
@@ -552,7 +552,7 @@ export default function VadeMecumClient({
                     placeholder="Pesquisar termo neste resumo..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-10 bg-background border-slate-850 focus:border-blue-500/50 rounded-xl text-xs placeholder:text-slate-600 text-white font-bold"
+                    className="pl-10 h-10 bg-background border-border focus:border-blue-500/50 rounded-xl text-xs placeholder:text-muted-foreground text-heading font-bold"
                   />
                 </div>
 
@@ -562,7 +562,7 @@ export default function VadeMecumClient({
                       variant="ghost"
                       size="sm"
                       onClick={handleCopy}
-                      className="h-10 px-3 bg-background hover:bg-slate-900 border border-border text-xs text-muted-foreground hover:text-white rounded-xl font-bold flex items-center gap-1.5 cursor-pointer"
+                      className="h-10 px-3 bg-background hover:bg-card border border-border text-xs text-muted-foreground hover:text-heading rounded-xl font-bold flex items-center gap-1.5 cursor-pointer"
                     >
                       {copied ? (
                         <>
@@ -581,7 +581,7 @@ export default function VadeMecumClient({
                       variant="ghost"
                       size="sm"
                       onClick={handlePrint}
-                      className="h-10 px-3 bg-background hover:bg-slate-900 border border-border text-xs text-muted-foreground hover:text-white rounded-xl font-bold flex items-center gap-1.5 cursor-pointer"
+                      className="h-10 px-3 bg-background hover:bg-card border border-border text-xs text-muted-foreground hover:text-heading rounded-xl font-bold flex items-center gap-1.5 cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5" />
                       Imprimir / PDF
@@ -593,7 +593,7 @@ export default function VadeMecumClient({
               {/* Title Section (printed nicely) */}
               <div className="p-6 border-b border-border/40 bg-background/10 print-header print:p-0 print:border-none print:bg-transparent">
                 <div className="text-[10px] text-blue-500 font-black tracking-widest uppercase mb-1 print:text-blue-900 print:text-xs">VADE MECUM DO ALUNO - PMCE</div>
-                <h2 className="text-xl sm:text-2xl font-black text-white print:text-black print:text-2xl print:font-extrabold print:border-b-2 print:border-slate-800 print:pb-2 print:mb-6">{formatApostilaTitle(selectedApostila.title)}</h2>
+                <h2 className="text-xl sm:text-2xl font-black text-heading print:text-black print:text-2xl print:font-extrabold print:border-b-2 print:border-border print:pb-2 print:mb-6">{formatApostilaTitle(selectedApostila.title)}</h2>
               </div>
 
               {/* Markdown Content Area */}
@@ -607,7 +607,7 @@ export default function VadeMecumClient({
                     <div className="p-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 mb-4">
                       <AlertTriangle className="w-8 h-8 animate-pulse" />
                     </div>
-                    <h3 className="text-base font-black uppercase text-white tracking-wider mb-2">Vade Mecum Pendente</h3>
+                    <h3 className="text-base font-black uppercase text-heading tracking-wider mb-2">Vade Mecum Pendente</h3>
                     <p className="text-muted-foreground text-xs max-w-md leading-relaxed font-medium">
                       O instrutor ainda não solicitou a geração do Vade Mecum para este material. Peça ao seu comandante de curso para criá-lo pelo painel administrativo.
                     </p>
@@ -616,9 +616,9 @@ export default function VadeMecumClient({
               </CardContent>
             </Card>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-card/20 border border-slate-850 rounded-2xl">
-              <BookOpen className="w-12 h-12 text-slate-700 mb-4 animate-pulse" />
-              <h3 className="text-base font-black uppercase text-white tracking-wider mb-1">Nenhum Material Selecionado</h3>
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-card/20 border border-border rounded-2xl">
+              <BookOpen className="w-12 h-12 text-muted-foreground mb-4 animate-pulse" />
+              <h3 className="text-base font-black uppercase text-heading tracking-wider mb-1">Nenhum Material Selecionado</h3>
               <p className="text-muted-foreground text-xs max-w-xs font-bold uppercase tracking-wider">
                 Selecione uma das apostilas ativas na barra lateral para carregar seus estudos.
               </p>

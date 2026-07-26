@@ -179,7 +179,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-emerald-500"></div>
       <CardHeader className="border-b border-border bg-card/80 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <CardTitle className="flex items-center gap-2 text-2xl font-black text-white uppercase tracking-widest">
+          <CardTitle className="flex items-center gap-2 text-2xl font-black text-heading uppercase tracking-widest">
             <Users className="w-6 h-6 text-blue-500" />
             Divisão de Combatentes & Auditoria
           </CardTitle>
@@ -191,7 +191,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
             placeholder="Buscar por QRA do aluno..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-background/80 border-border text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+            className="pl-9 bg-background/80 border-border text-heading placeholder:text-foreground0 focus-visible:ring-blue-500"
           />
         </div>
       </CardHeader>
@@ -213,7 +213,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                   <th className="p-5 text-right">Score Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-sm">
+              <tbody className="divide-y divide-border text-sm">
                 {filteredStudents.map((student, index) => {
                   const rankIndex = searchTerm ? studentsPerformance.findIndex(s => s.id === student.id) : index;
                   const isStudentSuspended = student.suspendedUntil && new Date(student.suspendedUntil) > new Date();
@@ -222,13 +222,13 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                     <tr 
                       key={student.id} 
                       onClick={() => setSelectedStudent(student)}
-                      className="hover:bg-slate-800/60 transition-colors cursor-pointer"
+                      className="hover:bg-muted/60 transition-colors cursor-pointer"
                     >
                       <td className="p-5">
                         <div className="flex items-center gap-4">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs border ${
                             rankIndex === 0 ? "bg-yellow-900/30 border-yellow-500 text-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.3)]" :
-                            rankIndex === 1 ? "bg-muted border-slate-400 text-muted-foreground" :
+                            rankIndex === 1 ? "bg-muted border-border text-muted-foreground" :
                             rankIndex === 2 ? "bg-amber-900/20 border-amber-700 text-amber-600" :
                             "bg-card border-border text-muted-foreground"
                           }`}>
@@ -250,7 +250,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                               );
                             })()}
                             <div className="flex flex-col gap-1">
-                              <span className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                              <span className="font-bold text-heading uppercase tracking-wider flex items-center gap-2">
                                 {(() => {
                                   const p = getPatentByScore(student.totalScore || 0);
                                   const PIcon = p.icon;
@@ -314,7 +314,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                         </span>
                       </td>
                       <td className="p-5 text-right">
-                        <span className="flex items-center justify-end gap-2 font-black text-white text-lg tracking-wider">
+                        <span className="flex items-center justify-end gap-2 font-black text-heading text-lg tracking-wider">
                           {student.totalScore > 0 && <Trophy className="w-4 h-4 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />}
                           {student.totalScore}
                         </span>
@@ -331,7 +331,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       <Dialog open={!!selectedStudent} onOpenChange={handleOpenChange}>
         <DialogContent className="bg-background border-border text-foreground sm:max-w-2xl max-h-[88vh] overflow-hidden flex flex-col">
           <DialogHeader className="border-b border-border pb-4 shrink-0">
-            <DialogTitle className="text-lg font-black uppercase tracking-widest text-white flex items-center justify-between">
+            <DialogTitle className="text-lg font-black uppercase tracking-widest text-heading flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {selectedStudent?.avatarUrl ? (
                   <img src={selectedStudent.avatarUrl} alt={selectedStudent.name} className="w-11 h-11 rounded-full object-cover border-2 border-blue-500" />
@@ -354,8 +354,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                   onClick={() => setActiveModalTab("dossier")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     activeModalTab === "dossier" 
-                      ? "bg-blue-600 text-white shadow-md" 
-                      : "text-muted-foreground hover:text-white"
+                      ? "bg-blue-600 text-heading shadow-md" 
+                      : "text-muted-foreground hover:text-heading"
                   }`}
                 >
                   Dossiê
@@ -364,8 +364,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                   onClick={() => setActiveModalTab("simulados")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
                     activeModalTab === "simulados" 
-                      ? "bg-blue-600 text-white shadow-md" 
-                      : "text-muted-foreground hover:text-white"
+                      ? "bg-blue-600 text-heading shadow-md" 
+                      : "text-muted-foreground hover:text-heading"
                   }`}
                 >
                   <Target className="w-3.5 h-3.5" />
@@ -375,8 +375,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                   onClick={() => setActiveModalTab("chat")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 ${
                     activeModalTab === "chat" 
-                      ? "bg-blue-600 text-white shadow-md" 
-                      : "text-muted-foreground hover:text-white"
+                      ? "bg-blue-600 text-heading shadow-md" 
+                      : "text-muted-foreground hover:text-heading"
                   }`}
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
@@ -394,22 +394,22 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                 <div className="grid grid-cols-4 gap-3">
                   <div className="bg-card/50 border border-border rounded-xl p-3.5 text-center">
                     <Target className="w-4 h-4 text-blue-500 mx-auto mb-1.5" />
-                    <div className="text-xl font-black text-white">{selectedStudent?.accuracy}%</div>
+                    <div className="text-xl font-black text-heading">{selectedStudent?.accuracy}%</div>
                     <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Precisão</div>
                   </div>
                   <div className="bg-card/50 border border-border rounded-xl p-3.5 text-center">
                     <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1.5" />
-                    <div className="text-xl font-black text-white">{selectedStudent?.totalScore}</div>
+                    <div className="text-xl font-black text-heading">{selectedStudent?.totalScore}</div>
                     <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Score Total</div>
                   </div>
                   <div className="bg-card/50 border border-border rounded-xl p-3.5 text-center">
                     <Users className="w-4 h-4 text-emerald-500 mx-auto mb-1.5" />
-                    <div className="text-xl font-black text-white">{selectedStudent?.totalAnswers}</div>
+                    <div className="text-xl font-black text-heading">{selectedStudent?.totalAnswers}</div>
                     <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Questões</div>
                   </div>
                   <div className="bg-card/50 border border-border rounded-xl p-3.5 text-center">
                     <Clock className="w-4 h-4 text-amber-500 mx-auto mb-1.5" />
-                    <div className="text-xl font-black text-white">{selectedStudent?.avgTime}s</div>
+                    <div className="text-xl font-black text-heading">{selectedStudent?.avgTime}s</div>
                     <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Reação Média</div>
                   </div>
                 </div>
@@ -443,12 +443,12 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                           placeholder="Nova senha do combatente"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          className="bg-background border-border text-white placeholder:text-slate-600 focus-visible:ring-blue-500 pr-10"
+                          className="bg-background border-border text-heading placeholder:text-muted-foreground focus-visible:ring-blue-500 pr-10"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-slate-300 transition-colors cursor-pointer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground transition-colors cursor-pointer"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -460,7 +460,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                           setNewPassword("PMCE123");
                           setShowPassword(true);
                         }}
-                        className="border-border hover:bg-slate-800 hover:text-white font-bold text-xs shrink-0 cursor-pointer"
+                        className="border-border hover:bg-muted hover:text-heading font-bold text-xs shrink-0 cursor-pointer"
                       >
                         Padrão (PMCE123)
                       </Button>
@@ -483,7 +483,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       type="button"
                       onClick={handleResetPassword}
                       disabled={isResetting || !newPassword}
-                      className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs cursor-pointer"
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-heading font-black uppercase tracking-widest text-xs cursor-pointer"
                     >
                       {isResetting ? "Redefinindo..." : "Atualizar Senha Agora"}
                     </Button>
@@ -510,14 +510,14 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                             setNewStudentNumber(e.target.value);
                             setNumberUpdateMessage(null);
                           }}
-                          className="bg-background border-border text-white placeholder:text-slate-600 focus-visible:ring-blue-500"
+                          className="bg-background border-border text-heading placeholder:text-muted-foreground focus-visible:ring-blue-500"
                         />
                       </div>
                       <Button
                         type="button"
                         onClick={handleUpdateNumber}
                         disabled={isUpdatingNumber || !newStudentNumber || String(selectedStudent?.numero) === newStudentNumber}
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shrink-0 cursor-pointer h-10 px-4"
+                        className="bg-blue-600 hover:bg-blue-500 text-heading font-bold text-xs shrink-0 cursor-pointer h-10 px-4"
                       >
                         {isUpdatingNumber ? <Loader2 className="w-4 h-4 animate-spin" /> : "Atualizar Número"}
                       </Button>
@@ -568,11 +568,11 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       const accuracy = sim.questionsCount > 0 ? Math.round((sim.correctAnswersCount / sim.questionsCount) * 100) : 0;
                       
                       return (
-                        <div key={sim.id} className="border border-slate-850 bg-card/30 rounded-xl overflow-hidden">
+                        <div key={sim.id} className="border border-border bg-card/30 rounded-xl overflow-hidden">
                           {/* Row Header */}
                           <div 
                             onClick={() => setExpandedSimuladoId(isExpanded ? null : sim.id)}
-                            className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 cursor-pointer hover:bg-slate-900/50 transition-colors"
+                            className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 cursor-pointer hover:bg-card/50 transition-colors"
                           >
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
@@ -587,13 +587,13 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                   {sim.codigoSala} • {sim.tipo}
                                 </span>
                               </div>
-                              <h5 className="text-xs font-bold text-white max-w-sm line-clamp-2" title={sim.apostilaName || ""}>{formatApostilaTitle(sim.apostilaName)}</h5>
+                              <h5 className="text-xs font-bold text-heading max-w-sm line-clamp-2" title={sim.apostilaName || ""}>{formatApostilaTitle(sim.apostilaName)}</h5>
                               <p className="text-[10px] font-medium text-muted-foreground">Realizado em {new Date(sim.createdAt).toLocaleDateString("pt-BR")}</p>
                             </div>
 
                             <div className="flex items-center gap-4">
                               <div className="text-right">
-                                <div className="text-sm font-black text-white">{sim.correctAnswersCount}/{sim.questionsCount}</div>
+                                <div className="text-sm font-black text-heading">{sim.correctAnswersCount}/{sim.questionsCount}</div>
                                 <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Acertos ({accuracy}%)</div>
                               </div>
                               <div className="text-right">
@@ -608,12 +608,12 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
 
                           {/* Expanded Details */}
                           {isExpanded && (
-                            <div className="border-t border-slate-850 bg-background/40 p-4 space-y-4 max-h-[450px] overflow-y-auto custom-scrollbar">
+                            <div className="border-t border-border bg-background/40 p-4 space-y-4 max-h-[450px] overflow-y-auto custom-scrollbar">
                               {sim.questionsList.map((q: any, idx: number) => {
                                 return (
-                                  <div key={q.id} className="space-y-3 pb-4 border-b border-slate-900 last:border-b-0 last:pb-0">
+                                  <div key={q.id} className="space-y-3 pb-4 border-b border-border last:border-b-0 last:pb-0">
                                     <div className="flex justify-between items-start gap-3">
-                                      <h6 className="text-xs font-bold text-white">
+                                      <h6 className="text-xs font-bold text-heading">
                                         Q{idx + 1}. {q.enunciado}
                                       </h6>
                                       <div className="flex items-center gap-1.5 shrink-0">
@@ -634,24 +634,24 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                         const isSelected = q.alunoEscolha === altIdx;
                                         const isCorrectAlt = q.correta === altIdx;
                                         
-                                        let borderClass = "border-slate-900 bg-card/10";
+                                        let borderClass = "border-border bg-card/10";
                                         let textClass = "text-muted-foreground";
                                         let badge = null;
 
                                         if (isCorrectAlt) {
                                           borderClass = "border-emerald-500/20 bg-emerald-950/10";
                                           textClass = "text-emerald-400 font-bold";
-                                          badge = <span className="text-[8px] font-black bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">Gabarito</span>;
+                                          badge = <span className="text-[8px] font-black bg-emerald-500 text-foreground px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">Gabarito</span>;
                                         }
                                         if (isSelected && !isCorrectAlt) {
                                           borderClass = "border-red-500/20 bg-red-950/10";
                                           textClass = "text-red-400 font-bold";
-                                          badge = <span className="text-[8px] font-black bg-red-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">Marcou</span>;
+                                          badge = <span className="text-[8px] font-black bg-red-500 text-foreground px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">Marcou</span>;
                                         } else if (isSelected && isCorrectAlt) {
                                           badge = (
                                             <div className="flex gap-1 shrink-0">
-                                              <span className="text-[8px] font-black bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider">Marcou</span>
-                                              <span className="text-[8px] font-black bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded uppercase tracking-wider">Gabarito</span>
+                                              <span className="text-[8px] font-black bg-emerald-500 text-foreground px-1.5 py-0.5 rounded uppercase tracking-wider">Marcou</span>
+                                              <span className="text-[8px] font-black bg-emerald-500 text-foreground px-1.5 py-0.5 rounded uppercase tracking-wider">Gabarito</span>
                                             </div>
                                           );
                                         }
@@ -666,7 +666,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                     </div>
 
                                     {/* Justification */}
-                                    <div className="p-3 bg-card/30 border border-slate-900 rounded-lg text-[11px] text-muted-foreground leading-normal flex items-start gap-2 pl-3">
+                                    <div className="p-3 bg-card/30 border border-border rounded-lg text-[11px] text-muted-foreground leading-normal flex items-start gap-2 pl-3">
                                       <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
                                       <p><strong className="text-muted-foreground">Justificativa:</strong> {q.justificativa}</p>
                                     </div>
@@ -698,7 +698,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       {isCurrentlySuspended ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
                     </div>
                     <div>
-                      <h4 className="text-xs font-black uppercase tracking-wider text-white">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-heading">
                         {isCurrentlySuspended ? "Combatente Suspenso do Chat" : "Acesso Disciplinar Regular"}
                       </h4>
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
@@ -714,8 +714,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                     disabled={togglingSuspension}
                     className={`h-10 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                       isCurrentlySuspended 
-                        ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
-                        : "bg-rose-600 hover:bg-rose-500 text-white"
+                        ? "bg-emerald-600 hover:bg-emerald-500 text-heading" 
+                        : "bg-rose-600 hover:bg-rose-500 text-heading"
                     }`}
                   >
                     {togglingSuspension ? (
@@ -747,7 +747,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       <span className="text-xs font-bold uppercase tracking-wider">Carregando auditoria do chat...</span>
                     </div>
                   ) : auditMessages.length === 0 ? (
-                    <div className="py-12 text-center border border-slate-850 rounded-xl bg-card/20 text-muted-foreground font-bold uppercase tracking-wider text-xs">
+                    <div className="py-12 text-center border border-border rounded-xl bg-card/20 text-muted-foreground font-bold uppercase tracking-wider text-xs">
                       Este combatente ainda não enviou mensagens para o Mentor IA.
                     </div>
                   ) : (

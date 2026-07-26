@@ -3,7 +3,6 @@ const path = require('path');
 
 const srcDir = path.join(__dirname, 'src');
 
-// Function to walk through the directory recursively
 function walkSync(dir, callback) {
   const files = fs.readdirSync(dir);
   files.forEach((file) => {
@@ -17,58 +16,44 @@ function walkSync(dir, callback) {
   });
 }
 
-const colorReplacements = {
-  // Backgrounds
-  'bg-slate-950': 'bg-background',
-  'bg-slate-900': 'bg-card',
-  'bg-slate-800': 'bg-muted',
-  'bg-slate-100': 'bg-muted',
+const replacements = [
+  // divide-y dividers
+  ['divide-slate-800/60', 'divide-border'],
+  ['divide-slate-800/50', 'divide-border'],
+  ['divide-slate-800/40', 'divide-border'],
+  ['divide-slate-100', 'divide-border'],
+  ['divide-slate-300', 'divide-border'],
   
-  // Text colors
-  'text-slate-50': 'text-foreground',
-  'text-slate-100': 'text-foreground',
-  'text-slate-200': 'text-foreground',
-  'text-slate-300': 'text-muted-foreground',
-  'text-slate-400': 'text-muted-foreground',
-  'text-slate-500': 'text-muted-foreground',
-  'text-slate-600': 'text-muted-foreground',
+  // ring-offset backgrounds (avatar rings)
+  ['ring-offset-slate-950', 'ring-offset-background'],
   
-  // Border colors
-  'border-slate-800': 'border-border',
-  'border-slate-700': 'border-border',
-  'border-slate-600': 'border-border',
+  // placeholders
+  ['placeholder-slate-500', 'placeholder-muted-foreground'],
   
-  // Specific hardcoded gradients that assume dark mode
-  'from-slate-900': 'from-background',
-  'to-slate-950': 'to-background',
-  'via-slate-900': 'via-background',
-};
+  // border for tooltip arrow  
+  ['border-t-slate-900', 'border-t-card'],
+  
+  // from-slate-700 in quem-somos gradient
+  ['from-slate-700', 'from-muted'],
+];
 
 let totalReplaced = 0;
 
 walkSync(srcDir, (filepath) => {
   let content = fs.readFileSync(filepath, 'utf8');
   let originalContent = content;
-
-  // We only want to replace whole words (CSS classes)
-  for (const [oldClass, newClass] of Object.entries(colorReplacements)) {
-    // Regex matches the class name bounded by word boundaries or quotes/spaces
-    const regex = new RegExp(`(?<=[\\s"'\\\`])(${oldClass})(?=[\\s"'\\\`/])`, 'g');
+  
+  for (const [oldClass, newClass] of replacements) {
+    const escapedOld = oldClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedOld, 'g');
     content = content.replace(regex, newClass);
-  }
-
-  // Also handle cases with opacity, e.g. bg-slate-900/50 -> bg-card/50
-  for (const [oldClass, newClass] of Object.entries(colorReplacements)) {
-    // Regex for class with opacity modifier: oldClass/XX
-    const regexOpacity = new RegExp(`(?<=[\\s"'\\\`])(${oldClass})/(\\d+)(?=[\\s"'\\\`])`, 'g');
-    content = content.replace(regexOpacity, `${newClass}/$2`);
   }
 
   if (content !== originalContent) {
     fs.writeFileSync(filepath, content, 'utf8');
-    console.log(`Updated ${filepath}`);
+    console.log(`Updated: ${path.relative(__dirname, filepath)}`);
     totalReplaced++;
   }
 });
 
-console.log(`\nFinished! Modified ${totalReplaced} files.`);
+console.log(`\nDone! Modified ${totalReplaced} files.`);

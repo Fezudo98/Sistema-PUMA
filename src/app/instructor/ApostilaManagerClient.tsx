@@ -173,7 +173,7 @@ export default function ApostilaManagerClient({
         <Card className="bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-500"></div>
           <CardHeader>
-            <CardTitle className="text-lg font-black uppercase tracking-wider text-white flex items-center gap-2">
+            <CardTitle className="text-lg font-black uppercase tracking-wider text-heading flex items-center gap-2">
               <FileUp className="w-5 h-5 text-blue-500" />
               Adicionar Material
             </CardTitle>
@@ -184,7 +184,7 @@ export default function ApostilaManagerClient({
 
           <CardContent>
             <form onSubmit={handleUpload} className="space-y-4">
-              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:bg-slate-900/20 hover:border-blue-500/30 transition-all bg-background/40 cursor-pointer">
+              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:bg-card/20 hover:border-blue-500/30 transition-all bg-background/40 cursor-pointer">
                 <Input 
                   type="file" 
                   accept="application/pdf"
@@ -236,7 +236,7 @@ export default function ApostilaManagerClient({
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-heading" />
                     Enviando Material...
                   </>
                 ) : (
@@ -254,7 +254,7 @@ export default function ApostilaManagerClient({
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-emerald-500"></div>
           <CardHeader className="pb-3 border-b border-border/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <CardTitle className="text-lg font-black uppercase tracking-wider text-white flex items-center gap-2">
+              <CardTitle className="text-lg font-black uppercase tracking-wider text-heading flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-500" />
                 Biblioteca de Apostilas ({apostilas.length})
               </CardTitle>
@@ -267,7 +267,7 @@ export default function ApostilaManagerClient({
                 size="sm"
                 onClick={handleGenerateAllDaily}
                 disabled={generatingAll}
-                className="bg-indigo-600 hover:bg-indigo-500 font-bold uppercase tracking-wider text-[10px] h-9 shrink-0 cursor-pointer text-white"
+                className="bg-indigo-600 hover:bg-indigo-500 font-bold uppercase tracking-wider text-[10px] h-9 shrink-0 cursor-pointer text-heading"
               >
                 {generatingAll ? (
                   <>
@@ -290,11 +290,11 @@ export default function ApostilaManagerClient({
                 Nenhuma apostila na biblioteca.
               </div>
             ) : (
-              <div className="divide-y divide-slate-800/60">
+              <div className="divide-y divide-border">
                 {apostilas.map((apo) => (
                   <div 
                     key={apo.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 hover:bg-slate-900/10 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 hover:bg-card/10 transition-colors"
                   >
                     <div className="min-w-0 flex-1 flex gap-3.5 items-start">
                       <div className={`p-2.5 rounded-lg border shrink-0 ${
@@ -305,7 +305,7 @@ export default function ApostilaManagerClient({
                         <FileText className="w-6 h-6" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className={`text-base font-bold break-words ${apo.isActive ? "text-white" : "text-muted-foreground line-through"}`} title={apo.title}>
+                        <h4 className={`text-base font-bold break-words ${apo.isActive ? "text-heading" : "text-muted-foreground line-through"}`} title={apo.title}>
                           {formatApostilaTitle(apo.title)}
                         </h4>
                         
@@ -315,7 +315,7 @@ export default function ApostilaManagerClient({
                             {new Date(apo.createdAt).toLocaleDateString()}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <span className={`w-1.5 h-1.5 rounded-full ${apo.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-600"}`}></span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${apo.isActive ? "bg-emerald-500 animate-pulse" : "bg-muted"}`}></span>
                             {apo.isActive ? "Participa dos simulados diários" : "Inativa"}
                           </span>
                         </div>
@@ -330,7 +330,7 @@ export default function ApostilaManagerClient({
                           size="sm"
                           disabled={generatingId === apo.id}
                           onClick={() => handleGenerateSingleDaily(apo.id, apo.title)}
-                          className="h-10 px-3 font-bold text-xs uppercase tracking-wider border border-border bg-card hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 rounded-lg transition-all cursor-pointer"
+                          className="h-10 px-3 font-bold text-xs uppercase tracking-wider border border-border bg-card hover:bg-muted text-indigo-400 hover:text-indigo-300 rounded-lg transition-all cursor-pointer"
                           title="Forçar geração imediata de simulado diário para esta apostila"
                         >
                           {generatingId === apo.id ? (
@@ -354,7 +354,7 @@ export default function ApostilaManagerClient({
                           className={`h-10 px-3 font-bold text-xs uppercase tracking-wider border transition-all cursor-pointer rounded-lg ${
                             apo.vadeMecum
                               ? "bg-blue-950/20 border-blue-500/30 text-blue-400 hover:bg-blue-950/40 hover:text-blue-300"
-                              : "bg-background border-border text-muted-foreground hover:bg-slate-900 hover:text-white"
+                              : "bg-background border-border text-muted-foreground hover:bg-card hover:text-heading"
                           }`}
                           title={apo.vadeMecum ? "Atualizar Vade Mecum (Resumo)" : "Gerar Vade Mecum com IA"}
                         >
@@ -377,7 +377,7 @@ export default function ApostilaManagerClient({
                         className={`h-10 px-3 font-bold text-xs uppercase tracking-wider border rounded-lg transition-all ${
                           apo.isActive
                             ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-950/40 hover:text-emerald-300"
-                            : "bg-background border-border text-muted-foreground hover:bg-slate-900 hover:text-white"
+                            : "bg-background border-border text-muted-foreground hover:bg-card hover:text-heading"
                         }`}
                       >
                         {apo.isActive ? (

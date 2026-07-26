@@ -233,14 +233,14 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       {/* Toast Notifications */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-80">
         {notifications.map(n => (
-          <div key={n.id} className="bg-card border border-border text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+          <div key={n.id} className="bg-card border border-border text-heading p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
             <span className="text-sm font-bold leading-tight">{n.text}</span>
           </div>
         ))}
       </div>
       <header className="border-b border-border bg-card px-6 py-4 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-widest uppercase">
+          <h1 className="text-xl font-bold text-heading tracking-widest uppercase">
             Sala <span className="text-blue-500">{simulado.codigoSala}</span>
           </h1>
           <p className="text-xs text-muted-foreground">Controle Remoto do Instrutor</p>
@@ -253,7 +253,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
           {status !== "FINISHED" && (
             <Button 
               variant="destructive" 
-              className="font-bold bg-red-600 hover:bg-red-500 text-white"
+              className="font-bold bg-red-600 hover:bg-red-500 text-heading"
               onClick={async () => {
                 if (confirm("Tem certeza que deseja encerrar definitivamente este simulado agora?")) {
                   setStatus("FINISHED");
@@ -266,7 +266,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
             </Button>
           )}
           <Link href="/instructor">
-            <Button variant="outline" className="border-border text-muted-foreground hover:bg-slate-800">Sair da Sala</Button>
+            <Button variant="outline" className="border-border text-muted-foreground hover:bg-muted">Sair da Sala</Button>
           </Link>
         </div>
       </header>
@@ -275,16 +275,16 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
         {status === "WAITING" && (
           <div className="text-center max-w-4xl w-full p-8 bg-card/30 border border-border/80 rounded-3xl backdrop-blur-md shadow-2xl">
             <div className="w-24 h-24 mx-auto bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(37,99,235,0.4)] animate-pulse">
-              <Play className="w-10 h-10 text-white ml-1.5" />
+              <Play className="w-10 h-10 text-heading ml-1.5" />
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-2 uppercase tracking-wide">Aguardando Alunos</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-heading mb-2 uppercase tracking-wide">Aguardando Alunos</h2>
             <p className="text-muted-foreground text-lg md:text-xl mb-8">
               Peça para os alunos entrarem no painel do aluno e ingressarem no simulado, ou insira o código:
             </p>
             
             <div className="bg-background/90 border-2 border-blue-500/30 rounded-2xl p-6 md:p-8 mb-8 text-center shadow-[0_0_50px_rgba(59,130,246,0.15)] select-all cursor-pointer group hover:border-blue-500/50 transition-all">
               <span className="block text-muted-foreground text-xs md:text-sm font-black tracking-widest uppercase mb-3">CÓDIGO DE ACESSO DA SALA</span>
-              <span className="font-mono text-6xl md:text-8xl font-black text-white tracking-widest animate-pulse drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+              <span className="font-mono text-6xl md:text-8xl font-black text-heading tracking-widest animate-pulse drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                 {simulado.codigoSala}
               </span>
             </div>
@@ -306,7 +306,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     {s.avatarUrl ? (
                       <img src={s.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-border shrink-0" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center text-xs font-bold text-muted-foreground border border-border shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground border border-border shrink-0">
                         {s.name.substring(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -314,7 +314,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   </div>
                 ))}
                 {students.length === 0 && (
-                  <div className="col-span-full text-center py-6 text-slate-650 font-bold text-lg animate-pulse">
+                  <div className="col-span-full text-center py-6 text-muted-foreground font-bold text-lg animate-pulse">
                     Ninguém entrou ainda. Aguardando conexão dos recrutas...
                   </div>
                 )}
@@ -330,7 +330,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
               {currentQuestionIndex === -1 ? (
                 <div className="flex-1 bg-card border border-border rounded-2xl flex flex-col items-center justify-center text-center p-6 md:p-8">
                   <Target className="w-16 h-16 text-blue-500 mb-4" />
-                  <h2 className="text-2xl font-bold text-white mb-2">Simulado Iniciado!</h2>
+                  <h2 className="text-2xl font-bold text-heading mb-2">Simulado Iniciado!</h2>
                   <p className="text-muted-foreground mb-8">Os alunos estão vendo a tela de aguarde. Libere a primeira questão quando estiver pronto.</p>
                   <Button onClick={handleNextQuestion} className="h-12 md:h-14 px-8 text-base md:text-lg bg-blue-600 hover:bg-blue-500 font-bold">
                     Liberar Questão 1
@@ -356,13 +356,13 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       <Target className="w-8 h-8 text-red-500 animate-pulse" />
                       <div className="flex-1">
                         <h3 className="text-red-400 font-bold uppercase tracking-wider text-xs">Alvo Sorteado</h3>
-                        <p className="text-white font-black text-xl tracking-wide">{raffleWinner.name}</p>
+                        <p className="text-heading font-black text-xl tracking-wide">{raffleWinner.name}</p>
                       </div>
                     </div>
                   )}
 
                   <div className="mb-6 flex-1 flex flex-col gap-4 md:gap-6 overflow-y-auto pr-2 custom-scrollbar">
-                    <p className="text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-normal tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">{currentQuestion?.enunciado}</p>
+                    <p className="text-xl md:text-2xl lg:text-3xl font-extrabold text-heading leading-normal tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">{currentQuestion?.enunciado}</p>
                     
                     {currentQuestion?.alternativas && (
                       <div className="flex flex-col gap-3">
@@ -387,14 +387,14 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                               className={`flex flex-col gap-3 p-4 md:p-5 rounded-xl border transition-all ${
                                 isCorrect 
                                   ? 'bg-emerald-950/30 border-emerald-500/70 shadow-[0_0_20px_rgba(16,185,129,0.15)]' 
-                                  : 'bg-card border-slate-850'
-                              } ${isClickable ? 'cursor-pointer hover:bg-slate-850 hover:border-blue-500/40' : ''}`}
+                                  : 'bg-card border-border'
+                              } ${isClickable ? 'cursor-pointer hover:bg-muted hover:border-blue-500/40' : ''}`}
                             >
                               <div className="flex items-start gap-4">
                                 <span className={`flex shrink-0 items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full text-sm md:text-lg font-extrabold border-2 ${
                                   isCorrect
-                                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-400'
-                                    : 'bg-slate-850 text-muted-foreground border-border'
+                                    ? 'bg-emerald-500 text-heading shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-400'
+                                    : 'bg-muted text-muted-foreground border-border'
                                 }`}>
                                   {letter}
                                 </span>
@@ -460,7 +460,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     </div>
                   ) : isQuestionActive && isTimeUp ? (
                     <div className="flex flex-col gap-3">
-                      <Button onClick={() => socket?.emit("reveal_result", { roomCode: simulado.codigoSala })} className="w-full h-14 md:h-16 font-black text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-pulse text-white">
+                      <Button onClick={() => socket?.emit("reveal_result", { roomCode: simulado.codigoSala })} className="w-full h-14 md:h-16 font-black text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-pulse text-heading">
                         <Trophy className="w-8 h-8 mr-3" /> VER RESULTADO
                       </Button>
                     </div>
@@ -470,7 +470,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                         {currentQuestionIndex + 1 < simulado.questions.length ? "Próxima Questão" : "Finalizar Simulado"} <ChevronRight className="w-5 h-5 ml-2" />
                       </Button>
                       <div className="flex items-center justify-center gap-2 mt-2">
-                        <label className="text-sm text-muted-foreground font-bold flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                        <label className="text-sm text-muted-foreground font-bold flex items-center gap-2 cursor-pointer hover:text-heading transition-colors">
                           <input type="checkbox" checked={isRaffleMode} onChange={e => setIsRaffleMode(e.target.checked)} className="w-5 h-5 rounded border-border bg-muted text-blue-500 focus:ring-blue-500 cursor-pointer" />
                           Modo Sorteio (Roleta Tática) 🎲
                         </label>
@@ -481,7 +481,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   {isRaffling && (
                     <div className="absolute inset-0 bg-card/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center rounded-2xl">
                       <Target className="w-24 h-24 text-red-500 mb-6 animate-[spin_0.5s_linear_infinite]" />
-                      <h2 className="text-4xl font-black text-white mb-2 uppercase tracking-widest text-center px-4 animate-pulse">Sorteando Alvo...</h2>
+                      <h2 className="text-4xl font-black text-heading mb-2 uppercase tracking-widest text-center px-4 animate-pulse">Sorteando Alvo...</h2>
                       <div className="mt-8 p-6 bg-red-900/20 rounded-xl border border-red-500/30 flex flex-col items-center gap-4 w-full max-w-sm">
                         {displayStudent?.avatarUrl ? (
                           <img src={displayStudent.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-red-500 object-cover shadow-[0_0_30px_rgba(239,68,68,0.5)]" />
@@ -506,7 +506,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     <CardTitle className="text-xs md:text-sm text-muted-foreground flex items-center justify-center gap-2 uppercase tracking-wider font-black"><Clock className="w-4 h-4 text-amber-500"/> Tempo</CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    <div className="text-3xl md:text-5xl font-black text-center text-white font-mono flex items-center justify-center gap-2">
+                    <div className="text-3xl md:text-5xl font-black text-center text-heading font-mono flex items-center justify-center gap-2">
                       {timeLeft}s
                       {isPaused && <Pause className="w-5 h-5 md:w-6 md:h-6 text-amber-500 animate-pulse" />}
                     </div>
@@ -518,7 +518,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     <CardTitle className="text-xs md:text-sm text-muted-foreground flex items-center justify-center gap-2 uppercase tracking-wider font-black"><CheckCircle className="w-4 h-4 text-blue-500"/> Respostas</CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    <div className="text-2xl md:text-4xl font-black text-center text-white mb-2">
+                    <div className="text-2xl md:text-4xl font-black text-center text-heading mb-2">
                       {answersReceived}<span className="text-xs md:text-base text-muted-foreground">/{students.length}</span>
                     </div>
                     <Progress value={students.length > 0 ? (answersReceived / students.length) * 100 : 0} className="h-1.5 md:h-2 bg-muted [&>div]:bg-blue-500" />
@@ -532,7 +532,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     <CardTitle className="text-emerald-400 text-xs md:text-sm uppercase tracking-widest font-black">Gabarito Divulgado</CardTitle>
                   </CardHeader>
                   <CardContent className="pb-4">
-                    <p className="text-lg md:text-xl font-bold text-white flex items-center justify-between">
+                    <p className="text-lg md:text-xl font-bold text-heading flex items-center justify-between">
                       Alternativa Correta: <span className="text-emerald-400 text-4xl md:text-5xl font-black">{String.fromCharCode(65 + questionEndedData.correta)}</span>
                     </p>
                   </CardContent>
@@ -543,14 +543,14 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
               {isTeamCompetition && teams.length > 0 && (
                 <Card className="bg-card border-emerald-500/40 shadow-2xl overflow-hidden mb-4">
                   <div className="bg-gradient-to-r from-emerald-600/20 to-blue-600/20 px-4 py-3 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 font-black text-sm md:text-base text-white uppercase tracking-wider">
+                    <div className="flex items-center gap-2 font-black text-sm md:text-base text-heading uppercase tracking-wider">
                       <Trophy className="w-5 h-5 text-emerald-400 animate-bounce" />
                       Disputa por Equipes ({teams.length})
                     </div>
                     <Button
                       onClick={() => socket?.emit("shuffle_teams", { roomCode: simulado.codigoSala })}
                       size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-wider shadow-lg text-white cursor-pointer"
+                      className="bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-wider shadow-lg text-heading cursor-pointer"
                     >
                       🎲 Embaralhar / Rebalancear Alunos
                     </Button>
@@ -570,7 +570,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                 style={{ backgroundColor: team.color }}
                                 className="w-3 h-3 rounded-full shrink-0 shadow-sm"
                               ></span>
-                              <span className="font-black text-base md:text-lg text-white tracking-wide">
+                              <span className="font-black text-base md:text-lg text-heading tracking-wide">
                                 {team.name}
                               </span>
                               <span className="text-xs bg-background/60 text-muted-foreground font-bold px-2 py-0.5 rounded-full border border-border">
@@ -596,7 +596,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                               {members.map((member: any) => (
                                 <div
                                   key={member.id}
-                                  className="flex items-center justify-between bg-background/50 hover:bg-slate-950/80 rounded-lg p-2 text-xs font-semibold border border-border/50 transition-colors"
+                                  className="flex items-center justify-between bg-background/50 hover:bg-background/80 rounded-lg p-2 text-xs font-semibold border border-border/50 transition-colors"
                                 >
                                   <div className="flex items-center gap-2 overflow-hidden">
                                     {member.avatarUrl ? (
@@ -655,13 +655,13 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       O ranking aparecerá aqui assim que os alunos pontuarem.
                     </div>
                   ) : (
-                    <ul className="divide-y divide-slate-800/40">
+                    <ul className="divide-y divide-border">
                       {ranking.map((aluno, index) => (
-                        <li key={index} className="flex items-center justify-between p-3 md:p-4 hover:bg-slate-850 transition-colors">
+                        <li key={index} className="flex items-center justify-between p-3 md:p-4 hover:bg-muted transition-colors">
                           <div className="flex items-center gap-2.5">
                             <span className={`flex items-center justify-center shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full text-xs md:text-sm font-extrabold ${
                               index === 0 ? 'bg-yellow-500 text-yellow-950' : 
-                              index === 1 ? 'bg-slate-300 text-slate-800' :
+                              index === 1 ? 'bg-secondary text-foreground' :
                               index === 2 ? 'bg-amber-700 text-amber-100' : 'bg-muted text-muted-foreground'
                             }`}>
                               {index + 1}
@@ -697,7 +697,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                 answeredStudentIds.includes(aluno.id) ? (
                                   <span className="text-[9px] md:text-xs bg-emerald-500/20 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 ml-1.5 animate-pulse">Respondeu</span>
                                 ) : (
-                                  <span className="text-[9px] md:text-xs bg-slate-850 text-muted-foreground font-bold px-1.5 py-0.5 rounded border border-slate-750 ml-1.5">Aguardando</span>
+                                  <span className="text-[9px] md:text-xs bg-muted text-muted-foreground font-bold px-1.5 py-0.5 rounded border border-border ml-1.5">Aguardando</span>
                                 )
                               )}
                               {aluno.streak >= 3 && (
@@ -726,7 +726,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
         {status === "FINISHED" && (
           <div className="text-center max-w-2xl w-full animate-in fade-in zoom-in duration-500">
             <Trophy className="w-20 h-20 text-yellow-500 mx-auto mb-4 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]" />
-            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">Simulado Finalizado!</h2>
+            <h2 className="text-3xl font-black text-heading mb-2 uppercase tracking-widest">Simulado Finalizado!</h2>
             <p className="text-muted-foreground mb-8">
               Obrigado por utilizar o sistema. As pontuações já foram processadas.
             </p>
@@ -749,17 +749,17 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <span className={`flex items-center justify-center w-7 h-7 rounded-full font-black text-sm ${
-                            idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-700 text-amber-100"
+                            idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-secondary text-foreground" : "bg-amber-700 text-amber-100"
                           }`}>
                             {idx + 1}º
                           </span>
-                          <span className="font-black text-xl text-white tracking-wide">{team.name}</span>
+                          <span className="font-black text-xl text-heading tracking-wide">{team.name}</span>
                         </div>
                         <span style={{ backgroundColor: team.color }} className="w-3.5 h-3.5 rounded-full"></span>
                       </div>
                       <div className="text-left mt-2 border-t border-border/60 pt-3">
                         <div className="text-2xl font-black font-mono text-emerald-400">{team.totalScore || 0} <span className="text-sm font-bold text-muted-foreground">pts totais</span></div>
-                        <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Média: <span className="text-white font-mono">{team.averageScore || 0}</span> pts/aluno</div>
+                        <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Média: <span className="text-heading font-mono">{team.averageScore || 0}</span> pts/aluno</div>
                         <div className="text-[10px] text-muted-foreground mt-1 font-semibold">{team.memberCount || 0} combatentes na equipe</div>
                       </div>
                     </div>
@@ -776,7 +776,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   {/* Segundo Colocado */}
                   {ranking.length > 1 && (
                     <div className="flex flex-col items-center w-28">
-                      <div className="w-12 h-12 rounded-full border-2 border-slate-400 mb-3 overflow-hidden bg-muted flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full border-2 border-border mb-3 overflow-hidden bg-muted flex items-center justify-center">
                         {ranking[1].avatarUrl ? (
                           <img src={ranking[1].avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
@@ -785,7 +785,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       </div>
                       <div className="text-sm text-muted-foreground truncate w-full text-center">{ranking[1].name.split(' ')[0]}</div>
                       <div className="text-xs font-bold text-muted-foreground mb-2">{ranking[1].score} pts</div>
-                      <div className="w-full h-20 bg-slate-700 rounded-t-lg flex items-end justify-center pb-2 text-muted-foreground font-black text-2xl">2</div>
+                      <div className="w-full h-20 bg-muted rounded-t-lg flex items-end justify-center pb-2 text-muted-foreground font-black text-2xl">2</div>
                     </div>
                   )}
                   {/* Primeiro Colocado */}
@@ -801,7 +801,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       </div>
                       <div className="text-base font-bold text-yellow-500 truncate w-full text-center">{ranking[0].name.split(' ')[0]}</div>
                       <div className="text-sm font-bold text-yellow-400 mb-2">{ranking[0].score} pts</div>
-                      <div className="w-full h-28 bg-gradient-to-t from-yellow-700 to-yellow-600 rounded-t-lg flex items-end justify-center pb-2 text-white font-black text-3xl shadow-lg">1</div>
+                      <div className="w-full h-28 bg-gradient-to-t from-yellow-700 to-yellow-600 rounded-t-lg flex items-end justify-center pb-2 text-heading font-black text-3xl shadow-lg">1</div>
                     </div>
                   )}
                   {/* Terceiro Colocado */}
@@ -823,12 +823,12 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
               </div>
             )}
             <Link href={`/instructor/painel/${simulado.id}/review`}>
-              <Button className="w-full h-14 text-lg font-bold bg-blue-600 hover:bg-blue-500 text-white mb-4 shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+              <Button className="w-full h-14 text-lg font-bold bg-blue-600 hover:bg-blue-500 text-heading mb-4 shadow-[0_0_20px_rgba(37,99,235,0.2)]">
                 Ver Relatório do Simulado
               </Button>
             </Link>
             <Link href="/instructor">
-              <Button variant="outline" className="w-full h-14 text-lg font-bold border-border text-muted-foreground hover:bg-slate-800">
+              <Button variant="outline" className="w-full h-14 text-lg font-bold border-border text-muted-foreground hover:bg-muted">
                 Voltar ao Painel
               </Button>
             </Link>
@@ -845,7 +845,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       >
         <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl text-white">
+            <DialogTitle className="flex items-center gap-2 text-xl text-heading">
               <Users className="w-5 h-5 text-blue-500" /> 
               {selectedAltForDetails === -1 
                 ? "Combatentes sem Resposta" 
@@ -878,7 +878,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                       {aluno.avatarUrl ? (
                         <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-border" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-850 flex items-center justify-center text-xs font-bold text-muted-foreground border border-border">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground border border-border">
                           {aluno.name.substring(0, 2).toUpperCase()}
                         </div>
                       )}

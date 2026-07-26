@@ -49,7 +49,7 @@ export default function ManutencaoPage() {
       className="min-h-screen flex items-center justify-center p-4 bg-background bg-cover bg-center relative overflow-hidden"
       style={{ backgroundImage: "url('/arte_fundo.png')" }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/90 to-background pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/90 to-background pointer-events-none"></div>
 
       <div className="w-full max-w-lg z-10 space-y-6">
         <div className="flex flex-col items-center text-center">
@@ -64,7 +64,7 @@ export default function ManutencaoPage() {
             <Wrench className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: "6s" }} />
             Manutenção Operacional
           </span>
-          <h1 className="text-3xl font-black text-white tracking-tight uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+          <h1 className="text-3xl font-black text-heading tracking-tight uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             Servidor em <span className="text-amber-500">Manutenção</span>
           </h1>
           <p className="text-muted-foreground font-bold uppercase tracking-wider text-xs mt-1">
@@ -72,7 +72,7 @@ export default function ManutencaoPage() {
           </p>
         </div>
 
-        <Card className="border-amber-500/30 bg-card/90 text-white shadow-[0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-md relative overflow-hidden">
+        <Card className="border-amber-500/30 bg-card/90 text-heading shadow-[0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-md relative overflow-hidden">
           {/* Top accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600"></div>
 
@@ -91,7 +91,7 @@ export default function ManutencaoPage() {
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <p className="font-bold text-white uppercase tracking-wider">Previsão de Retorno:</p>
+                  <p className="font-bold text-heading uppercase tracking-wider">Previsão de Retorno:</p>
                   <p>Estamos trabalhando com a máxima celeridade. Retornaremos em breve com força total para a continuação de suas instruções e simulados.</p>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export default function ManutencaoPage() {
                 <Button 
                   onClick={() => checkStatus(true)} 
                   disabled={checking}
-                  className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black uppercase tracking-wider py-6 shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all transform active:scale-[0.98]"
+                  className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-foreground font-black uppercase tracking-wider py-6 shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all transform active:scale-[0.98]"
                 >
                   {checking ? (
                     <>

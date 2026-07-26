@@ -356,18 +356,18 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         {/* Toast Notifications */}
         <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-72 sm:w-80">
           {notifications.map(n => (
-            <div key={n.id} className="bg-card border border-border text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+            <div key={n.id} className="bg-card border border-border text-heading p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
               <span className="text-sm font-bold leading-tight">{n.text}</span>
             </div>
           ))}
         </div>
         <Link href="/aluno/painel" className="absolute top-6 left-6">
-          <Button variant="ghost" className="text-muted-foreground hover:text-white">Sair da Sala</Button>
+          <Button variant="ghost" className="text-muted-foreground hover:text-heading">Sair da Sala</Button>
         </Link>
         <div className="w-24 h-24 rounded-full bg-card border-2 border-blue-500/30 flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
           <ShieldAlert className="w-10 h-10 text-blue-500 animate-pulse" />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Sala {simulado.codigoSala}</h1>
+        <h1 className="text-2xl font-bold text-heading mb-2">Sala {simulado.codigoSala}</h1>
         <p className="text-muted-foreground max-w-sm mb-6">Você entrou com sucesso. Aguarde o instrutor iniciar o simulado na tela principal.</p>
         
         {(() => {
@@ -380,7 +380,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                 className="flex items-center gap-2.5 px-6 py-3 rounded-full border mb-8 shadow-lg animate-bounce"
               >
                 <span style={{ backgroundColor: myTeam.color }} className="w-4 h-4 rounded-full shadow-sm"></span>
-                <span className="font-black text-white uppercase tracking-wider text-sm sm:text-base">
+                <span className="font-black text-heading uppercase tracking-wider text-sm sm:text-base">
                   Sua Equipe: {myTeam.name}
                 </span>
               </div>
@@ -402,7 +402,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       {/* Toast Notifications */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none w-72 sm:w-80">
         {notifications.map(n => (
-          <div key={n.id} className="bg-card border border-border text-white p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
+          <div key={n.id} className="bg-card border border-border text-heading p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto flex items-start gap-3">
             <span className="text-sm font-bold leading-tight">{n.text}</span>
           </div>
         ))}
@@ -411,7 +411,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       <header className="h-16 border-b border-border flex justify-between items-center px-4 bg-card shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/aluno/painel">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white px-2">Sair</Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-heading px-2">Sair</Button>
           </Link>
           <span className="font-bold text-muted-foreground">SALA {simulado.codigoSala}</span>
           
@@ -444,7 +444,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   title="Clique para ver a classificação das equipes"
                 >
                   <span style={{ backgroundColor: myTeam.color }} className="w-2.5 h-2.5 rounded-full"></span>
-                  <span className="text-white truncate max-w-[110px]">{myTeam.name}</span>
+                  <span className="text-heading truncate max-w-[110px]">{myTeam.name}</span>
                   <span className="text-emerald-400 font-mono ml-0.5">({myTeam.totalScore || 0} pts)</span>
                 </div>
               );
@@ -456,7 +456,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             variant="ghost"
             size="sm"
             onClick={() => setShowParticipants(true)}
-            className="text-yellow-500 hover:text-yellow-400 hover:bg-slate-800 text-xs font-bold flex items-center gap-1.5 px-2"
+            className="text-yellow-500 hover:text-yellow-400 hover:bg-muted text-xs font-bold flex items-center gap-1.5 px-2"
           >
             <Trophy className="w-3.5 h-3.5" /> Ranking
           </Button>
@@ -484,7 +484,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
             </div>
             <div>
               <p className="text-xs font-black text-yellow-500 uppercase tracking-widest mb-1">Novo Brevê Desbloqueado!</p>
-              <p className="text-white font-bold text-lg leading-tight">{badge.name}</p>
+              <p className="text-heading font-bold text-lg leading-tight">{badge.name}</p>
               <p className="text-muted-foreground text-xs mt-1">Novo ícone de perfil disponível na Armaria.</p>
             </div>
           </div>
@@ -495,7 +495,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         {isRaffling && (
           <div className="absolute inset-0 bg-background z-50 flex flex-col items-center justify-center p-4">
             <Target className="w-24 h-24 text-red-500 mb-6 animate-[spin_0.5s_linear_infinite]" />
-            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest text-center animate-pulse">Sorteando Alvo...</h2>
+            <h2 className="text-3xl font-black text-heading mb-2 uppercase tracking-widest text-center animate-pulse">Sorteando Alvo...</h2>
             <div className="mt-8 p-6 bg-red-900/20 rounded-xl border border-red-500/30 flex flex-col items-center gap-4 w-full max-w-sm">
               {displayStudent?.avatarUrl ? (
                 <img src={displayStudent.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full border-4 border-red-500 object-cover shadow-[0_0_30px_rgba(239,68,68,0.5)]" />
@@ -530,7 +530,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   <Target className="w-8 h-8 text-red-500 animate-pulse shrink-0" />
                   <div>
                     <p className="text-red-400 font-black text-sm uppercase tracking-widest">Alvo Sorteado</p>
-                    <p className="text-muted-foreground text-sm mt-0.5">Aguardando a resposta de: <strong className="text-white">{raffleWinner.name}</strong></p>
+                    <p className="text-muted-foreground text-sm mt-0.5">Aguardando a resposta de: <strong className="text-heading">{raffleWinner.name}</strong></p>
                   </div>
                 </div>
 
@@ -549,13 +549,13 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                         <div className="flex gap-3">
                           <Button 
                             onClick={() => setSelectedGuess("ACERTAR")}
-                            className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-500 font-bold text-white uppercase tracking-wider text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                            className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-500 font-bold text-heading uppercase tracking-wider text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]"
                           >
                             Vai Acertar 👍
                           </Button>
                           <Button 
                             onClick={() => setSelectedGuess("ERRAR")}
-                            className="flex-1 h-11 bg-red-650 hover:bg-red-550 font-bold text-white uppercase tracking-wider text-xs transition-all shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                            className="flex-1 h-11 bg-red-650 hover:bg-red-550 font-bold text-heading uppercase tracking-wider text-xs transition-all shadow-[0_0_15px_rgba(239,68,68,0.15)]"
                           >
                             Vai Errar 👎
                           </Button>
@@ -612,22 +612,22 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {isObserver && (
-                    <div className="text-sm text-muted-foreground font-bold bg-background/50 p-3 rounded-lg border border-slate-850/80 leading-relaxed">
+                    <div className="text-sm text-muted-foreground font-bold bg-background/50 p-3 rounded-lg border border-border/80 leading-relaxed">
                       {selectedGuess ? (
                         <>
                           Você palpitou que o alvo iria <strong className={selectedGuess === "ACERTAR" ? "text-emerald-400" : "text-red-400"}>{selectedGuess === "ACERTAR" ? "Acertar 👍" : "Errar 👎"}</strong>.<br/>
-                          O alvo (<span className="text-white">{raffleWinner?.name}</span>) de fato <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong>.
+                          O alvo (<span className="text-heading">{raffleWinner?.name}</span>) de fato <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong>.
                         </>
                       ) : (
                         <>
                           Você ficou como observador nesta rodada.<br/>
-                          O alvo (<span className="text-white">{raffleWinner?.name}</span>) <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong> a questão.
+                          O alvo (<span className="text-heading">{raffleWinner?.name}</span>) <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong> a questão.
                         </>
                       )}
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-bold text-slate-350 mb-2 uppercase tracking-wide">Justificativa:</p>
+                    <p className="text-sm font-bold text-muted-foreground mb-2 uppercase tracking-wide">Justificativa:</p>
                     <p className="text-sm text-muted-foreground bg-background p-3 rounded-lg border border-border leading-relaxed">
                       {questionEndedData.justificativa}
                     </p>
@@ -645,14 +645,14 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                 
                 const isObserver = raffleWinner && raffleWinner.id !== user.userId;
 
-                let btnClass = "bg-card border-border text-muted-foreground hover:bg-slate-800";
+                let btnClass = "bg-card border-border text-muted-foreground hover:bg-muted";
                 
                 if (isEnded) {
                   if (isCorrect) btnClass = "bg-emerald-900/50 border-emerald-500 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]";
                   else if (isWrongSelected) btnClass = "bg-red-900/50 border-red-500 text-red-400";
                   else btnClass = "bg-background border-border text-muted-foreground opacity-50";
                 } else if (isSelected) {
-                  btnClass = "bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]";
+                  btnClass = "bg-blue-600 border-blue-500 text-heading shadow-[0_0_20px_rgba(37,99,235,0.4)]";
                 }
 
                 return (
@@ -664,8 +664,8 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   >
                     <div className="flex gap-4 items-start w-full">
                       <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold border ${
-                        isEnded && isCorrect ? 'bg-emerald-500 border-emerald-400 text-white' :
-                        isEnded && isWrongSelected ? 'bg-red-500 border-red-400 text-white' :
+                        isEnded && isCorrect ? 'bg-emerald-500 border-emerald-400 text-heading' :
+                        isEnded && isWrongSelected ? 'bg-red-500 border-red-400 text-heading' :
                         isSelected && !isEnded ? 'bg-white border-white text-blue-600' :
                         'bg-muted border-border text-muted-foreground'
                       }`}>
@@ -694,7 +694,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               <div className="flex flex-col gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2">
                 <Button 
                   onClick={handleConfirmAnswer} 
-                  className="w-full h-16 font-black text-xl bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] animate-pulse"
+                  className="w-full h-16 font-black text-xl bg-blue-600 hover:bg-blue-500 text-heading shadow-[0_0_30px_rgba(37,99,235,0.4)] animate-pulse"
                 >
                   <CheckCircle className="w-6 h-6 mr-2" /> CONFIRMAR RESPOSTA
                 </Button>
@@ -722,7 +722,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         {status === "FINISHED" && (
           <div className="h-full flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 overflow-y-auto custom-scrollbar">
             <Trophy className="w-20 h-20 text-yellow-500 mb-2 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]" />
-            <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-widest">Missão Cumprida!</h2>
+            <h2 className="text-3xl font-black text-heading mb-2 uppercase tracking-widest">Missão Cumprida!</h2>
             <p className="text-muted-foreground mb-8 max-w-md text-sm">
               O instrutor encerrou este simulado. Suas respostas e pontuações já foram processadas no sistema.
             </p>
@@ -736,7 +736,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               const myData = ranking[myRankIndex];
               
               return (
-                <div className="w-full max-w-md bg-gradient-to-br from-blue-900/40 to-slate-900 border border-blue-500/30 rounded-xl p-6 mb-8 flex items-center gap-6 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
+                <div className="w-full max-w-md bg-gradient-to-br from-blue-900/40 to-card border border-blue-500/30 rounded-xl p-6 mb-8 flex items-center gap-6 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
                   <div className="w-20 h-20 rounded-full border-4 border-blue-500 overflow-hidden bg-muted flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                     {user.avatarUrl ? (
                       <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -746,7 +746,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   </div>
                   <div className="text-left flex-1">
                     <h3 className="text-muted-foreground text-xs font-bold tracking-widest uppercase mb-1">Seu Desempenho</h3>
-                    <p className="text-white font-black text-2xl mb-1">{myData.score} pts</p>
+                    <p className="text-heading font-black text-2xl mb-1">{myData.score} pts</p>
                     <p className="text-blue-400 font-medium text-sm flex items-center gap-1">
                       <BarChart2 className="w-4 h-4" /> Você ficou em {myRank}º lugar
                     </p>
@@ -775,13 +775,13 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                       >
                         <div className="flex items-center gap-2">
                           <span className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-xs ${
-                            idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-700 text-amber-100"
+                            idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-secondary text-foreground" : "bg-amber-700 text-amber-100"
                           }`}>
                             {idx + 1}º
                           </span>
-                          <span className="font-bold text-white text-sm">{team.name}</span>
+                          <span className="font-bold text-heading text-sm">{team.name}</span>
                           {isMyTeam && (
-                            <span className="text-[10px] bg-white text-slate-950 font-black px-1.5 py-0.5 rounded uppercase">Sua Equipe</span>
+                            <span className="text-[10px] bg-white text-foreground font-black px-1.5 py-0.5 rounded uppercase">Sua Equipe</span>
                           )}
                         </div>
                         <div className="text-right">
@@ -803,7 +803,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   {/* Segundo Colocado */}
                   {ranking.length > 1 && (
                     <div className="flex flex-col items-center w-24">
-                      <div className="w-10 h-10 rounded-full border-2 border-slate-400 mb-2 overflow-hidden bg-muted flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full border-2 border-border mb-2 overflow-hidden bg-muted flex items-center justify-center">
                         {ranking[1].avatarUrl ? (
                           <img src={ranking[1].avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
@@ -812,7 +812,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                       </div>
                       <div className="text-xs text-muted-foreground truncate w-full text-center">{ranking[1].name.split(' ')[0]}</div>
                       <div className="text-xs font-bold text-muted-foreground mb-2">{ranking[1].score} pts</div>
-                      <div className="w-full h-16 bg-slate-700 rounded-t-lg flex items-end justify-center pb-2 text-muted-foreground font-black text-xl">2</div>
+                      <div className="w-full h-16 bg-muted rounded-t-lg flex items-end justify-center pb-2 text-muted-foreground font-black text-xl">2</div>
                     </div>
                   )}
                   {/* Primeiro Colocado */}
@@ -828,7 +828,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                       </div>
                       <div className="text-sm font-bold text-yellow-500 truncate w-full text-center">{ranking[0].name.split(' ')[0]}</div>
                       <div className="text-sm font-bold text-yellow-400 mb-2">{ranking[0].score} pts</div>
-                      <div className="w-full h-24 bg-gradient-to-t from-yellow-700 to-yellow-600 rounded-t-lg flex items-end justify-center pb-2 text-white font-black text-2xl shadow-lg">1</div>
+                      <div className="w-full h-24 bg-gradient-to-t from-yellow-700 to-yellow-600 rounded-t-lg flex items-end justify-center pb-2 text-heading font-black text-2xl shadow-lg">1</div>
                     </div>
                   )}
                   {/* Terceiro Colocado */}
@@ -854,7 +854,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               <Button 
                 onClick={() => setShowParticipants(true)} 
                 variant="outline" 
-                className="w-full max-w-sm h-14 mb-4 border-border text-muted-foreground hover:bg-slate-800 font-bold"
+                className="w-full max-w-sm h-14 mb-4 border-border text-muted-foreground hover:bg-muted font-bold"
               >
                 <Users className="w-5 h-5 mr-2" /> Ver Ranking Completo
               </Button>
@@ -862,13 +862,13 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
             <div className="flex flex-col gap-4 w-full max-w-sm mx-auto">
               <Link href={`/aluno/simulado/${simulado.id}/review`} className="w-full">
-                <Button className="w-full h-14 font-bold text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+                <Button className="w-full h-14 font-bold text-lg bg-blue-600 hover:bg-blue-500 text-heading shadow-[0_0_20px_rgba(37,99,235,0.3)]">
                   <BookOpen className="w-5 h-5 mr-2" />
                   Ver Meu Desempenho
                 </Button>
               </Link>
               <Link href="/aluno/painel" className="w-full">
-                <Button variant="outline" className="w-full h-14 font-bold text-lg border-border text-muted-foreground hover:bg-slate-800">
+                <Button variant="outline" className="w-full h-14 font-bold text-lg border-border text-muted-foreground hover:bg-muted">
                   Voltar ao QG
                 </Button>
               </Link>
@@ -879,7 +879,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         <Dialog open={showParticipants} onOpenChange={setShowParticipants}>
           <DialogContent className="sm:max-w-xl bg-card border-border text-foreground max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl text-white">
+              <DialogTitle className="flex items-center gap-2 text-xl text-heading">
                 <Trophy className="w-5 h-5 text-yellow-500" /> Ranking Completo de Participantes
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
@@ -906,13 +906,13 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                         >
                           <div className="flex items-center gap-2">
                             <span className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-xs ${
-                              idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-700 text-amber-100"
+                              idx === 0 ? "bg-yellow-500 text-yellow-950" : idx === 1 ? "bg-secondary text-foreground" : "bg-amber-700 text-amber-100"
                             }`}>
                               {idx + 1}º
                             </span>
-                            <span className="font-bold text-white text-xs truncate max-w-[110px]">{team.name}</span>
+                            <span className="font-bold text-heading text-xs truncate max-w-[110px]">{team.name}</span>
                             {isMyTeam && (
-                              <span className="text-[9px] bg-white text-slate-950 font-black px-1 rounded uppercase shrink-0">Sua</span>
+                              <span className="text-[9px] bg-white text-foreground font-black px-1 rounded uppercase shrink-0">Sua</span>
                             )}
                           </div>
                           <div className="text-right shrink-0">
@@ -939,9 +939,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                       <th className="px-4 py-2 font-medium text-right">Pontuação</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/50">
+                  <tbody className="divide-y divide-border">
                     {ranking.map((aluno, idx) => (
-                      <tr key={idx} className="hover:bg-slate-800/30">
+                      <tr key={idx} className="hover:bg-muted/30">
                         <td className="px-4 py-3 font-bold text-muted-foreground">
                           {idx + 1}º
                         </td>

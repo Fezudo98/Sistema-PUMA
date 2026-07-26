@@ -21,20 +21,20 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
   );
 
   return (
-    <div className="min-h-screen bg-background text-white relative">
+    <div className="min-h-screen bg-background text-heading relative">
       <div className="fixed inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
       
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/aluno/painel">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white hover:bg-slate-800">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-heading hover:bg-muted">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
             <div className="flex items-center gap-2 text-blue-400">
               <BookOpen className="w-6 h-6" />
-              <h1 className="text-xl font-black uppercase tracking-wider text-white hidden sm:block">
+              <h1 className="text-xl font-black uppercase tracking-wider text-heading hidden sm:block">
                 Biblioteca PUMA
               </h1>
             </div>
@@ -46,7 +46,7 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
               placeholder="Buscar apostila..." 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-9 bg-card border-border text-white focus:border-blue-500 rounded-xl"
+              className="pl-9 bg-card border-border text-heading focus:border-blue-500 rounded-xl"
             />
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
 
       <main className="max-w-7xl mx-auto p-4 md:p-8 relative z-10">
         <div className="mb-8">
-          <h2 className="text-3xl font-black uppercase tracking-tight text-white">Acervo de Estudo</h2>
+          <h2 className="text-3xl font-black uppercase tracking-tight text-heading">Acervo de Estudo</h2>
           <p className="text-muted-foreground mt-2">Acesse suas apostilas, marque textos e crie anotações individuais para reforçar seu aprendizado.</p>
         </div>
 
@@ -70,16 +70,16 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
               
               return (
               <Link href={`/aluno/biblioteca/${apostila.id}`} key={apostila.id}>
-                <div className="bg-card/50 border border-border hover:border-blue-500/50 rounded-2xl p-6 transition-all hover:bg-slate-900 shadow-lg group h-full flex flex-col relative">
+                <div className="bg-card/50 border border-border hover:border-blue-500/50 rounded-2xl p-6 transition-all hover:bg-card shadow-lg group h-full flex flex-col relative">
                   {isNew && (
-                    <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-lg animate-pulse">
+                    <div className="absolute top-4 right-4 bg-blue-600 text-heading text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-lg animate-pulse">
                       Novo
                     </div>
                   )}
                   <div className="w-12 h-12 bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-400 mb-4 group-hover:scale-110 transition-transform">
                     <BookOpen className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight">
+                  <h3 className="text-lg font-bold text-heading mb-2 line-clamp-2 leading-tight">
                     {apostila.title}
                   </h3>
                   <div className="mt-auto pt-4 flex items-center justify-between text-xs text-muted-foreground font-medium">

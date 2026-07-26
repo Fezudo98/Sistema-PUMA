@@ -138,13 +138,13 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <Link 
                 href="/aluno/painel"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-card hover:bg-slate-800 border border-border/80 hover:border-blue-500/50 text-foreground hover:text-white font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-card hover:bg-muted border border-border/80 hover:border-blue-500/50 text-foreground hover:text-heading font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
                 title="Voltar para o Painel Principal"
               >
                 <ArrowLeft className="w-5 h-5 text-blue-400" />
                 <span>Voltar ao Painel</span>
               </Link>
-              <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">Correção do Simulado</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-heading uppercase tracking-tight">Correção do Simulado</h1>
             </div>
             {simulado.tipo === "LIVE" ? (
               <p className="text-muted-foreground font-medium">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
@@ -164,7 +164,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
           <Card className="bg-card/50 border-border shadow-sm">
             <CardContent className="p-6 text-center">
               <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Acertos</p>
-              <p className="text-3xl font-black text-white">{correctAnswers} / {totalQuestions}</p>
+              <p className="text-3xl font-black text-heading">{correctAnswers} / {totalQuestions}</p>
             </CardContent>
           </Card>
           <Card className="bg-card/50 border-border shadow-sm">
@@ -206,9 +206,9 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                     <th className="px-4 py-2 font-medium text-right">Pontuação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-border">
                   {ranking.map((aluno, idx) => (
-                    <tr key={idx} className="hover:bg-slate-900/30">
+                    <tr key={idx} className="hover:bg-card/30">
                       <td className="px-4 py-3 font-bold text-muted-foreground">
                         {idx + 1}º
                       </td>
@@ -366,7 +366,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link 
             href="/aluno/painel"
-            className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm sm:text-base uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(59,130,246,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-heading font-black text-sm sm:text-base uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(59,130,246,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Voltar para o Painel Principal</span>

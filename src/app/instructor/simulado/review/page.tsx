@@ -153,7 +153,7 @@ export default function ReviewSimulado() {
         
         {/* Top Header */}
         <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
-          <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-white hover:bg-slate-900/50 font-bold">
+          <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-heading hover:bg-card/50 font-bold">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
@@ -161,16 +161,16 @@ export default function ReviewSimulado() {
           <Button 
             onClick={handleSave} 
             disabled={loading || editingIndex !== null}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-12 uppercase tracking-widest text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-emerald-600 hover:bg-emerald-500 text-heading font-bold h-12 uppercase tracking-widest text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" /> : <Save className="w-4 h-4 mr-2 text-white" />}
+            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin text-heading" /> : <Save className="w-4 h-4 mr-2 text-heading" />}
             Aprovar e Salvar Simulado
           </Button>
         </div>
 
         {/* Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_10px_rgba(59,130,246,0.2)]">Revisão das Questões (IA)</h1>
+          <h1 className="text-3xl font-black text-heading uppercase tracking-widest drop-shadow-[0_0_10px_rgba(59,130,246,0.2)]">Revisão das Questões (IA)</h1>
           <p className="text-muted-foreground font-medium flex items-center gap-2 mt-2 text-sm uppercase tracking-wide">
             <AlertCircle className="w-4 h-4 text-amber-500" />
             A inteligência artificial gerou {questions.length} questões. Revise o material antes de salvar.
@@ -184,7 +184,7 @@ export default function ReviewSimulado() {
             <BookOpen className="w-5 h-5 text-blue-500" />
             <div>
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">Material Base</span>
-              <span className="text-sm font-bold text-white max-w-[250px] md:max-w-[350px] line-clamp-2 block" title={apostilaName || ""}>{formatApostilaTitle(apostilaName || "Carregando...")}</span>
+              <span className="text-sm font-bold text-heading max-w-[250px] md:max-w-[350px] line-clamp-2 block" title={apostilaName || ""}>{formatApostilaTitle(apostilaName || "Carregando...")}</span>
             </div>
           </div>
           
@@ -243,7 +243,7 @@ export default function ReviewSimulado() {
                   <CardHeader className="bg-background border-b border-border p-6">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
-                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shrink-0">
+                        <span className="bg-blue-600 text-heading px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shrink-0">
                           EDITANDO Q{qIndex + 1}
                         </span>
                         <span className="text-xs font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1">
@@ -257,7 +257,7 @@ export default function ReviewSimulado() {
                         <textarea
                           value={editBuffer?.enunciado || ""}
                           onChange={(e) => updateBufferField("enunciado", e.target.value)}
-                          className="w-full min-h-[100px] p-3 rounded-lg border border-border bg-background text-white focus:outline-none focus:border-blue-500 transition-all font-medium text-sm leading-relaxed"
+                          className="w-full min-h-[100px] p-3 rounded-lg border border-border bg-background text-heading focus:outline-none focus:border-blue-500 transition-all font-medium text-sm leading-relaxed"
                           placeholder="Edite o enunciado da questão..."
                         />
                       </div>
@@ -278,8 +278,8 @@ export default function ReviewSimulado() {
                               onClick={() => updateBufferField("correta", aIndex)}
                               className={`font-black text-sm shrink-0 w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
                                 isCorrect 
-                                  ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
-                                  : "bg-background border-border text-muted-foreground hover:border-slate-700 hover:text-slate-400"
+                                  ? "bg-emerald-500 text-heading border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
+                                  : "bg-background border-border text-muted-foreground hover:border-border hover:text-muted-foreground"
                               }`}
                               title={isCorrect ? "Alternativa Correta (Gabarito)" : "Marcar como Gabarito"}
                             >
@@ -291,7 +291,7 @@ export default function ReviewSimulado() {
                               type="text"
                               value={alt.replace(/^[A-E]\)\s*/i, '')}
                               onChange={(e) => updateBufferAlternative(aIndex, e.target.value)}
-                              className="flex-1 bg-background border-border text-white focus-visible:ring-blue-500 h-10 px-3"
+                              className="flex-1 bg-background border-border text-heading focus-visible:ring-blue-500 h-10 px-3"
                               placeholder={`Texto da alternativa ${["A", "B", "C", "D", "E"][aIndex]}`}
                             />
                             
@@ -322,7 +322,7 @@ export default function ReviewSimulado() {
                         size="sm"
                         variant="ghost"
                         onClick={cancelEdit}
-                        className="bg-background border border-border text-muted-foreground hover:text-white hover:bg-slate-900 px-4 h-10 font-bold"
+                        className="bg-background border border-border text-muted-foreground hover:text-heading hover:bg-card px-4 h-10 font-bold"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Cancelar
@@ -330,9 +330,9 @@ export default function ReviewSimulado() {
                       <Button
                         size="sm"
                         onClick={saveEdit}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 h-10 font-bold"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-heading px-4 h-10 font-bold"
                       >
-                        <Check className="w-4 h-4 mr-2 text-white" />
+                        <Check className="w-4 h-4 mr-2 text-heading" />
                         Confirmar
                       </Button>
                     </div>
@@ -342,7 +342,7 @@ export default function ReviewSimulado() {
             }
 
             return (
-              <Card key={qIndex} className="bg-card/40 border-border shadow-xl relative overflow-hidden group hover:border-slate-800/80 transition-all duration-300">
+              <Card key={qIndex} className="bg-card/40 border-border shadow-xl relative overflow-hidden group hover:border-border/80 transition-all duration-300">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-emerald-500"></div>
                 <CardHeader className="bg-background/60 border-b border-border p-6">
                   <div className="flex justify-between items-start gap-4">
@@ -431,9 +431,9 @@ export default function ReviewSimulado() {
             size="lg"
             onClick={handleSave} 
             disabled={loading || editingIndex !== null}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-14 px-8 uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-emerald-600 hover:bg-emerald-500 text-heading font-bold h-14 px-8 uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin text-white" /> : <Save className="w-5 h-5 mr-2 text-white" />}
+            {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin text-heading" /> : <Save className="w-5 h-5 mr-2 text-heading" />}
             Tudo Certo! Salvar Simulado
           </Button>
         </div>

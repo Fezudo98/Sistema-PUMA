@@ -37,11 +37,11 @@ export default function InstructorAuth() {
       <div className="w-full max-w-md z-10">
         <div className="flex flex-col items-center mb-8">
           <Image src="/logo.png" alt="Sistema PUMA" width={110} height={110} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] object-contain mb-2 hover:scale-105 transition-transform duration-300" />
-          <h1 className="text-3xl font-extrabold text-white mt-2">Sistema <span className="text-blue-500">PUMA</span></h1>
+          <h1 className="text-3xl font-extrabold text-heading mt-2">Sistema <span className="text-blue-500">PUMA</span></h1>
           <p className="text-muted-foreground font-medium">Acesso Restrito: Instrutores</p>
         </div>
         
-        <Card className="border-border bg-card/90 text-white shadow-2xl backdrop-blur-md">
+        <Card className="border-border bg-card/90 text-heading shadow-2xl backdrop-blur-md">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl font-bold">Acesso do Instrutor</CardTitle>
             <CardDescription className="text-muted-foreground">

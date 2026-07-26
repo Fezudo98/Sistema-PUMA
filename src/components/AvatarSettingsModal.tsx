@@ -49,7 +49,7 @@ export default function AvatarSettingsModal({ isOpen, onClose, onAvatarUpdate }:
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl text-slate-800">
+          <DialogTitle className="flex items-center gap-2 text-xl text-foreground">
             <ImagePlus className="w-5 h-5 text-blue-600" /> Alterar Ícone Padrão
           </DialogTitle>
           <DialogDescription>
@@ -66,7 +66,7 @@ export default function AvatarSettingsModal({ isOpen, onClose, onAvatarUpdate }:
                 className={`cursor-pointer rounded-xl border-2 overflow-hidden aspect-square flex items-center justify-center p-2 transition-all ${
                   selectedPredefined === avatarName 
                     ? "border-blue-600 bg-blue-50 shadow-md transform scale-105" 
-                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    : "border-border hover:border-border hover:bg-background"
                 }`}
               >
                 <img src={`/avatars/predefined/${avatarName}`} alt="Avatar" className="w-full h-full object-contain" />
@@ -77,7 +77,7 @@ export default function AvatarSettingsModal({ isOpen, onClose, onAvatarUpdate }:
           <Button 
             onClick={handleSavePredefined} 
             disabled={!selectedPredefined || loading} 
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-heading font-bold"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Salvar Avatar"}
           </Button>

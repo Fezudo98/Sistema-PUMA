@@ -42,7 +42,7 @@ export function JustificativaWithCitation({ text, apostilaFilePath }: Justificat
         disabled={!apostilaFilePath}
         className={`inline-flex items-center gap-1.5 px-2 py-0.5 mx-1 rounded-md text-xs font-bold uppercase tracking-wider transition-all
           ${apostilaFilePath 
-            ? "bg-blue-600 hover:bg-blue-500 text-white shadow-sm hover:shadow-[0_0_10px_rgba(37,99,235,0.4)]" 
+            ? "bg-blue-600 hover:bg-blue-500 text-heading shadow-sm hover:shadow-[0_0_10px_rgba(37,99,235,0.4)]" 
             : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         title={apostilaFilePath ? `Abrir PDF na página ${pageNumber}` : "Apostila PDF não encontrada no sistema"}

@@ -135,7 +135,7 @@ export default function NovoSimulado() {
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-3xl mx-auto">
         <Link href="/instructor">
-          <Button variant="ghost" className="mb-6 text-muted-foreground hover:text-white hover:bg-slate-900/50 font-bold">
+          <Button variant="ghost" className="mb-6 text-muted-foreground hover:text-heading hover:bg-card/50 font-bold">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar ao Painel
           </Button>
@@ -144,7 +144,7 @@ export default function NovoSimulado() {
         <Card className="bg-card/40 border-border shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-emerald-500"></div>
           <CardHeader className="border-b border-border bg-card/80 p-6">
-            <CardTitle className="text-2xl font-black text-white uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+            <CardTitle className="text-2xl font-black text-heading uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">
               <FileUp className="w-6 h-6 text-blue-500 animate-pulse" />
               Novo Simulado (IA)
             </CardTitle>
@@ -164,7 +164,7 @@ export default function NovoSimulado() {
                 </label>
                 
                 <Select value={selectedApostilaId} onValueChange={(v) => setSelectedApostilaId(v || "")}>
-                  <SelectTrigger className="h-12 text-base bg-background border-border text-white focus-visible:ring-blue-500">
+                  <SelectTrigger className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500">
                     <SelectValue placeholder="Selecione a origem do PDF" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border-border text-foreground">
@@ -172,7 +172,7 @@ export default function NovoSimulado() {
                       + Fazer Upload de Novo Arquivo PDF
                     </SelectItem>
                     {apostilas.map(apo => (
-                      <SelectItem key={apo.id} value={apo.id} className="focus:bg-slate-800 focus:text-white">
+                      <SelectItem key={apo.id} value={apo.id} className="focus:bg-muted focus:text-heading">
                         {formatApostilaTitle(apo.title)} (Salvo em {new Date(apo.createdAt).toLocaleDateString()})
                       </SelectItem>
                     ))}
@@ -186,7 +186,7 @@ export default function NovoSimulado() {
                   <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
                     Arquivo PDF
                   </label>
-                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-slate-900/40 hover:border-blue-500/50 transition-all bg-background/60 cursor-pointer">
+                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-card/40 hover:border-blue-500/50 transition-all bg-background/60 cursor-pointer">
                     <Input 
                       type="file" 
                       accept="application/pdf"
@@ -228,7 +228,7 @@ export default function NovoSimulado() {
                     max="100"
                     value={qtd}
                     onChange={(e) => setQtd(e.target.value)}
-                    className="h-12 text-base bg-background border-border text-white focus-visible:ring-blue-500 font-mono font-bold"
+                    className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500 font-mono font-bold"
                     placeholder="Ex: 5"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function NovoSimulado() {
                     max="600"
                     value={tempo}
                     onChange={(e) => setTempo(e.target.value)}
-                    className="h-12 text-base bg-background border-border text-white focus-visible:ring-blue-500 font-mono font-bold"
+                    className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500 font-mono font-bold"
                     placeholder="Ex: 60"
                   />
                 </div>
@@ -258,7 +258,7 @@ export default function NovoSimulado() {
                   placeholder="Ex: Tópico 1 ao 4, Tópico 2, ou Tópico 1, 3 e 5"
                   value={topics}
                   onChange={(e) => setTopics(e.target.value)}
-                  className="bg-background border-border text-white focus-visible:ring-blue-500 h-12 text-base shadow-sm placeholder:text-slate-700"
+                  className="bg-background border-border text-heading focus-visible:ring-blue-500 h-12 text-base shadow-sm placeholder:text-muted-foreground"
                 />
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
                   Especifique tópicos ou seções do material para filtrar a geração das questões (ex: <em className="text-blue-500">"Tópico 1 ao 4"</em>, <em className="text-blue-500">"Capítulo 3"</em>). Deixe em branco para considerar todo o PDF.
@@ -266,7 +266,7 @@ export default function NovoSimulado() {
               </div>
 
               <div className="bg-background/40 p-5 rounded-xl border border-border">
-                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-white transition-colors">
+                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-heading transition-colors">
                   <input 
                     type="checkbox" 
                     checked={isRaffleMode} 
@@ -282,7 +282,7 @@ export default function NovoSimulado() {
 
               {/* Modo Competição em Equipes */}
               <div className="bg-background/40 p-5 rounded-xl border border-border space-y-4">
-                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-white transition-colors">
+                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-heading transition-colors">
                   <input 
                     type="checkbox" 
                     checked={isTeamCompetition} 
@@ -300,7 +300,7 @@ export default function NovoSimulado() {
                     <div className="space-y-2">
                       <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Quantidade de Equipes</label>
                       <Select value={teamCount.toString()} onValueChange={(v) => handleTeamCountChange(parseInt(v || "2"))}>
-                        <SelectTrigger className="h-11 bg-background border-border text-white font-bold w-full md:w-48">
+                        <SelectTrigger className="h-11 bg-background border-border text-heading font-bold w-full md:w-48">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-background border-border text-foreground">
@@ -328,7 +328,7 @@ export default function NovoSimulado() {
                                 setTeamNames(copy);
                               }}
                               placeholder={`Ex: Equipe ${idx + 1}`}
-                              className="bg-background border-border text-white font-bold h-10"
+                              className="bg-background border-border text-heading font-bold h-10"
                             />
                           </div>
                         ))}
@@ -346,12 +346,12 @@ export default function NovoSimulado() {
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin text-white" />
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin text-heading" />
                       Analisando Material e Gerando Questões...
                     </>
                   ) : (
                     <>
-                      <Settings className="w-5 h-5 mr-2 text-white" />
+                      <Settings className="w-5 h-5 mr-2 text-heading" />
                       Processar e Gerar Questões
                     </>
                   )}

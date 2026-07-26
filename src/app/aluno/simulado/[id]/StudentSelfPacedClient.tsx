@@ -275,7 +275,7 @@ export default function StudentSelfPacedClient({
             </div>
             <div>
               <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest block">Treinamento de Combate</h2>
-              <h1 className="text-lg font-bold text-white truncate max-w-[calc(100vw-120px)] sm:max-w-md" title={simulado.apostilaName || ""}>{formatApostilaTitle(simulado.apostilaName)}</h1>
+              <h1 className="text-lg font-bold text-heading truncate max-w-[calc(100vw-120px)] sm:max-w-md" title={simulado.apostilaName || ""}>{formatApostilaTitle(simulado.apostilaName)}</h1>
             </div>
           </div>
 
@@ -288,14 +288,14 @@ export default function StudentSelfPacedClient({
                   router.push("/aluno/painel");
                 }
               }}
-              className="h-10 px-3.5 bg-card border border-border text-muted-foreground hover:text-white font-black text-[10px] uppercase tracking-wider cursor-pointer"
+              className="h-10 px-3.5 bg-card border border-border text-muted-foreground hover:text-heading font-black text-[10px] uppercase tracking-wider cursor-pointer"
             >
               Sair
             </Button>
             {/* Timer Progress */}
             <div className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-xl">
               <Clock className={`w-4 h-4 ${hasTimer && timeLeft <= 10 && !isAnswered ? "text-red-500 animate-pulse" : "text-blue-400"}`} />
-              <span className={`font-mono ${hasTimer ? "text-base" : "text-xs"} font-black ${hasTimer && timeLeft <= 10 && !isAnswered ? "text-red-500" : "text-white"}`}>
+              <span className={`font-mono ${hasTimer ? "text-base" : "text-xs"} font-black ${hasTimer && timeLeft <= 10 && !isAnswered ? "text-red-500" : "text-heading"}`}>
                 {hasTimer ? `${timeLeft}s` : "ILIMITADO"}
               </span>
             </div>
@@ -330,7 +330,7 @@ export default function StudentSelfPacedClient({
                     <HelpCircle className="w-3.5 h-3.5" />
                     Enunciado da Questão
                   </div>
-                  <p className="text-base md:text-lg font-bold leading-relaxed text-white">
+                  <p className="text-base md:text-lg font-bold leading-relaxed text-heading">
                     {currentQuestion.enunciado}
                   </p>
                 </div>
@@ -339,7 +339,7 @@ export default function StudentSelfPacedClient({
                 <div className="space-y-3">
                   {alternativasList.map((alt, idx) => {
                     const isSelected = selectedAlt === idx;
-                    let altClass = "bg-background/40 border-border text-muted-foreground hover:bg-slate-900/40 hover:text-white";
+                    let altClass = "bg-background/40 border-border text-muted-foreground hover:bg-card/40 hover:text-heading";
                     
                     if (isAnswered) {
                       if (idx === correctAltIndex) {
@@ -350,7 +350,7 @@ export default function StudentSelfPacedClient({
                         altClass = "bg-red-950/30 border-red-500/50 text-red-300 shadow-[inset_0_0_15px_rgba(239,68,68,0.05)]";
                       } else {
                         // Gray out other options
-                        altClass = "bg-background/10 border-slate-900/50 text-muted-foreground cursor-not-allowed";
+                        altClass = "bg-background/10 border-border/50 text-muted-foreground cursor-not-allowed";
                       }
                     } else if (isSelected) {
                       altClass = "bg-blue-950/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]";
@@ -386,7 +386,7 @@ export default function StudentSelfPacedClient({
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-heading" />
                         Validando resposta...
                       </>
                     ) : (
@@ -406,7 +406,7 @@ export default function StudentSelfPacedClient({
                 <div className={`absolute top-0 left-0 w-full h-1 ${isCorrect ? "bg-emerald-500" : "bg-red-500"}`}></div>
                 
                 <CardHeader>
-                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                  <CardTitle className="text-lg text-heading flex items-center gap-2">
                     {isCorrect ? (
                       <>
                         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -441,13 +441,13 @@ export default function StudentSelfPacedClient({
                     disabled={finishing}
                     className={`w-full h-12 font-bold uppercase tracking-wider text-xs shadow-lg cursor-pointer ${
                       isCorrect 
-                        ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
-                        : "bg-blue-600 hover:bg-blue-500 text-white"
+                        ? "bg-emerald-600 hover:bg-emerald-500 text-heading" 
+                        : "bg-blue-600 hover:bg-blue-500 text-heading"
                     }`}
                   >
                     {finishing ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-white" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-heading" />
                         Finalizando Simulado...
                       </>
                     ) : (
@@ -463,7 +463,7 @@ export default function StudentSelfPacedClient({
               <Card className="bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm h-full flex flex-col justify-center">
                 <div className="absolute top-0 left-0 w-full h-1 bg-muted"></div>
                 <CardContent className="p-6 text-center space-y-4">
-                  <HelpCircle className="w-12 h-12 text-slate-700 mx-auto animate-pulse" />
+                  <HelpCircle className="w-12 h-12 text-muted-foreground mx-auto animate-pulse" />
                   <div>
                     <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Aguardando Resposta</h3>
                     <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto leading-relaxed">

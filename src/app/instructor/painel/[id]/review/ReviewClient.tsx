@@ -35,20 +35,20 @@ export default function ReviewClient({
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12">
+    <div className="min-h-screen bg-background p-6 md:p-12">
       <div className="w-full">
         <header className="flex justify-between items-center mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <Link 
                 href="/instructor"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary hover:bg-accent text-foreground font-bold text-sm transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
                 title="Voltar para o Painel do Instrutor"
               >
-                <ArrowLeft className="w-5 h-5 text-slate-700" />
+                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
                 <span>Voltar ao Painel</span>
               </Link>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight">Relatório do Simulado</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-foreground uppercase tracking-tight">Relatório do Simulado</h1>
             </div>
             <p className="text-muted-foreground font-medium">Sala <strong className="text-blue-600">{simulado.codigoSala}</strong> • Finalizado</p>
           </div>
@@ -63,7 +63,7 @@ export default function ReviewClient({
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card 
-            className="bg-white border-slate-200 shadow-sm cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group"
+            className="bg-white border-border shadow-sm cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group"
             onClick={() => setShowParticipants(true)}
           >
             <CardHeader className="pb-2">
@@ -73,12 +73,12 @@ export default function ReviewClient({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-black text-slate-800">{ranking.length}</div>
+              <div className="text-3xl font-black text-foreground">{ranking.length}</div>
             </CardContent>
           </Card>
           
           <Card 
-            className="bg-white border-slate-200 shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group"
+            className="bg-white border-border shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group"
             onClick={() => setShowGlobalChart(true)}
           >
             <CardHeader className="pb-2">
@@ -88,12 +88,12 @@ export default function ReviewClient({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-black text-slate-800">{globalAccuracy}%</div>
+              <div className="text-3xl font-black text-foreground">{globalAccuracy}%</div>
               <Progress value={globalAccuracy} className="h-1.5 mt-3 bg-muted [&>div]:bg-emerald-500" />
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm md:col-span-2">
+          <Card className="bg-white border-border shadow-sm md:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-yellow-500" /> Pódio (Top 3)
@@ -102,18 +102,18 @@ export default function ReviewClient({
             <CardContent>
               <div className="flex items-center gap-6">
                 {ranking.slice(0, 3).map((aluno, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center p-3 rounded-lg bg-slate-50 border border-slate-100 relative">
+                  <div key={idx} className="flex-1 flex flex-col items-center p-3 rounded-lg bg-background border border-border relative">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mb-2 ${
                       idx === 0 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                      idx === 1 ? 'bg-slate-200 text-slate-700 border border-slate-300' :
+                      idx === 1 ? 'bg-secondary text-muted-foreground border border-border' :
                       'bg-orange-100 text-orange-800 border border-orange-200'
                     }`}>
                       {idx + 1}º
                     </div>
                     {aluno.avatarUrl ? (
-                      <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover absolute top-2 right-2 border border-slate-200" />
+                      <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover absolute top-2 right-2 border border-border" />
                     ) : null}
-                    <span className="font-bold text-slate-800 text-sm text-center truncate w-full">{aluno.name}</span>
+                    <span className="font-bold text-foreground text-sm text-center truncate w-full">{aluno.name}</span>
                     <span className="text-xs text-muted-foreground font-mono mt-1">{aluno.score} pts</span>
                   </div>
                 ))}
@@ -124,7 +124,7 @@ export default function ReviewClient({
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
             <BarChart2 className="w-6 h-6 text-blue-600" /> Análise por Questão
           </h2>
           
@@ -148,18 +148,18 @@ export default function ReviewClient({
                             </span>
                           )}
                         </div>
-                        <p className="text-slate-950 text-xl md:text-3xl lg:text-4xl font-semibold leading-relaxed mb-8">{q.enunciado}</p>
+                        <p className="text-foreground text-xl md:text-3xl lg:text-4xl font-semibold leading-relaxed mb-8">{q.enunciado}</p>
                         
-                        <div className="bg-slate-50 p-6 md:p-8 rounded-lg border border-slate-200 mt-6">
-                          <p className="text-lg md:text-2xl font-black text-slate-800 mb-2">Gabarito e Justificativa:</p>
+                        <div className="bg-background p-6 md:p-8 rounded-lg border border-border mt-6">
+                          <p className="text-lg md:text-2xl font-black text-foreground mb-2">Gabarito e Justificativa:</p>
                           <p className="text-lg md:text-2xl text-emerald-700 font-extrabold mb-3">Opção Correta: {String.fromCharCode(65 + q.correta)}</p>
-                          <p className="text-base md:text-xl text-slate-800 italic leading-relaxed font-medium">{q.justificativa}</p>
+                          <p className="text-base md:text-xl text-foreground italic leading-relaxed font-medium">{q.justificativa}</p>
                         </div>
                       </div>
                       
-                      <div className="w-full lg:w-80 shrink-0 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-slate-200 pt-6 lg:pt-0 lg:pl-8">
+                      <div className="w-full lg:w-80 shrink-0 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-border pt-6 lg:pt-0 lg:pl-8">
                         <div className="text-center mb-6">
-                          <span className="block text-5xl md:text-7xl font-black text-slate-800 mb-1">{qAccuracy}%</span>
+                          <span className="block text-5xl md:text-7xl font-black text-foreground mb-1">{qAccuracy}%</span>
                           <span className="text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-widest">Taxa de Acerto</span>
                         </div>
                         <Progress value={qAccuracy} className={`h-3 mb-6 ${isHard ? '[&>div]:bg-red-500' : '[&>div]:bg-blue-500'}`} />
@@ -179,14 +179,14 @@ export default function ReviewClient({
                     </div>
 
                     {isExpanded && (
-                      <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <h4 className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Desempenho Individual</h4>
+                      <div className="mt-6 pt-6 border-t border-border animate-in fade-in slide-in-from-top-4 duration-300">
+                        <h4 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">Desempenho Individual</h4>
                         {q.answers.length === 0 ? (
                           <p className="text-muted-foreground text-sm">Ninguém respondeu esta questão.</p>
                         ) : (
                           <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
-                              <thead className="bg-slate-50 text-muted-foreground border-b border-slate-200">
+                              <thead className="bg-background text-muted-foreground border-b border-border">
                                 <tr>
                                   <th className="px-4 py-2 font-medium">Aluno</th>
                                   <th className="px-4 py-2 font-medium">Alternativa Escolhida</th>
@@ -194,18 +194,18 @@ export default function ReviewClient({
                                   <th className="px-4 py-2 font-medium">Pontos Gerados</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-slate-100">
+                              <tbody className="divide-y divide-border">
                                 {q.answers.map((ans: any, ansIdx: number) => (
-                                  <tr key={ansIdx} className="hover:bg-slate-50">
+                                  <tr key={ansIdx} className="hover:bg-background">
                                     <td className="px-4 py-3 flex items-center gap-3">
                                       {ans.student.avatarUrl ? (
-                                        <img src={ans.student.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
+                                        <img src={ans.student.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-border" />
                                       ) : (
-                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                                           {ans.student.name.substring(0,2).toUpperCase()}
                                         </div>
                                       )}
-                                      <span className="font-medium text-slate-800">{ans.student.name}</span>
+                                      <span className="font-medium text-foreground">{ans.student.name}</span>
                                     </td>
                                     <td className="px-4 py-3">
                                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold ${
@@ -239,7 +239,7 @@ export default function ReviewClient({
       <Dialog open={showParticipants} onOpenChange={setShowParticipants}>
         <DialogContent className="sm:max-w-xl bg-white max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl text-slate-800">
+            <DialogTitle className="flex items-center gap-2 text-xl text-foreground">
               <Users className="w-5 h-5 text-blue-600" /> Ranking Completo de Participantes
             </DialogTitle>
             <DialogDescription>
@@ -249,7 +249,7 @@ export default function ReviewClient({
           <div className="mt-4">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-muted-foreground border-b border-slate-200">
+                <thead className="bg-background text-muted-foreground border-b border-border">
                   <tr>
                     <th className="px-4 py-2 font-medium">Posição</th>
                     <th className="px-4 py-2 font-medium">Aluno</th>
@@ -260,21 +260,21 @@ export default function ReviewClient({
                     <th className="px-4 py-2 font-medium text-right">Pontuação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-border">
                   {ranking.map((aluno, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
+                    <tr key={idx} className="hover:bg-background">
                       <td className="px-4 py-3 font-bold text-muted-foreground">
                         {idx + 1}º
                       </td>
                       <td className="px-4 py-3 flex items-center gap-3">
                         {aluno.avatarUrl ? (
-                          <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
+                          <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-border" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                          <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                             {aluno.name.substring(0,2).toUpperCase()}
                           </div>
                         )}
-                        <span className="font-bold text-slate-800">{aluno.name}</span>
+                        <span className="font-bold text-foreground">{aluno.name}</span>
                       </td>
                       <td className="px-4 py-3 text-center text-muted-foreground">{aluno.answers}</td>
                       <td className="px-4 py-3 text-center text-emerald-600 font-bold">{aluno.corrects || 0}</td>
@@ -299,7 +299,7 @@ export default function ReviewClient({
       <Dialog open={showGlobalChart} onOpenChange={setShowGlobalChart}>
         <DialogContent className="sm:max-w-2xl bg-white">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl text-slate-800">
+            <DialogTitle className="flex items-center gap-2 text-xl text-foreground">
               <BarChart2 className="w-5 h-5 text-emerald-600" /> Desempenho da Sala por Questão
             </DialogTitle>
             <DialogDescription>

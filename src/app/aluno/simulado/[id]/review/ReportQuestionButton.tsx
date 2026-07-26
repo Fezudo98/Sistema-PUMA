@@ -26,7 +26,7 @@ export default function ReportQuestionButton({
   const [error, setError] = useState("");
 
   if (hasAppealLocal) {
-    let badgeColor = "bg-slate-500 text-foreground";
+    let badgeColor = "bg-muted-foreground text-foreground";
     let statusText = "Em Análise";
 
     if (appealStatus === "ANNULLED") {
@@ -124,7 +124,7 @@ export default function ReportQuestionButton({
           size="sm" 
           onClick={() => setIsOpen(false)}
           disabled={loading}
-          className="text-muted-foreground hover:text-slate-300"
+          className="text-muted-foreground hover:text-muted-foreground"
         >
           Cancelar
         </Button>
@@ -132,7 +132,7 @@ export default function ReportQuestionButton({
           size="sm"
           onClick={handleSubmit}
           disabled={loading}
-          className="bg-red-600 hover:bg-red-500 text-white"
+          className="bg-red-600 hover:bg-red-500 text-heading"
         >
           {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
           Enviar Recurso

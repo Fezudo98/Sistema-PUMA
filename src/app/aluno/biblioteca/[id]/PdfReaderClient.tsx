@@ -30,7 +30,7 @@ const HighlightContentEditor = ({ props, addAnnotation }: { props: RenderHighlig
   const [message, setMessage] = useState("");
 
   return (
-    <div className="bg-white border border-gray-300 rounded-md p-3 shadow-lg flex flex-col gap-2 w-64 absolute z-50 text-slate-800"
+    <div className="bg-white border border-gray-300 rounded-md p-3 shadow-lg flex flex-col gap-2 w-64 absolute z-50 text-foreground"
       style={{
         left: `${props.selectionRegion.left}%`,
         top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
@@ -49,7 +49,7 @@ const HighlightContentEditor = ({ props, addAnnotation }: { props: RenderHighlig
         </Button>
         <Button 
           size="sm" 
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-blue-600 hover:bg-blue-700 text-heading"
           onClick={() => {
             addAnnotation(message, props.highlightAreas);
             props.cancel();
@@ -136,7 +136,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
       <Button 
         size="sm" 
         onClick={props.toggle} 
-        className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+        className="bg-blue-600 hover:bg-blue-700 text-heading flex items-center gap-2"
       >
         <MessageIcon />
         Adicionar Anotação
@@ -202,11 +202,11 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
       <header className="bg-background border-b border-border p-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/aluno/biblioteca">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-heading">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-bold text-white max-w-xl truncate">
+          <h1 className="text-xl font-bold text-heading max-w-xl truncate">
             {apostila.title}
           </h1>
         </div>
@@ -215,7 +215,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
       <main className="flex-1 overflow-hidden relative" onClick={() => setActiveTooltip(null)}>
         {activeTooltip && (
           <div 
-            className="fixed bg-card text-white p-4 rounded-xl shadow-2xl border border-border z-[99999] w-72 transform -translate-x-1/2 -translate-y-full flex flex-col gap-3 cursor-default"
+            className="fixed bg-card text-heading p-4 rounded-xl shadow-2xl border border-border z-[99999] w-72 transform -translate-x-1/2 -translate-y-full flex flex-col gap-3 cursor-default"
             style={{ left: activeTooltip.x, top: activeTooltip.y - 12 }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -236,14 +236,14 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
               </button>
               <button 
                 onClick={() => setActiveTooltip(null)}
-                className="text-muted-foreground hover:text-white text-xs font-semibold px-2 py-1 -mr-2 rounded hover:bg-slate-800 transition-colors"
+                className="text-muted-foreground hover:text-heading text-xs font-semibold px-2 py-1 -mr-2 rounded hover:bg-muted transition-colors"
               >
                 Fechar
               </button>
             </div>
             
             {/* Seta do Tooltip */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-slate-900"></div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-card"></div>
           </div>
         )}
         

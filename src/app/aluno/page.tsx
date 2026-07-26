@@ -52,7 +52,7 @@ export default function StudentAuth() {
       <div className="w-full max-w-md z-10 space-y-4 my-6">
         <div className="flex flex-col items-center mb-4">
           <Image src="/logo.png" alt="Sistema PUMA" width={100} height={100} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] object-contain mb-2 hover:scale-105 transition-transform duration-300" />
-          <h1 className="text-3xl font-extrabold text-white mt-1">Sistema <span className="text-blue-500">PUMA</span></h1>
+          <h1 className="text-3xl font-extrabold text-heading mt-1">Sistema <span className="text-blue-500">PUMA</span></h1>
           <p className="text-muted-foreground font-medium text-sm">32º Pelotão • CFSD PMCE</p>
         </div>
         
@@ -66,7 +66,7 @@ export default function StudentAuth() {
           </Button>
         </Link>
 
-        <Card className="border-border bg-card/90 text-white shadow-2xl backdrop-blur-md">
+        <Card className="border-border bg-card/90 text-heading shadow-2xl backdrop-blur-md">
           <CardHeader className="text-center pb-2 pt-4">
             <CardTitle className="text-xl font-bold">Acesso do Aluno</CardTitle>
             <CardDescription className="text-muted-foreground text-xs">
@@ -77,8 +77,8 @@ export default function StudentAuth() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted text-muted-foreground">
-                <TabsTrigger value="login" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Entrar</TabsTrigger>
-                <TabsTrigger value="register" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Cadastrar</TabsTrigger>
+                <TabsTrigger value="login" className="data-[state=active]:bg-blue-600 data-[state=active]:text-heading">Entrar</TabsTrigger>
+                <TabsTrigger value="register" className="data-[state=active]:bg-blue-600 data-[state=active]:text-heading">Cadastrar</TabsTrigger>
               </TabsList>
               
               {error && <div className="mb-4 p-3 bg-red-900/50 border border-red-500 text-red-200 text-sm rounded-md text-center">{error}</div>}
@@ -110,7 +110,7 @@ export default function StudentAuth() {
                       name="numero" 
                       required 
                       defaultValue=""
-                      className="flex h-12 w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-12 w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-sm text-heading placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="" disabled>Selecione seu número</option>
                       {Array.from({ length: 34 }, (_, i) => i + 1).map(num => (

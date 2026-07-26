@@ -6,7 +6,7 @@ import { Shield } from "lucide-react";
 export default function Home() {
   return (
     <div 
-      className="min-h-screen flex text-white relative overflow-hidden bg-background bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex text-heading relative overflow-hidden bg-background bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/arte_fundo.png')" }}
     >
       {/* Left Side - Empty to let the Jaguar shine */}
@@ -56,7 +56,7 @@ export default function Home() {
           </Link>
           
           <Link href="/auth/login" className="w-full">
-            <Button size="lg" variant="outline" className="w-full h-15 text-base font-bold border-border bg-transparent text-foreground hover:bg-slate-800 hover:text-white transition-all">
+            <Button size="lg" variant="outline" className="w-full h-15 text-base font-bold border-border bg-transparent text-foreground hover:bg-muted hover:text-heading transition-all">
               Acessar como Instrutor
             </Button>
           </Link>

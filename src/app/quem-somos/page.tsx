@@ -69,7 +69,7 @@ const HERALDICA = [
     title: "A Boina Preta com Distintivo",
     category: "Identidade & Comando",
     icon: Shield,
-    color: "from-slate-700 to-slate-900",
+    color: "from-muted to-card",
     description: "A boina humaniza o felino e o integra à nobre identidade militar. Ela representa o fardamento sagrado, o orgulho inabalável da tropa e a disciplina de ferro forjada no fogo do Curso de Formação de Soldados (CFSD). O distintivo ostentando a estrela vermelha é o símbolo clássico de autoridade, hierarquia e comando tático."
   },
   {
@@ -132,7 +132,7 @@ const HERALDICA = [
 
 export default function QuemSomosPage() {
   return (
-    <div className="min-h-screen bg-background text-white relative pb-16 selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-background text-heading relative pb-16 selection:bg-amber-500 selection:text-foreground">
       {/* Background radial visual */}
       <div className="fixed inset-0 opacity-15 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-amber-500/15 via-yellow-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -152,7 +152,7 @@ export default function QuemSomosPage() {
 
           <Link href="/aluno">
             <Button 
-              className="bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+              className="bg-blue-600 hover:bg-blue-500 text-heading font-bold transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.4)]"
             >
               <span>Área do Aluno</span>
               <LogIn className="w-4 h-4" />
@@ -185,7 +185,7 @@ export default function QuemSomosPage() {
                 <span>CFSD PMCE • 14º Batalhão • Maracanaú</span>
               </div>
               
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white drop-shadow-lg leading-none">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-heading drop-shadow-lg leading-none">
                 32º PELOTÃO <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500">PUMA</span>
               </h1>
 
@@ -196,15 +196,15 @@ export default function QuemSomosPage() {
               <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
                 <div className="px-4 py-2 bg-muted/90 border border-border/80 rounded-xl text-xs sm:text-sm font-bold text-muted-foreground flex items-center gap-2 shadow">
                   <UserCheck className="w-4 h-4 text-blue-400" />
-                  <span>Coord.: <strong className="text-white">TC Everton</strong></span>
+                  <span>Coord.: <strong className="text-heading">TC Everton</strong></span>
                 </div>
                 <div className="px-4 py-2 bg-muted/90 border border-border/80 rounded-xl text-xs sm:text-sm font-bold text-muted-foreground flex items-center gap-2 shadow">
                   <Award className="w-4 h-4 text-amber-400" />
-                  <span>Monitor: <strong className="text-white">CB Gomes</strong></span>
+                  <span>Monitor: <strong className="text-heading">CB Gomes</strong></span>
                 </div>
                 <div className="px-4 py-2 bg-muted/90 border border-border/80 rounded-xl text-xs sm:text-sm font-bold text-muted-foreground flex items-center gap-2 shadow">
                   <Users className="w-4 h-4 text-emerald-400" />
-                  <span>Efetivo: <strong className="text-white">32 Combatentes</strong></span>
+                  <span>Efetivo: <strong className="text-heading">32 Combatentes</strong></span>
                 </div>
               </div>
             </div>
@@ -218,25 +218,25 @@ export default function QuemSomosPage() {
             <TabsList className="flex flex-wrap md:grid md:grid-cols-4 h-auto w-full bg-card/90 border border-border p-1.5 rounded-xl gap-2 shadow-lg">
               <TabsTrigger 
                 value="heraldica" 
-                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-heading hover:bg-muted/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-foreground font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 🛡️ Heráldica
               </TabsTrigger>
               <TabsTrigger 
                 value="efetivo" 
-                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-heading hover:bg-muted/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-foreground font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 👥 Efetivo (QRAs)
               </TabsTrigger>
               <TabsTrigger 
                 value="brado" 
-                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-heading hover:bg-muted/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-foreground font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 🔥 Brado
               </TabsTrigger>
               <TabsTrigger 
                 value="lideranca" 
-                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-heading hover:bg-muted/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-foreground font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 ⭐ Origem
               </TabsTrigger>
@@ -272,10 +272,10 @@ export default function QuemSomosPage() {
                             {item.category}
                           </span>
                           <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-md shrink-0`}>
-                            <Icon className="w-5 h-5 text-white" />
+                            <Icon className="w-5 h-5 text-heading" />
                           </div>
                         </div>
-                        <h4 className="text-lg font-bold text-white tracking-tight mb-3 flex items-center gap-2">
+                        <h4 className="text-lg font-bold text-heading tracking-tight mb-3 flex items-center gap-2">
                           {item.title}
                         </h4>
                         <p className="text-sm text-muted-foreground leading-relaxed text-justify">
@@ -307,7 +307,7 @@ export default function QuemSomosPage() {
                 {QRAS.map((aluno) => (
                   <div 
                     key={aluno.num}
-                    className="group bg-card/90 hover:bg-slate-800 border border-border hover:border-amber-500/40 rounded-xl p-4 text-center transition-all duration-300 hover:scale-[1.03] shadow flex flex-col items-center justify-center gap-1.5 relative overflow-hidden"
+                    className="group bg-card/90 hover:bg-muted border border-border hover:border-amber-500/40 rounded-xl p-4 text-center transition-all duration-300 hover:scale-[1.03] shadow flex flex-col items-center justify-center gap-1.5 relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500/10 rounded-bl-full flex items-start justify-end p-1.5 text-[10px] font-black text-amber-500 opacity-60 group-hover:opacity-100 transition">
                       PM
@@ -315,7 +315,7 @@ export default function QuemSomosPage() {
                     <span className="text-xs font-black tracking-widest text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
                       #{String(aluno.num).padStart(2, '0')}
                     </span>
-                    <span className="text-base sm:text-lg font-bold text-white group-hover:text-amber-300 transition tracking-tight">
+                    <span className="text-base sm:text-lg font-bold text-heading group-hover:text-amber-300 transition tracking-tight">
                       {aluno.qra}
                     </span>
                     <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">
@@ -339,7 +339,7 @@ export default function QuemSomosPage() {
                       <span className="text-xs font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded">
                         Coordenador de Pelotão
                       </span>
-                      <h4 className="text-2xl font-black text-white mt-1">
+                      <h4 className="text-2xl font-black text-heading mt-1">
                         TC Everton
                       </h4>
                     </div>
@@ -359,7 +359,7 @@ export default function QuemSomosPage() {
                       <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">
                         Monitor de Pelotão
                       </span>
-                      <h4 className="text-2xl font-black text-white mt-1">
+                      <h4 className="text-2xl font-black text-heading mt-1">
                         CB Gomes
                       </h4>
                     </div>
@@ -377,7 +377,7 @@ export default function QuemSomosPage() {
                     <MapPin className="w-4 h-4 text-amber-400" />
                     <span>Sede de Formação</span>
                   </div>
-                  <h4 className="text-xl sm:text-2xl font-black text-white uppercase">
+                  <h4 className="text-xl sm:text-2xl font-black text-heading uppercase">
                     14º Batalhão da PMCE • Maracanaú / CE
                   </h4>
                   <p className="text-sm text-muted-foreground max-w-xl">
@@ -406,7 +406,7 @@ export default function QuemSomosPage() {
                 
                 <Flame className="w-12 h-12 text-amber-500 mb-6 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
                 
-                <h3 className="text-2xl md:text-3xl font-black uppercase text-white tracking-widest mb-8 border-b-2 border-amber-500/40 pb-4 inline-block">
+                <h3 className="text-2xl md:text-3xl font-black uppercase text-heading tracking-widest mb-8 border-b-2 border-amber-500/40 pb-4 inline-block">
                   Brado do 32º Pelotão
                 </h3>
 
@@ -441,7 +441,7 @@ export default function QuemSomosPage() {
           <Link href="/aluno">
             <Button 
               size="lg"
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-6 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-heading font-bold px-8 py-6 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(37,99,235,0.4)]"
             >
               <span className="text-base">Acessar Sistema como Aluno</span>
               <LogIn className="w-5 h-5" />
