@@ -1,5 +1,11 @@
 import React from 'react';
 
+export const RecrutaDotIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <circle cx="12" cy="12" r="4" />
+  </svg>
+);
+
 export const RecrutaIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
     <path d="M12 4L3 11L5 14L12 8.5L19 14L21 11L12 4Z" />

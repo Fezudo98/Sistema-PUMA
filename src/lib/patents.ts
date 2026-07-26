@@ -1,4 +1,5 @@
 import {
+  RecrutaDotIcon,
   RecrutaIcon,
   SoldadoIcon,
   CaboIcon,
@@ -26,7 +27,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "recruta",
     name: "Recruta",
-    icon: RecrutaIcon,
+    icon: RecrutaDotIcon, // Recruta gets a basic dot
     color: "text-slate-400",
     bg: "bg-slate-900/40",
     border: "border-slate-700",
@@ -37,7 +38,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "soldado",
     name: "Soldado Combatente",
-    icon: SoldadoIcon,
+    icon: RecrutaIcon, // 1 Divisa
     color: "text-blue-400",
     bg: "bg-blue-900/20",
     border: "border-blue-500/30",
@@ -49,7 +50,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "cabo",
     name: "Cabo Especialista",
-    icon: CaboIcon,
+    icon: SoldadoIcon, // 2 Divisas
     color: "text-emerald-400",
     bg: "bg-emerald-900/20",
     border: "border-emerald-500/30",
@@ -61,7 +62,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "sargento",
     name: "Sargento Tático",
-    icon: SargentoIcon,
+    icon: CaboIcon, // 3 Divisas
     color: "text-yellow-400",
     bg: "bg-yellow-900/20",
     border: "border-yellow-500/30",
@@ -74,7 +75,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "subtenente",
     name: "Subtenente Veterano",
-    icon: SubtenenteIcon,
+    icon: SargentoIcon, // 3 Divisas + 1 Arco
     color: "text-orange-400",
     bg: "bg-orange-900/20",
     border: "border-orange-500/30",
