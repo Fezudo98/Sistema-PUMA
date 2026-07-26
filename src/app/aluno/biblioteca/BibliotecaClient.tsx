@@ -21,14 +21,14 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white relative">
+    <div className="min-h-screen bg-background text-white relative">
       <div className="fixed inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
       
-      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/aluno/painel">
-              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white hover:bg-slate-800">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
@@ -41,12 +41,12 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
           </div>
           
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Buscar apostila..." 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-9 bg-slate-900 border-slate-700 text-white focus:border-blue-500 rounded-xl"
+              className="pl-9 bg-card border-border text-white focus:border-blue-500 rounded-xl"
             />
           </div>
         </div>
@@ -55,11 +55,11 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
       <main className="max-w-7xl mx-auto p-4 md:p-8 relative z-10">
         <div className="mb-8">
           <h2 className="text-3xl font-black uppercase tracking-tight text-white">Acervo de Estudo</h2>
-          <p className="text-slate-400 mt-2">Acesse suas apostilas, marque textos e crie anotações individuais para reforçar seu aprendizado.</p>
+          <p className="text-muted-foreground mt-2">Acesse suas apostilas, marque textos e crie anotações individuais para reforçar seu aprendizado.</p>
         </div>
 
         {filteredApostilas.length === 0 ? (
-          <div className="text-center py-20 text-slate-500">
+          <div className="text-center py-20 text-muted-foreground">
             <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-20" />
             <p>Nenhuma apostila encontrada.</p>
           </div>
@@ -70,7 +70,7 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
               
               return (
               <Link href={`/aluno/biblioteca/${apostila.id}`} key={apostila.id}>
-                <div className="bg-slate-900/50 border border-slate-800 hover:border-blue-500/50 rounded-2xl p-6 transition-all hover:bg-slate-900 shadow-lg group h-full flex flex-col relative">
+                <div className="bg-card/50 border border-border hover:border-blue-500/50 rounded-2xl p-6 transition-all hover:bg-slate-900 shadow-lg group h-full flex flex-col relative">
                   {isNew && (
                     <div className="absolute top-4 right-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-lg animate-pulse">
                       Novo
@@ -82,7 +82,7 @@ export default function BibliotecaClient({ user, apostilas }: { user: any; apost
                   <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight">
                     {apostila.title}
                   </h3>
-                  <div className="mt-auto pt-4 flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <div className="mt-auto pt-4 flex items-center justify-between text-xs text-muted-foreground font-medium">
                     <span>Adicionada em {new Date(apostila.createdAt).toLocaleDateString()}</span>
                     {apostila.annotationsCount > 0 && (
                       <span className="flex items-center gap-1 text-amber-400 bg-amber-400/10 px-2 py-1 rounded-md">

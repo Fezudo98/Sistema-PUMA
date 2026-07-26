@@ -106,8 +106,8 @@ export default function SettingsClient({
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Maintenance Mode Card */}
-      <Card className={`border-slate-800 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors ${
-        maintenanceEnabled ? "bg-amber-950/20 border-amber-500/40" : "bg-slate-900/40"
+      <Card className={`border-border backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors ${
+        maintenanceEnabled ? "bg-amber-950/20 border-amber-500/40" : "bg-card/40"
       }`}>
         <CardHeader className="border-b border-slate-850 pb-4">
           <div className="flex items-center gap-3">
@@ -116,7 +116,7 @@ export default function SettingsClient({
               <CardTitle className="text-xl font-black uppercase tracking-wider text-white">
                 Controle do Servidor em Manutenção
               </CardTitle>
-              <CardDescription className="text-slate-400 mt-1 text-xs font-bold uppercase tracking-wider">
+              <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
                 Bloquear ou liberar acesso temporário para alunos
               </CardDescription>
             </div>
@@ -125,7 +125,7 @@ export default function SettingsClient({
         
         <CardContent className="pt-6 space-y-6">
           <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-4 border rounded-xl ${
-            maintenanceEnabled ? "bg-amber-950/30 border-amber-500/30" : "bg-slate-950/60 border-slate-850"
+            maintenanceEnabled ? "bg-amber-950/30 border-amber-500/30" : "bg-background/60 border-slate-850"
           }`}>
             <div className="space-y-1 max-w-lg">
               <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function SettingsClient({
                   {maintenanceEnabled ? "EM MANUTENÇÃO (BLOQUEADO)" : "ACESSO NORMAL (LIBERADO)"}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                 Quando ativado, qualquer aluno que tentar acessar páginas de acesso ou simulados receberá uma tela de manutenção. Quando desativado, os alunos recuperam o acesso instantaneamente.
               </p>
             </div>
@@ -183,7 +183,7 @@ export default function SettingsClient({
       </Card>
 
       {/* Control AI Card */}
-      <Card className="border-slate-800 bg-slate-900/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+      <Card className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
         <CardHeader className="border-b border-slate-850 pb-4">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-blue-500" />
@@ -191,7 +191,7 @@ export default function SettingsClient({
               <CardTitle className="text-xl font-black uppercase tracking-wider text-white">
                 Controles do Mentor de IA
               </CardTitle>
-              <CardDescription className="text-slate-400 mt-1 text-xs font-bold uppercase tracking-wider">
+              <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
                 Configurações globais de inteligência artificial
               </CardDescription>
             </div>
@@ -199,7 +199,7 @@ export default function SettingsClient({
         </CardHeader>
         
         <CardContent className="pt-6 space-y-6">
-          <div className="flex items-center justify-between gap-6 p-4 bg-slate-950/60 border border-slate-850 rounded-xl">
+          <div className="flex items-center justify-between gap-6 p-4 bg-background/60 border border-slate-850 rounded-xl">
             <div className="space-y-1 max-w-lg">
               <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                 Chat Geral com IA
@@ -211,7 +211,7 @@ export default function SettingsClient({
                   {chatEnabled ? "Ativado" : "Desativado"}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                 Quando desativado, impede todos os alunos de enviar mensagens ou fazer perguntas ao Mentor de IA das apostilas. Útil para moderar o consumo de tokens de API.
               </p>
             </div>
@@ -256,7 +256,7 @@ export default function SettingsClient({
       </Card>
 
       {/* Cadastrar Novo Instrutor Card */}
-      <Card className="border-slate-800 bg-slate-900/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+      <Card className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
         <CardHeader className="border-b border-slate-850 pb-4">
           <div className="flex items-center gap-3">
             <UserPlus className="w-6 h-6 text-blue-500" />
@@ -264,7 +264,7 @@ export default function SettingsClient({
               <CardTitle className="text-xl font-black uppercase tracking-wider text-white">
                 Cadastrar Novo Instrutor
               </CardTitle>
-              <CardDescription className="text-slate-400 mt-1 text-xs font-bold uppercase tracking-wider">
+              <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
                 Adicione um novo membro para gerenciar simulados e turmas
               </CardDescription>
             </div>
@@ -275,38 +275,38 @@ export default function SettingsClient({
           <form onSubmit={handleCreateInstructor} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">Nome Completo</label>
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Nome Completo</label>
                 <input 
                   type="text" 
                   value={newInstName} 
                   onChange={(e) => setNewInstName(e.target.value)} 
                   placeholder="Nome do Instrutor" 
                   required 
-                  className="w-full h-11 bg-slate-950 border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
+                  className="w-full h-11 bg-background border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">Nome de Usuário</label>
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Nome de Usuário</label>
                 <input 
                   type="text" 
                   value={newInstUsername} 
                   onChange={(e) => setNewInstUsername(e.target.value)} 
                   placeholder="QRA ou usuário de login" 
                   required 
-                  className="w-full h-11 bg-slate-950 border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium uppercase" 
+                  className="w-full h-11 bg-background border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium uppercase" 
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">Senha Provisória</label>
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Senha Provisória</label>
                 <input 
                   type="password" 
                   value={newInstPassword} 
                   onChange={(e) => setNewInstPassword(e.target.value)} 
                   placeholder="Senha de acesso" 
                   required 
-                  className="w-full h-11 bg-slate-950 border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
+                  className="w-full h-11 bg-background border border-slate-850 rounded-xl px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium" 
                 />
               </div>
             </div>

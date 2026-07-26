@@ -6,7 +6,7 @@ import { Shield } from "lucide-react";
 export default function Home() {
   return (
     <div 
-      className="min-h-screen flex text-white relative overflow-hidden bg-slate-950 bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex text-white relative overflow-hidden bg-background bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/arte_fundo.png')" }}
     >
       {/* Left Side - Empty to let the Jaguar shine */}
@@ -21,7 +21,7 @@ export default function Home() {
       </div>
 
       {/* Right Side Panel */}
-      <div className="z-10 w-full md:w-[450px] bg-black/80 backdrop-blur-xl border-l border-slate-800 shadow-[-20px_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-center items-center px-12 py-8 relative overflow-y-auto">
+      <div className="z-10 w-full md:w-[450px] bg-black/80 backdrop-blur-xl border-l border-border shadow-[-20px_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-center items-center px-12 py-8 relative overflow-y-auto">
         
         <Image 
           src="/logo.png" 
@@ -56,7 +56,7 @@ export default function Home() {
           </Link>
           
           <Link href="/auth/login" className="w-full">
-            <Button size="lg" variant="outline" className="w-full h-15 text-base font-bold border-slate-600 bg-transparent text-slate-200 hover:bg-slate-800 hover:text-white transition-all">
+            <Button size="lg" variant="outline" className="w-full h-15 text-base font-bold border-border bg-transparent text-foreground hover:bg-slate-800 hover:text-white transition-all">
               Acessar como Instrutor
             </Button>
           </Link>

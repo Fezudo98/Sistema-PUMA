@@ -23,7 +23,7 @@ export default function HeaderAvatar({ initials, avatarUrl, disableModal }: Head
     <>
       <div 
         onClick={() => !disableModal && setIsModalOpen(true)}
-        className={`w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold overflow-hidden border-2 border-transparent transition-all shadow-sm ${disableModal ? '' : 'cursor-pointer hover:border-blue-500'}`}
+        className={`w-10 h-10 rounded-full bg-muted text-white flex items-center justify-center font-bold overflow-hidden border-2 border-transparent transition-all shadow-sm ${disableModal ? '' : 'cursor-pointer hover:border-blue-500'}`}
         title="Alterar foto de perfil"
       >
         {avatarUrl ? (

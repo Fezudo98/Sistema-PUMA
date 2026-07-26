@@ -160,9 +160,9 @@ export default async function InstructorDashboard() {
   }).sort((a, b) => b.totalScore - a.totalScore); // Sort by highest score
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 sm:p-8">
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10 border-b border-slate-800 pb-6">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10 border-b border-border pb-6">
           <div className="flex items-center gap-4">
             <Image src="/logo.png" alt="Logo PUMA" width={56} height={56} className="drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] object-contain shrink-0 hover:scale-105 transition-transform duration-300" />
             <div>
@@ -182,10 +182,10 @@ export default async function InstructorDashboard() {
                 initials={user.name.substring(0, 2).toUpperCase()} 
                 avatarUrl={dbUser?.avatarUrl || null} 
               />
-              <span className="text-xs font-bold text-slate-300 sm:hidden">{user.name}</span>
+              <span className="text-xs font-bold text-muted-foreground sm:hidden">{user.name}</span>
             </div>
             <form action={logout}>
-              <Button variant="ghost" type="submit" size="sm" className="text-slate-400 hover:text-red-500 hover:bg-red-950/30 font-bold text-xs uppercase tracking-wider h-10 px-4">
+              <Button variant="ghost" type="submit" size="sm" className="text-muted-foreground hover:text-red-500 hover:bg-red-950/30 font-bold text-xs uppercase tracking-wider h-10 px-4">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </Button>
@@ -195,12 +195,12 @@ export default async function InstructorDashboard() {
 
         <Tabs defaultValue="simulados" className="w-full">
           <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6">
-            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:flex sm:!h-14 bg-slate-900 border border-slate-800 p-1 !h-auto gap-1 rounded-xl">
-              <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Simulados</TabsTrigger>
-              <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Combatentes</TabsTrigger>
-              <TabsTrigger value="materiais" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Materiais</TabsTrigger>
-              <TabsTrigger value="inventario" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Inventário</TabsTrigger>
-              <TabsTrigger value="config" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-slate-400">Configurações</TabsTrigger>
+            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:flex sm:!h-14 bg-card border border-border p-1 !h-auto gap-1 rounded-xl">
+              <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-muted-foreground">Simulados</TabsTrigger>
+              <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-muted-foreground">Combatentes</TabsTrigger>
+              <TabsTrigger value="materiais" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-muted-foreground">Materiais</TabsTrigger>
+              <TabsTrigger value="inventario" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-muted-foreground">Inventário</TabsTrigger>
+              <TabsTrigger value="config" className="text-xs sm:text-base px-3 sm:px-6 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-white font-bold text-muted-foreground">Configurações</TabsTrigger>
             </TabsList>
             
             <Link href="/instructor/simulado/new" className="w-full lg:w-auto">
@@ -214,10 +214,10 @@ export default async function InstructorDashboard() {
           <TabsContent value="simulados" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {simulados.length === 0 && (
-                <div className="col-span-full py-20 bg-slate-900/50 border border-slate-800 rounded-xl text-center shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <div className="col-span-full py-20 bg-card/50 border border-border rounded-xl text-center shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                   <Target className="w-16 h-16 text-slate-700 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-widest">Nenhum Simulado Ativo</h3>
-                  <p className="text-slate-400 mb-6">Faça o upload de um PDF e inicie o treinamento de combate da tropa.</p>
+                  <p className="text-muted-foreground mb-6">Faça o upload de um PDF e inicie o treinamento de combate da tropa.</p>
                   <Link href="/instructor/simulado/new">
                     <Button className="bg-blue-600 hover:bg-blue-500 font-bold shadow-[0_0_20px_rgba(37,99,235,0.3)] h-12 px-8">
                       Criar Operação
@@ -227,8 +227,8 @@ export default async function InstructorDashboard() {
               )}
 
               {simulados.map(simulado => (
-                <Card key={simulado.id} className="border-slate-800 bg-slate-900/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-blue-500/50 hover:bg-slate-900/60 transition-all group">
-                  <CardHeader className="pb-3 border-b border-slate-800 mb-3 relative overflow-hidden">
+                <Card key={simulado.id} className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-blue-500/50 hover:bg-slate-900/60 transition-all group">
+                  <CardHeader className="pb-3 border-b border-border mb-3 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 group-hover:bg-blue-400 transition-colors"></div>
                     <div className="flex justify-between items-start pl-2">
                       <div>
@@ -240,18 +240,18 @@ export default async function InstructorDashboard() {
                       <span className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider border ${
                         simulado.status === "WAITING" ? "bg-amber-900/30 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]" :
                         simulado.status === "ACTIVE" ? "bg-emerald-900/30 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] animate-pulse" :
-                        "bg-slate-900 text-slate-500 border-slate-800"
+                        "bg-card text-muted-foreground border-border"
                       }`}>
                         {simulado.status === "WAITING" ? "Prontidão" : simulado.status === "ACTIVE" ? "Em Combate" : "Encerrado"}
                       </span>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex justify-between text-sm text-slate-300 font-medium">
+                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
                       <span className="flex items-center"><Target className="w-4 h-4 mr-2 text-blue-500"/> {simulado._count.questions} Alvos (Questões)</span>
                     </div>
                     {simulado.apostilaName && (
-                      <div className="flex flex-col gap-1 text-xs text-slate-400 bg-slate-950 border border-slate-800 rounded px-3 py-2">
+                      <div className="flex flex-col gap-1 text-xs text-muted-foreground bg-background border border-border rounded px-3 py-2">
                         <span className="font-bold line-clamp-2" title={simulado.apostilaName}>Base: {formatApostilaTitle(simulado.apostilaName)}</span>
                         {simulado.topics && (
                           <span className="text-blue-400 font-medium truncate">Tópicos: {simulado.topics}</span>

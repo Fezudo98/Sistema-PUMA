@@ -140,20 +140,20 @@ export default function ReviewSimulado() {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
-        <div className="text-slate-400 font-bold uppercase tracking-widest text-xs">Carregando questões táticas...</div>
+        <div className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Carregando questões táticas...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
+    <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-4xl mx-auto">
         
         {/* Top Header */}
-        <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
-          <Button variant="ghost" onClick={() => router.back()} className="text-slate-400 hover:text-white hover:bg-slate-900/50 font-bold">
+        <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
+          <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-white hover:bg-slate-900/50 font-bold">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
@@ -171,19 +171,19 @@ export default function ReviewSimulado() {
         {/* Title */}
         <div className="mb-6">
           <h1 className="text-3xl font-black text-white uppercase tracking-widest drop-shadow-[0_0_10px_rgba(59,130,246,0.2)]">Revisão das Questões (IA)</h1>
-          <p className="text-slate-400 font-medium flex items-center gap-2 mt-2 text-sm uppercase tracking-wide">
+          <p className="text-muted-foreground font-medium flex items-center gap-2 mt-2 text-sm uppercase tracking-wide">
             <AlertCircle className="w-4 h-4 text-amber-500" />
             A inteligência artificial gerou {questions.length} questões. Revise o material antes de salvar.
           </p>
         </div>
 
         {/* Card de Configuração do Simulado */}
-        <div className="mb-8 bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-wrap gap-6 items-center justify-between shadow-lg relative overflow-hidden backdrop-blur-sm">
+        <div className="mb-8 bg-card/60 border border-border rounded-xl p-4 flex flex-wrap gap-6 items-center justify-between shadow-lg relative overflow-hidden backdrop-blur-sm">
           <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
           <div className="flex items-center gap-3">
             <BookOpen className="w-5 h-5 text-blue-500" />
             <div>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Material Base</span>
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">Material Base</span>
               <span className="text-sm font-bold text-white max-w-[250px] md:max-w-[350px] line-clamp-2 block" title={apostilaName || ""}>{formatApostilaTitle(apostilaName || "Carregando...")}</span>
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function ReviewSimulado() {
           <div className="flex flex-wrap gap-4 items-center">
             {/* Dificuldade */}
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Dificuldade</span>
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1">Dificuldade</span>
               <span className="bg-rose-950/40 border-rose-500/30 text-rose-400 text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border">
                 Avançado
               </span>
@@ -199,20 +199,20 @@ export default function ReviewSimulado() {
 
             {/* Tempo */}
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Tempo por Questão</span>
-              <span className="text-xs font-bold text-slate-300 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1">Tempo por Questão</span>
+              <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                 {tempo}s
               </span>
             </div>
 
             {/* Modo Sorteio */}
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Modo Sorteio</span>
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1">Modo Sorteio</span>
               <span className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
                 isRaffleMode
                   ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
-                  : "bg-slate-950 border-slate-800 text-slate-500"
+                  : "bg-background border-border text-muted-foreground"
               }`}>
                 {isRaffleMode ? "Ativado" : "Desativado"}
               </span>
@@ -221,8 +221,8 @@ export default function ReviewSimulado() {
             {/* Tópicos */}
             {topics && (
               <div className="flex flex-col">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Filtro de Tópicos</span>
-                <span className="text-xs font-bold text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 max-w-[150px] truncate" title={topics}>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1">Filtro de Tópicos</span>
+                <span className="text-xs font-bold text-muted-foreground bg-background px-2 py-0.5 rounded border border-border max-w-[150px] truncate" title={topics}>
                   {topics}
                 </span>
               </div>
@@ -237,10 +237,10 @@ export default function ReviewSimulado() {
 
             if (isEditing) {
               return (
-                <Card key={qIndex} className="bg-slate-900/80 border-blue-500 shadow-2xl relative overflow-hidden ring-1 ring-blue-500/30">
+                <Card key={qIndex} className="bg-card/80 border-blue-500 shadow-2xl relative overflow-hidden ring-1 ring-blue-500/30">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-400"></div>
                   
-                  <CardHeader className="bg-slate-950 border-b border-slate-800 p-6">
+                  <CardHeader className="bg-background border-b border-border p-6">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shrink-0">
@@ -253,11 +253,11 @@ export default function ReviewSimulado() {
                       </div>
                       
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Enunciado da Questão</label>
+                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Enunciado da Questão</label>
                         <textarea
                           value={editBuffer?.enunciado || ""}
                           onChange={(e) => updateBufferField("enunciado", e.target.value)}
-                          className="w-full min-h-[100px] p-3 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:border-blue-500 transition-all font-medium text-sm leading-relaxed"
+                          className="w-full min-h-[100px] p-3 rounded-lg border border-border bg-background text-white focus:outline-none focus:border-blue-500 transition-all font-medium text-sm leading-relaxed"
                           placeholder="Edite o enunciado da questão..."
                         />
                       </div>
@@ -266,7 +266,7 @@ export default function ReviewSimulado() {
                   
                   <CardContent className="pt-6 space-y-6">
                     <div className="space-y-3 pl-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Alternativas e Seleção de Gabarito</label>
+                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">Alternativas e Seleção de Gabarito</label>
                       
                       {(editBuffer?.alternativas || []).map((alt, aIndex) => {
                         const isCorrect = aIndex === editBuffer?.correta;
@@ -279,7 +279,7 @@ export default function ReviewSimulado() {
                               className={`font-black text-sm shrink-0 w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
                                 isCorrect 
                                   ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
-                                  : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-400"
+                                  : "bg-background border-border text-muted-foreground hover:border-slate-700 hover:text-slate-400"
                               }`}
                               title={isCorrect ? "Alternativa Correta (Gabarito)" : "Marcar como Gabarito"}
                             >
@@ -291,7 +291,7 @@ export default function ReviewSimulado() {
                               type="text"
                               value={alt.replace(/^[A-E]\)\s*/i, '')}
                               onChange={(e) => updateBufferAlternative(aIndex, e.target.value)}
-                              className="flex-1 bg-slate-950 border-slate-800 text-white focus-visible:ring-blue-500 h-10 px-3"
+                              className="flex-1 bg-background border-border text-white focus-visible:ring-blue-500 h-10 px-3"
                               placeholder={`Texto da alternativa ${["A", "B", "C", "D", "E"][aIndex]}`}
                             />
                             
@@ -307,22 +307,22 @@ export default function ReviewSimulado() {
                     
                     {/* Justificativa */}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Justificativa do Gabarito</label>
+                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block">Justificativa do Gabarito</label>
                       <textarea
                         value={editBuffer?.justificativa || ""}
                         onChange={(e) => updateBufferField("justificativa", e.target.value)}
-                        className="w-full min-h-[80px] p-3 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 focus:outline-none focus:border-blue-500 transition-all text-xs leading-relaxed"
+                        className="w-full min-h-[80px] p-3 rounded-lg border border-border bg-background text-muted-foreground focus:outline-none focus:border-blue-500 transition-all text-xs leading-relaxed"
                         placeholder="Justificativa da resposta correta..."
                       />
                     </div>
                     
                     {/* Botões de Ação do Editor */}
-                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/80">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-border/80">
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={cancelEdit}
-                        className="bg-slate-950 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900 px-4 h-10 font-bold"
+                        className="bg-background border border-border text-muted-foreground hover:text-white hover:bg-slate-900 px-4 h-10 font-bold"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Cancelar
@@ -342,11 +342,11 @@ export default function ReviewSimulado() {
             }
 
             return (
-              <Card key={qIndex} className="bg-slate-900/40 border-slate-800 shadow-xl relative overflow-hidden group hover:border-slate-800/80 transition-all duration-300">
+              <Card key={qIndex} className="bg-card/40 border-border shadow-xl relative overflow-hidden group hover:border-slate-800/80 transition-all duration-300">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-emerald-500"></div>
-                <CardHeader className="bg-slate-950/60 border-b border-slate-800 p-6">
+                <CardHeader className="bg-background/60 border-b border-border p-6">
                   <div className="flex justify-between items-start gap-4">
-                    <CardTitle className="text-lg text-slate-200 flex gap-4 items-start font-bold">
+                    <CardTitle className="text-lg text-foreground flex gap-4 items-start font-bold">
                       <span className="bg-blue-950/60 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shrink-0 mt-0.5">
                         Q{qIndex + 1}
                       </span>
@@ -362,7 +362,7 @@ export default function ReviewSimulado() {
                         variant="ghost"
                         onClick={() => startEdit(qIndex)}
                         disabled={editingIndex !== null}
-                        className="h-8 px-2 bg-slate-950 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-950/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="h-8 px-2 bg-background border border-border text-muted-foreground hover:text-blue-400 hover:border-blue-500/30 hover:bg-blue-950/20 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Editar Questão"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -372,7 +372,7 @@ export default function ReviewSimulado() {
                         variant="ghost"
                         onClick={() => deleteQuestion(qIndex)}
                         disabled={editingIndex !== null}
-                        className="h-8 px-2 bg-slate-950 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-950/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="h-8 px-2 bg-background border border-border text-muted-foreground hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-950/20 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Excluir Questão"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -390,13 +390,13 @@ export default function ReviewSimulado() {
                           className={`p-4 rounded-xl border flex gap-4 items-start ${
                             isCorrect 
                               ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-400 shadow-[inset_0_0_15px_rgba(16,185,129,0.05)]" 
-                              : "bg-slate-950/50 border-slate-800 text-slate-300"
+                              : "bg-background/50 border-border text-muted-foreground"
                           }`}
                         >
                           <span className={`font-black text-sm shrink-0 w-6 h-6 rounded-full flex items-center justify-center border ${
                             isCorrect 
                               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                              : "bg-slate-900 border-slate-800 text-slate-500"
+                              : "bg-card border-border text-muted-foreground"
                           }`}>
                             {["A", "B", "C", "D", "E"][aIndex] || String(aIndex)}
                           </span>
@@ -426,7 +426,7 @@ export default function ReviewSimulado() {
         </div>
         
         {/* Bottom Button */}
-        <div className="mt-8 flex justify-end pb-12 border-t border-slate-800 pt-6">
+        <div className="mt-8 flex justify-end pb-12 border-t border-border pt-6">
           <Button 
             size="lg"
             onClick={handleSave} 

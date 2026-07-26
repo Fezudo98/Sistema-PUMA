@@ -131,14 +131,14 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-8">
+    <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-4xl mx-auto">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <Link 
                 href="/aluno/painel"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-blue-500/50 text-slate-200 hover:text-white font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-card hover:bg-slate-800 border border-border/80 hover:border-blue-500/50 text-foreground hover:text-white font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
                 title="Voltar para o Painel Principal"
               >
                 <ArrowLeft className="w-5 h-5 text-blue-400" />
@@ -147,55 +147,55 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
               <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">Correção do Simulado</h1>
             </div>
             {simulado.tipo === "LIVE" ? (
-              <p className="text-slate-400 font-medium">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
+              <p className="text-muted-foreground font-medium">Sala <strong className="text-blue-500">{simulado.codigoSala}</strong></p>
             ) : (
-              <p className="text-slate-400 font-medium">Treinamento de Estudo Individual: <strong className="text-blue-500">IA Avançado</strong></p>
+              <p className="text-muted-foreground font-medium">Treinamento de Estudo Individual: <strong className="text-blue-500">IA Avançado</strong></p>
             )}
           </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-slate-900/50 border-slate-800 shadow-sm">
+          <Card className="bg-card/50 border-border shadow-sm">
             <CardContent className="p-6 text-center">
-              <p className="text-sm text-slate-500 uppercase tracking-wider mb-2">Desempenho</p>
+              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Desempenho</p>
               <p className="text-3xl font-black text-emerald-400">{accuracy}%</p>
             </CardContent>
           </Card>
-          <Card className="bg-slate-900/50 border-slate-800 shadow-sm">
+          <Card className="bg-card/50 border-border shadow-sm">
             <CardContent className="p-6 text-center">
-              <p className="text-sm text-slate-500 uppercase tracking-wider mb-2">Acertos</p>
+              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Acertos</p>
               <p className="text-3xl font-black text-white">{correctAnswers} / {totalQuestions}</p>
             </CardContent>
           </Card>
-          <Card className="bg-slate-900/50 border-slate-800 shadow-sm">
+          <Card className="bg-card/50 border-border shadow-sm">
             <CardContent className="p-6 text-center">
-              <p className="text-sm text-slate-500 uppercase tracking-wider mb-2">Pontuação</p>
+              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">Pontuação</p>
               <p className="text-3xl font-black text-yellow-500">{score}</p>
             </CardContent>
           </Card>
-          <Card className="bg-slate-900/50 border-slate-800 shadow-sm">
+          <Card className="bg-card/50 border-border shadow-sm">
             <CardContent className="p-6 text-center flex flex-col justify-center min-h-[100px]">
-              <p className="text-sm text-slate-500 uppercase tracking-wider mb-1">Apostila Base</p>
+              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Apostila Base</p>
               <p className="text-sm font-semibold text-blue-400 line-clamp-2 px-2" title={simulado.apostilaName || "N/A"}>{formatApostilaTitle(simulado.apostilaName || "N/A")}</p>
               {simulado.topics && (
-                <p className="text-xs text-slate-500 mt-1 truncate px-2" title={simulado.topics}>Tópicos: {simulado.topics}</p>
+                <p className="text-xs text-muted-foreground mt-1 truncate px-2" title={simulado.topics}>Tópicos: {simulado.topics}</p>
               )}
             </CardContent>
           </Card>
         </div>
 
         {/* Card de Ranking Geral */}
-        <Card className="bg-slate-900/50 border-slate-800 shadow-sm mb-8">
-          <CardHeader className="pb-3 border-b border-slate-800/50 flex flex-row items-center justify-between">
-            <CardTitle className="text-lg text-slate-200 flex items-center gap-2">
+        <Card className="bg-card/50 border-border shadow-sm mb-8">
+          <CardHeader className="pb-3 border-b border-border/50 flex flex-row items-center justify-between">
+            <CardTitle className="text-lg text-foreground flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-500" /> Ranking Geral de Participantes
             </CardTitle>
-            <span className="text-xs text-slate-400 font-bold uppercase">{ranking.length} Combatentes</span>
+            <span className="text-xs text-muted-foreground font-bold uppercase">{ranking.length} Combatentes</span>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <thead className="bg-background text-muted-foreground border-b border-border">
                   <tr>
                     <th className="px-4 py-2 font-medium">Posição</th>
                     <th className="px-4 py-2 font-medium">Aluno</th>
@@ -209,29 +209,29 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                 <tbody className="divide-y divide-slate-800/50">
                   {ranking.map((aluno, idx) => (
                     <tr key={idx} className="hover:bg-slate-900/30">
-                      <td className="px-4 py-3 font-bold text-slate-500">
+                      <td className="px-4 py-3 font-bold text-muted-foreground">
                         {idx + 1}º
                       </td>
                       <td className="px-4 py-3 flex items-center gap-3">
                         {aluno.avatarUrl ? (
-                          <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-700" />
+                          <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-border" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-700">
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border">
                             {aluno.name.substring(0,2).toUpperCase()}
                           </div>
                         )}
-                        <span className="font-bold text-slate-200">{aluno.name}</span>
+                        <span className="font-bold text-foreground">{aluno.name}</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-400">{aluno.answers}</td>
+                      <td className="px-4 py-3 text-center text-muted-foreground">{aluno.answers}</td>
                       <td className="px-4 py-3 text-center text-emerald-400 font-bold">{aluno.corrects}</td>
                       <td className="px-4 py-3 text-center text-red-400 font-bold">{aluno.incorrects}</td>
-                      <td className="px-4 py-3 text-slate-400">{aluno.avgTime}s</td>
+                      <td className="px-4 py-3 text-muted-foreground">{aluno.avgTime}s</td>
                       <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">{aluno.score} pts</td>
                     </tr>
                   ))}
                   {ranking.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-6 text-slate-500">Nenhum participante pontuou neste simulado.</td>
+                      <td colSpan={7} className="text-center py-6 text-muted-foreground">Nenhum participante pontuou neste simulado.</td>
                     </tr>
                   )}
                 </tbody>
@@ -246,7 +246,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
             const isAnswered = !!studentAnswer;
             const isCorrect = isAnswered && studentAnswer.isCorrect;
             
-            let cardBorder = "border-slate-800";
+            let cardBorder = "border-border";
             if (isAnswered) {
               cardBorder = isCorrect ? "border-emerald-500/50" : "border-red-500/50";
             }
@@ -254,11 +254,11 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
             const alternativas = JSON.parse(q.alternativas);
 
             return (
-              <Card key={q.id} className={`bg-slate-900/50 border-l-4 shadow-sm ${cardBorder}`}>
-                <CardHeader className="pb-3 border-b border-slate-800/50">
+              <Card key={q.id} className={`bg-card/50 border-l-4 shadow-sm ${cardBorder}`}>
+                <CardHeader className="pb-3 border-b border-border/50">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg text-slate-200 flex gap-4">
-                      <span className="bg-slate-800 text-blue-400 px-3 py-1 rounded-full text-sm font-black">
+                    <CardTitle className="text-lg text-foreground flex gap-4">
+                      <span className="bg-muted text-blue-400 px-3 py-1 rounded-full text-sm font-black">
                         Q{index + 1}
                       </span>
                       <span className="font-semibold leading-relaxed">
@@ -276,13 +276,13 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                             <XCircle className="w-4 h-4 mr-1" /> Errou
                           </span>
                         )}
-                        <span className="flex items-center text-xs text-slate-500 font-mono">
+                        <span className="flex items-center text-xs text-muted-foreground font-mono">
                           <Clock className="w-3 h-3 mr-1" /> {studentAnswer.tempoGasto}s
                         </span>
                       </div>
                     )}
                     {!isAnswered && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-muted text-muted-foreground">
                         {raffleQuestionIds.has(q.id) ? "Apenas Observou" : "Não Respondida"}
                       </span>
                     )}
@@ -295,7 +295,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                       const isOptionGabarito = aIndex === q.correta;
                       const isOptionStudent = isAnswered && studentAnswer.alternativa === aIndex;
                       
-                      let bgClass = "bg-slate-800/30 border-slate-800 text-slate-400";
+                      let bgClass = "bg-muted/30 border-border text-muted-foreground";
                       
                       if (isOptionGabarito && isOptionStudent) {
                         bgClass = "bg-emerald-500/10 border-emerald-500/30 text-emerald-300";
@@ -340,7 +340,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                       <p className="text-sm font-bold text-blue-400 mb-1">
                         Justificativa da IA:
                       </p>
-                      <div className="text-sm text-slate-300 leading-relaxed">
+                      <div className="text-sm text-muted-foreground leading-relaxed">
                         <JustificativaWithCitation text={q.justificativa} apostilaFilePath={apostilaFilePath} />
                       </div>
                     </div>
@@ -363,7 +363,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
         </div>
 
         {/* Rodapé de Navegação Rápida ao final da Correção */}
-        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link 
             href="/aluno/painel"
             className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm sm:text-base uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(59,130,246,0.3)] hover:scale-105 active:scale-95 cursor-pointer"

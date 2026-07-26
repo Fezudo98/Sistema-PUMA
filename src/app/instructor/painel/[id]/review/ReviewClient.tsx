@@ -50,7 +50,7 @@ export default function ReviewClient({
               </Link>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight">Relatório do Simulado</h1>
             </div>
-            <p className="text-slate-500 font-medium">Sala <strong className="text-blue-600">{simulado.codigoSala}</strong> • Finalizado</p>
+            <p className="text-muted-foreground font-medium">Sala <strong className="text-blue-600">{simulado.codigoSala}</strong> • Finalizado</p>
           </div>
           <div className="flex gap-3">
             <Link href="/instructor/simulado/new">
@@ -67,7 +67,7 @@ export default function ReviewClient({
             onClick={() => setShowParticipants(true)}
           >
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-500 uppercase tracking-wider flex items-center justify-between gap-2">
+              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-500" /> Participantes</span>
                 <span className="text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">Ver Lista</span>
               </CardTitle>
@@ -82,20 +82,20 @@ export default function ReviewClient({
             onClick={() => setShowGlobalChart(true)}
           >
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-500 uppercase tracking-wider flex items-center justify-between gap-2">
+              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2"><Target className="w-4 h-4 text-emerald-500" /> Acerto Global</span>
                 <span className="text-xs text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">Ver Gráfico</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-black text-slate-800">{globalAccuracy}%</div>
-              <Progress value={globalAccuracy} className="h-1.5 mt-3 bg-slate-100 [&>div]:bg-emerald-500" />
+              <Progress value={globalAccuracy} className="h-1.5 mt-3 bg-muted [&>div]:bg-emerald-500" />
             </CardContent>
           </Card>
 
           <Card className="bg-white border-slate-200 shadow-sm md:col-span-2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-yellow-500" /> Pódio (Top 3)
               </CardTitle>
             </CardHeader>
@@ -114,10 +114,10 @@ export default function ReviewClient({
                       <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover absolute top-2 right-2 border border-slate-200" />
                     ) : null}
                     <span className="font-bold text-slate-800 text-sm text-center truncate w-full">{aluno.name}</span>
-                    <span className="text-xs text-slate-500 font-mono mt-1">{aluno.score} pts</span>
+                    <span className="text-xs text-muted-foreground font-mono mt-1">{aluno.score} pts</span>
                   </div>
                 ))}
-                {ranking.length === 0 && <span className="text-slate-400 text-sm py-4">Nenhum aluno pontuou.</span>}
+                {ranking.length === 0 && <span className="text-muted-foreground text-sm py-4">Nenhum aluno pontuou.</span>}
               </div>
             </CardContent>
           </Card>
@@ -141,7 +141,7 @@ export default function ReviewClient({
                     <div className="flex flex-col lg:flex-row gap-8">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
-                          <span className="font-black text-slate-400 text-2xl md:text-3xl">Q{index + 1}</span>
+                          <span className="font-black text-muted-foreground text-2xl md:text-3xl">Q{index + 1}</span>
                           {isHard && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs md:text-sm font-bold bg-red-100 text-red-700">
                               <AlertTriangle className="w-4 h-4" /> Questão Crítica
@@ -160,12 +160,12 @@ export default function ReviewClient({
                       <div className="w-full lg:w-80 shrink-0 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-slate-200 pt-6 lg:pt-0 lg:pl-8">
                         <div className="text-center mb-6">
                           <span className="block text-5xl md:text-7xl font-black text-slate-800 mb-1">{qAccuracy}%</span>
-                          <span className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-widest">Taxa de Acerto</span>
+                          <span className="text-xs md:text-sm font-bold text-muted-foreground uppercase tracking-widest">Taxa de Acerto</span>
                         </div>
                         <Progress value={qAccuracy} className={`h-3 mb-6 ${isHard ? '[&>div]:bg-red-500' : '[&>div]:bg-blue-500'}`} />
-                        <div className="flex justify-between text-xs md:text-sm text-slate-500 mb-6">
+                        <div className="flex justify-between text-xs md:text-sm text-muted-foreground mb-6">
                           <span className="flex items-center gap-1.5 font-medium"><CheckCircle className="w-4 h-4 text-emerald-500"/> {qCorrects} acertos</span>
-                          <span className="flex items-center gap-1.5 font-medium"><Users className="w-4 h-4 text-slate-400"/> {qAnswers} total</span>
+                          <span className="flex items-center gap-1.5 font-medium"><Users className="w-4 h-4 text-muted-foreground"/> {qAnswers} total</span>
                         </div>
                         
                         <Button 
@@ -182,11 +182,11 @@ export default function ReviewClient({
                       <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
                         <h4 className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Desempenho Individual</h4>
                         {q.answers.length === 0 ? (
-                          <p className="text-slate-500 text-sm">Ninguém respondeu esta questão.</p>
+                          <p className="text-muted-foreground text-sm">Ninguém respondeu esta questão.</p>
                         ) : (
                           <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
-                              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                              <thead className="bg-slate-50 text-muted-foreground border-b border-slate-200">
                                 <tr>
                                   <th className="px-4 py-2 font-medium">Aluno</th>
                                   <th className="px-4 py-2 font-medium">Alternativa Escolhida</th>
@@ -201,7 +201,7 @@ export default function ReviewClient({
                                       {ans.student.avatarUrl ? (
                                         <img src={ans.student.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
                                       ) : (
-                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                                           {ans.student.name.substring(0,2).toUpperCase()}
                                         </div>
                                       )}
@@ -215,8 +215,8 @@ export default function ReviewClient({
                                         {ans.isCorrect ? <CheckCircle className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
                                       </span>
                                     </td>
-                                    <td className="px-4 py-3 text-slate-600 flex items-center gap-1">
-                                      <Clock className="w-3 h-3 text-slate-400" /> {ans.tempoGasto}s
+                                    <td className="px-4 py-3 text-muted-foreground flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-muted-foreground" /> {ans.tempoGasto}s
                                     </td>
                                     <td className="px-4 py-3 font-mono font-bold text-blue-600">+{ans.pontuacao}</td>
                                   </tr>
@@ -249,7 +249,7 @@ export default function ReviewClient({
           <div className="mt-4">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
+                <thead className="bg-slate-50 text-muted-foreground border-b border-slate-200">
                   <tr>
                     <th className="px-4 py-2 font-medium">Posição</th>
                     <th className="px-4 py-2 font-medium">Aluno</th>
@@ -263,29 +263,29 @@ export default function ReviewClient({
                 <tbody className="divide-y divide-slate-100">
                   {ranking.map((aluno, idx) => (
                     <tr key={idx} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-bold text-slate-500">
+                      <td className="px-4 py-3 font-bold text-muted-foreground">
                         {idx + 1}º
                       </td>
                       <td className="px-4 py-3 flex items-center gap-3">
                         {aluno.avatarUrl ? (
                           <img src={aluno.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                             {aluno.name.substring(0,2).toUpperCase()}
                           </div>
                         )}
                         <span className="font-bold text-slate-800">{aluno.name}</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-600">{aluno.answers}</td>
+                      <td className="px-4 py-3 text-center text-muted-foreground">{aluno.answers}</td>
                       <td className="px-4 py-3 text-center text-emerald-600 font-bold">{aluno.corrects || 0}</td>
                       <td className="px-4 py-3 text-center text-red-500 font-bold">{aluno.incorrects || 0}</td>
-                      <td className="px-4 py-3 text-center text-slate-600">{aluno.avgTime}s</td>
+                      <td className="px-4 py-3 text-center text-muted-foreground">{aluno.avgTime}s</td>
                       <td className="px-4 py-3 text-right font-mono font-bold text-blue-600">{aluno.score} pts</td>
                     </tr>
                   ))}
                   {ranking.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="text-center py-6 text-slate-500">Nenhum participante.</td>
+                      <td colSpan={5} className="text-center py-6 text-muted-foreground">Nenhum participante.</td>
                     </tr>
                   )}
                 </tbody>

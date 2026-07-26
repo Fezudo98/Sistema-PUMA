@@ -189,20 +189,20 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
       case "Em Manutenção":
         return "bg-purple-500/20 text-purple-300 border-purple-500/30 font-medium";
       default:
-        return "bg-slate-800 text-slate-300 border-slate-700";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Topo com Botão Voltar se for página dedicada e cabeçalho */}
-      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-6 bg-card border border-border p-5 sm:p-6 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)]">
         <div className="w-full md:w-auto">
           <div className="flex items-start sm:items-center gap-3">
             {onBack && (
               <button 
                 onClick={onBack}
-                className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-colors shrink-0 mt-0.5 sm:mt-0"
+                className="p-2.5 bg-muted hover:bg-slate-700 text-muted-foreground hover:text-white rounded-xl transition-colors shrink-0 mt-0.5 sm:mt-0"
                 title="Voltar ao Painel"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -220,7 +220,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                   {role === 'INSTRUCTOR' ? 'Instrutor' : 'Combatente'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1 leading-snug">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1 leading-snug">
                 Controle militar e auditoria em tempo real
               </p>
             </div>
@@ -231,7 +231,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
           <button
             onClick={fetchAll}
             disabled={loading}
-            className="w-full sm:w-auto px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-3 bg-muted hover:bg-slate-700 text-muted-foreground hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
             <span>Sincronizar</span>
@@ -248,9 +248,9 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
 
       {/* Cards de Estatísticas Inspirados na Planilha (Total e Danificados) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
+        <div className="bg-gradient-to-br from-background to-background border border-border p-6 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">
               Total de Itens
             </span>
             <span className="text-4xl font-black text-white tracking-tight">
@@ -265,15 +265,15 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
+        <div className="bg-gradient-to-br from-background to-background border border-border p-6 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">
               Itens Danificados / Manutenção
             </span>
-            <span className={`text-4xl font-black tracking-tight ${itensDanificados > 0 ? 'text-red-400 animate-pulse' : 'text-slate-200'}`}>
+            <span className={`text-4xl font-black tracking-tight ${itensDanificados > 0 ? 'text-red-400 animate-pulse' : 'text-foreground'}`}>
               {itensDanificados}
             </span>
-            <span className="text-xs text-slate-400 font-medium block mt-1">
+            <span className="text-xs text-muted-foreground font-medium block mt-1">
               {itensDanificados === 0 ? "Sala 100% operacional" : "Requer atenção ou reparo"}
             </span>
           </div>
@@ -282,15 +282,15 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
+        <div className="bg-gradient-to-br from-background to-background border border-border p-6 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">
               Auditoria PUMA
             </span>
             <span className="text-3xl font-black text-blue-400 tracking-tight">
               {histories.length}
             </span>
-            <span className="text-xs text-slate-400 font-medium block mt-1">
+            <span className="text-xs text-muted-foreground font-medium block mt-1">
               Registros de edições salvas
             </span>
           </div>
@@ -301,13 +301,13 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
       </div>
 
       {/* Abas e Barra de Filtros */}
-      <div className="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl space-y-4">
+      <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl space-y-4">
         <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 gap-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 bg-background p-1.5 rounded-xl border border-border gap-1.5">
             <button
               onClick={() => setActiveTab("table")}
               className={`px-4 py-2.5 rounded-lg font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                activeTab === "table" ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                activeTab === "table" ? "bg-blue-600 text-white shadow-lg" : "text-muted-foreground hover:text-white"
               }`}
             >
               <Package className="w-4 h-4 shrink-0" />
@@ -316,7 +316,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
             <button
               onClick={() => setActiveTab("history")}
               className={`px-4 py-2.5 rounded-lg font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                activeTab === "history" ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                activeTab === "history" ? "bg-blue-600 text-white shadow-lg" : "text-muted-foreground hover:text-white"
               }`}
             >
               <History className="w-4 h-4 shrink-0" />
@@ -327,13 +327,13 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
           {activeTab === "table" && (
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
               <div className="relative w-full sm:flex-1 sm:min-w-[220px]">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Buscar item ou código..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-medium"
+                  className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-medium"
                 />
               </div>
 
@@ -341,7 +341,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-blue-500 w-full"
+                  className="bg-background border border-border text-muted-foreground rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-blue-500 w-full"
                 >
                   <option value="ALL">Todas Categorias</option>
                   {categoriasUnicas.map(cat => (
@@ -352,7 +352,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-blue-500 w-full"
+                  className="bg-background border border-border text-muted-foreground rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-blue-500 w-full"
                 >
                   <option value="ALL">Todos Estados</option>
                   <option value="Novo">Novo</option>
@@ -369,8 +369,8 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
         {/* Modal / Overlay Flutuante para Adicionar ou Editar Item (Aparece centralizado onde o usuário estiver) */}
         {(isAdding || editingItem) && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <form onSubmit={isAdding ? handleSaveAdd : handleSaveEdit} className="bg-slate-950 border-2 border-blue-500/60 p-6 rounded-2xl shadow-[0_0_50px_rgba(37,99,235,0.3)] max-w-2xl w-full space-y-5 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+            <form onSubmit={isAdding ? handleSaveAdd : handleSaveEdit} className="bg-background border-2 border-blue-500/60 p-6 rounded-2xl shadow-[0_0_50px_rgba(37,99,235,0.3)] max-w-2xl w-full space-y-5 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center pb-3 border-b border-border">
                 <h3 className="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
                   {isAdding ? <PlusCircle className="w-5 h-5 text-blue-400 shrink-0" /> : <Edit className="w-5 h-5 text-amber-400 shrink-0" />}
                   <span>{isAdding ? "Cadastrar Novo Item na Sala" : `Editar Item [#${editingItem?.codigo}] - ${editingItem?.descricao}`}</span>
@@ -378,7 +378,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                 <button
                   type="button"
                   onClick={() => { setIsAdding(false); setEditingItem(null); }}
-                  className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
+                  className="p-2 bg-card hover:bg-slate-800 text-muted-foreground hover:text-white rounded-xl transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -386,14 +386,14 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Categoria</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Categoria</label>
                   <input
                     type="text"
                     list="categorias-list"
                     value={formData.categoria}
                     onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                     placeholder="Ex: Equipamentos"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                    className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
                   />
                   <datalist id="categorias-list">
                     <option value="Equipamentos" />
@@ -405,11 +405,11 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Estado</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Estado</label>
                   <select
                     value={formData.estado}
                     onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
                   >
                     <option value="Novo">Novo</option>
                     <option value="Bom">Bom</option>
@@ -420,46 +420,46 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Descrição do Item</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Descrição do Item</label>
                   <input
                     type="text"
                     value={formData.descricao}
                     onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                     placeholder="Ex: Simulacro de Fuzil, Capa tática, Ventilador..."
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                    className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
                     required
                   />
                 </div>
 
                 <div className="sm:col-span-1">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Quantidade</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Quantidade</label>
                   <input
                     type="number"
                     min="1"
                     value={formData.quantidade}
                     onChange={(e) => setFormData({ ...formData, quantidade: parseInt(e.target.value) || 1 })}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-bold"
+                    className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-bold"
                     required
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Observações / Detalhes</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Observações / Detalhes</label>
                   <input
                     type="text"
                     value={formData.observacoes}
                     onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                     placeholder="Ex: Jarro danificado, Faltando parafuso, Na estante superior..."
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                    className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => { setIsAdding(false); setEditingItem(null); }}
-                  className="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+                  className="px-5 py-3 bg-card hover:bg-slate-800 text-muted-foreground hover:text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
                 >
                   Cancelar
                 </button>
@@ -480,10 +480,10 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
         {activeTab === "table" && (
           <div className="space-y-4">
             {/* Visualização em TABELA para TABLET/DESKTOP (hidden md:block) */}
-            <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-800">
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-950 border-b border-slate-800 text-[11px] font-black uppercase tracking-wider text-slate-400">
+                  <tr className="bg-background border-b border-border text-[11px] font-black uppercase tracking-wider text-muted-foreground">
                     <th className="py-3.5 px-4 text-center w-16">Cód</th>
                     <th className="py-3.5 px-4 w-40">Categoria</th>
                     <th className="py-3.5 px-4">Descrição do Item</th>
@@ -496,14 +496,14 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                 <tbody className="divide-y divide-slate-800/60 font-medium text-sm">
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="py-16 text-center text-slate-400">
+                      <td colSpan={7} className="py-16 text-center text-muted-foreground">
                         <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-blue-500" />
                         <span className="font-bold text-xs uppercase tracking-widest">Carregando Itens da Sala...</span>
                       </td>
                     </tr>
                   ) : filteredItems.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-16 text-center text-slate-500">
+                      <td colSpan={7} className="py-16 text-center text-muted-foreground">
                         <Box className="w-12 h-12 mx-auto mb-3 opacity-30" />
                         <span className="font-bold text-xs uppercase tracking-widest block">Nenhum item encontrado no filtro</span>
                       </td>
@@ -511,11 +511,11 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                   ) : (
                     filteredItems.map(item => (
                       <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3.5 px-4 text-center font-black text-slate-400 bg-slate-950/40">
+                        <td className="py-3.5 px-4 text-center font-black text-muted-foreground bg-background/40">
                           {item.codigo}
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="text-xs px-2.5 py-1 bg-slate-800/80 border border-slate-700 rounded-lg text-slate-300 font-bold">
+                          <span className="text-xs px-2.5 py-1 bg-muted/80 border border-border rounded-lg text-muted-foreground font-bold">
                             {item.categoria}
                           </span>
                         </td>
@@ -533,37 +533,37 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                               className={`text-xs px-3 py-1.5 rounded-lg border appearance-none pr-7 font-bold cursor-pointer transition-all focus:outline-none ${getStatusBadge(item.estado)}`}
                               title="Clique para alterar rapidamente o estado"
                             >
-                              <option value="Novo" className="bg-slate-900 text-emerald-400 font-bold">Novo</option>
-                              <option value="Bom" className="bg-slate-900 text-teal-300 font-bold">Bom</option>
-                              <option value="Regular" className="bg-slate-900 text-amber-300 font-bold">Regular</option>
-                              <option value="Danificado" className="bg-slate-900 text-red-400 font-bold">Danificado</option>
-                              <option value="Em Manutenção" className="bg-slate-900 text-purple-300 font-bold">Em Manutenção</option>
+                              <option value="Novo" className="bg-card text-emerald-400 font-bold">Novo</option>
+                              <option value="Bom" className="bg-card text-teal-300 font-bold">Bom</option>
+                              <option value="Regular" className="bg-card text-amber-300 font-bold">Regular</option>
+                              <option value="Danificado" className="bg-card text-red-400 font-bold">Danificado</option>
+                              <option value="Em Manutenção" className="bg-card text-purple-300 font-bold">Em Manutenção</option>
                             </select>
                             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none opacity-60">▼</span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-xs text-slate-300 italic">
+                        <td className="py-3.5 px-4 text-xs text-muted-foreground italic">
                           {item.observacoes ? (
                             <span className="flex items-center gap-1.5 text-amber-300/90 font-medium">
                               <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
                               {item.observacoes}
                             </span>
                           ) : (
-                            <span className="text-slate-600">—</span>
+                            <span className="text-muted-foreground">—</span>
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => handleOpenEdit(item)}
-                              className="p-2 bg-slate-800/80 hover:bg-blue-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                              className="p-2 bg-muted/80 hover:bg-blue-600 text-muted-foreground hover:text-white rounded-lg transition-all"
                               title="Editar Item Completo"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(item)}
-                              className="p-2 bg-slate-800/80 hover:bg-red-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                              className="p-2 bg-muted/80 hover:bg-red-600 text-muted-foreground hover:text-white rounded-lg transition-all"
                               title="Excluir Item"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -580,25 +580,25 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
             {/* Visualização em CARDS para CELULAR (md:hidden) */}
             <div className="grid grid-cols-1 gap-3.5 md:hidden">
               {loading ? (
-                <div className="py-16 text-center text-slate-400 bg-slate-950/50 border border-slate-800 rounded-xl">
+                <div className="py-16 text-center text-muted-foreground bg-background/50 border border-border rounded-xl">
                   <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-blue-500" />
                   <span className="font-bold text-xs uppercase tracking-widest">Carregando Itens da Sala...</span>
                 </div>
               ) : filteredItems.length === 0 ? (
-                <div className="py-16 text-center text-slate-500 bg-slate-950/50 border border-slate-800 rounded-xl">
+                <div className="py-16 text-center text-muted-foreground bg-background/50 border border-border rounded-xl">
                   <Box className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <span className="font-bold text-xs uppercase tracking-widest block">Nenhum item encontrado no filtro</span>
                 </div>
               ) : (
                 filteredItems.map(item => (
-                  <div key={item.id} className="bg-slate-950 border border-slate-800/80 rounded-2xl p-4 space-y-3.5 shadow-lg">
+                  <div key={item.id} className="bg-background border border-border/80 rounded-2xl p-4 space-y-3.5 shadow-lg">
                     {/* Linha Superior: Código e Categoria + Estado dropdown */}
-                    <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                    <div className="flex items-center justify-between gap-2 border-b border-border/80 pb-3">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 font-black text-xs text-blue-400 shrink-0">
+                        <span className="px-2.5 py-1 rounded-lg bg-card border border-border font-black text-xs text-blue-400 shrink-0">
                           #{item.codigo}
                         </span>
-                        <span className="text-xs px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 font-bold truncate max-w-[130px]">
+                        <span className="text-xs px-2.5 py-1 bg-card border border-border rounded-lg text-muted-foreground font-bold truncate max-w-[130px]">
                           {item.categoria}
                         </span>
                       </div>
@@ -609,11 +609,11 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                           className={`text-[11px] px-2.5 py-1 rounded-lg border appearance-none pr-6 font-bold cursor-pointer transition-all focus:outline-none ${getStatusBadge(item.estado)}`}
                           title="Clique para alterar o estado"
                         >
-                          <option value="Novo" className="bg-slate-900 text-emerald-400 font-bold">Novo</option>
-                          <option value="Bom" className="bg-slate-900 text-teal-300 font-bold">Bom</option>
-                          <option value="Regular" className="bg-slate-900 text-amber-300 font-bold">Regular</option>
-                          <option value="Danificado" className="bg-slate-900 text-red-400 font-bold">Danificado</option>
-                          <option value="Em Manutenção" className="bg-slate-900 text-purple-300 font-bold">Em Manutenção</option>
+                          <option value="Novo" className="bg-card text-emerald-400 font-bold">Novo</option>
+                          <option value="Bom" className="bg-card text-teal-300 font-bold">Bom</option>
+                          <option value="Regular" className="bg-card text-amber-300 font-bold">Regular</option>
+                          <option value="Danificado" className="bg-card text-red-400 font-bold">Danificado</option>
+                          <option value="Em Manutenção" className="bg-card text-purple-300 font-bold">Em Manutenção</option>
                         </select>
                         <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] pointer-events-none opacity-60">▼</span>
                       </div>
@@ -625,7 +625,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                         {item.descricao}
                       </h4>
                       <div className="flex items-center gap-1.5 bg-blue-600/15 border border-blue-500/30 px-3 py-1.5 rounded-xl shrink-0">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Qtd:</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Qtd:</span>
                         <span className="text-base font-black text-blue-400">{item.quantidade}</span>
                       </div>
                     </div>
@@ -642,14 +642,14 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-900">
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="flex-1 px-3 py-2.5 bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-slate-800"
+                        className="flex-1 px-3 py-2.5 bg-card hover:bg-blue-600 text-muted-foreground hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-border"
                       >
                         <Edit className="w-3.5 h-3.5 text-blue-400" />
                         Editar Item
                       </button>
                       <button
                         onClick={() => handleDelete(item)}
-                        className="px-3.5 py-2.5 bg-slate-900 hover:bg-red-600 text-slate-400 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 border border-slate-800"
+                        className="px-3.5 py-2.5 bg-card hover:bg-red-600 text-muted-foreground hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 border border-border"
                         title="Excluir Item"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-red-400" />
@@ -665,19 +665,19 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
         {/* Conteúdo da Aba 2: Histórico de Auditoria */}
         {activeTab === "history" && (
           <div className="space-y-4">
-            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs text-slate-400 font-medium">
+            <div className="p-4 bg-background border border-border rounded-xl flex items-center justify-between text-xs text-muted-foreground font-medium">
               <span className="flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-blue-400" />
                 Registros de auditoria invioláveis gerados automaticamente por ações de Instrutores e Combatentes.
               </span>
-              <span className="font-bold text-slate-300">
+              <span className="font-bold text-muted-foreground">
                 Total registrado: {histories.length} eventos
               </span>
             </div>
 
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
               {histories.length === 0 ? (
-                <div className="py-16 text-center text-slate-500 bg-slate-950/50 border border-slate-800/60 rounded-xl">
+                <div className="py-16 text-center text-muted-foreground bg-background/50 border border-border/60 rounded-xl">
                   <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
                   <span className="font-bold text-xs uppercase tracking-widest block">Nenhuma alteração registrada ainda</span>
                 </div>
@@ -698,7 +698,7 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                   }
 
                   return (
-                    <div key={h.id} className="bg-slate-950 border border-slate-800/80 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-700 transition-colors">
+                    <div key={h.id} className="bg-background border border-border/80 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-slate-700 transition-colors">
                       <div className="flex items-start sm:items-center gap-3.5">
                         <div className={`px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider shrink-0 ${actionColor}`}>
                           {actionLabel}
@@ -715,18 +715,18 @@ export default function InventoryClient({ role, user, onBack }: InventoryClientP
                             }`}>
                               {h.userRole === 'INSTRUCTOR' ? 'Instrutor' : h.userRole === 'SYSTEM' ? 'Sistema' : 'Combatente'}
                             </span>
-                            <span className="text-xs text-slate-400 font-medium">
-                              • Item: <strong className="text-slate-200">{h.itemDesc}</strong>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              • Item: <strong className="text-foreground">{h.itemDesc}</strong>
                             </span>
                           </div>
-                          <p className="text-xs text-slate-300 mt-1 font-medium bg-slate-900/60 p-2 rounded-lg border border-slate-800/80">
+                          <p className="text-xs text-muted-foreground mt-1 font-medium bg-card/60 p-2 rounded-lg border border-border/80">
                             {h.changeDetail}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold shrink-0 self-end sm:self-center">
-                        <Clock className="w-3.5 h-3.5 text-slate-500" />
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-bold shrink-0 self-end sm:self-center">
+                        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                         {dateFormatted}
                       </div>
                     </div>

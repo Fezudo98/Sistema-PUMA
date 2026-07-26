@@ -29,22 +29,22 @@ export default function InstructorAuth() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-slate-950 bg-cover bg-center"
+      className="min-h-screen flex items-center justify-center p-4 bg-background bg-cover bg-center"
       style={{ backgroundImage: "url('/arte_fundo.png')" }}
     >
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm pointer-events-none"></div>
+      <div className="absolute inset-0 bg-background/60 backdrop-blur-sm pointer-events-none"></div>
 
       <div className="w-full max-w-md z-10">
         <div className="flex flex-col items-center mb-8">
           <Image src="/logo.png" alt="Sistema PUMA" width={110} height={110} className="drop-shadow-[0_0_20px_rgba(245,158,11,0.35)] object-contain mb-2 hover:scale-105 transition-transform duration-300" />
           <h1 className="text-3xl font-extrabold text-white mt-2">Sistema <span className="text-blue-500">PUMA</span></h1>
-          <p className="text-slate-400 font-medium">Acesso Restrito: Instrutores</p>
+          <p className="text-muted-foreground font-medium">Acesso Restrito: Instrutores</p>
         </div>
         
-        <Card className="border-slate-800 bg-slate-900/90 text-white shadow-2xl backdrop-blur-md">
+        <Card className="border-border bg-card/90 text-white shadow-2xl backdrop-blur-md">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl font-bold">Acesso do Instrutor</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardDescription className="text-muted-foreground">
               Gerencie simulados e turmas
             </CardDescription>
           </CardHeader>
@@ -54,12 +54,12 @@ export default function InstructorAuth() {
 
             <form action={(f) => handleAction(f, true)} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Nome de Usuário</label>
-                <Input name="username" placeholder="Seu nome de usuário" required className="bg-slate-800/50 border-slate-700 h-12" />
+                <label className="text-sm font-medium text-muted-foreground">Nome de Usuário</label>
+                <Input name="username" placeholder="Seu nome de usuário" required className="bg-muted/50 border-border h-12" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Senha</label>
-                <Input name="password" type="password" placeholder="Sua senha" required className="bg-slate-800/50 border-slate-700 h-12" />
+                <label className="text-sm font-medium text-muted-foreground">Senha</label>
+                <Input name="password" type="password" placeholder="Sua senha" required className="bg-muted/50 border-border h-12" />
               </div>
               <Button type="submit" className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">Entrar no Painel</Button>
             </form>

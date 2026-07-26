@@ -116,8 +116,8 @@ export default function ChatClient({
   // Render suspension screen
   if (isSuspended && suspendedUntil) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-slate-200">
-        <div className="max-w-md w-full space-y-6 bg-slate-900/40 p-8 rounded-2xl border border-rose-900/30 shadow-2xl relative overflow-hidden">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center text-foreground">
+        <div className="max-w-md w-full space-y-6 bg-card/40 p-8 rounded-2xl border border-rose-900/30 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-rose-500"></div>
           
           <div className="w-16 h-16 mx-auto rounded-full bg-rose-950/40 border border-rose-500/30 flex items-center justify-center text-rose-400">
@@ -131,19 +131,19 @@ export default function ChatClient({
             <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Penalidade por Desvio de Foco</p>
           </div>
 
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             Combatente, seu acesso ao chat com o Mentor foi suspenso temporariamente por insistir em conversas alheias ao conteúdo programático das apostilas.
           </p>
 
-          <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 space-y-1">
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">Tempo Restante de Bloqueio</span>
+          <div className="p-4 bg-background/60 rounded-xl border border-border space-y-1">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block">Tempo Restante de Bloqueio</span>
             <span className="text-2xl font-mono font-black text-white tracking-widest">{timeLeft || "Calculando..."}</span>
           </div>
 
           <div className="pt-2">
             <Button 
               onClick={() => router.push("/aluno/painel")}
-              className="w-full h-11 bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase tracking-wider text-xs border border-slate-700 rounded-xl transition-all cursor-pointer"
+              className="w-full h-11 bg-muted hover:bg-slate-700 text-white font-bold uppercase tracking-wider text-xs border border-border rounded-xl transition-all cursor-pointer"
             >
               Voltar ao Painel
             </Button>
@@ -254,7 +254,7 @@ export default function ChatClient({
     escaped = escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
     // Code blocks ```code```
-    escaped = escaped.replace(/```([\s\S]*?)```/g, "<pre class='bg-slate-950/70 p-3 rounded-lg font-mono text-[11px] text-emerald-400 border border-slate-800 my-2 overflow-x-auto whitespace-pre-wrap'><code>$1</code></pre>");
+    escaped = escaped.replace(/```([\s\S]*?)```/g, "<pre class='bg-background/70 p-3 rounded-lg font-mono text-[11px] text-emerald-400 border border-border my-2 overflow-x-auto whitespace-pre-wrap'><code>$1</code></pre>");
 
     const lines = escaped.split("\n");
     let inList = false;
@@ -263,7 +263,7 @@ export default function ChatClient({
     for (let line of lines) {
       if (line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
         if (!inList) {
-          resultLines.push("<ul class='list-disc pl-5 my-2 space-y-1 text-slate-300'>");
+          resultLines.push("<ul class='list-disc pl-5 my-2 space-y-1 text-muted-foreground'>");
           inList = true;
         }
         const itemText = line.trim().substring(2);
@@ -274,7 +274,7 @@ export default function ChatClient({
           inList = false;
         }
         if (line.trim().length > 0) {
-          resultLines.push(`<p class='my-1.5 leading-relaxed text-slate-300'>${line}</p>`);
+          resultLines.push(`<p class='my-1.5 leading-relaxed text-muted-foreground'>${line}</p>`);
         } else {
           resultLines.push("<div class='h-2'></div>");
         }
@@ -298,15 +298,15 @@ export default function ChatClient({
   const currentBookletName = currentBooklet ? formatApostilaTitle(currentBooklet.title) : "Apostila selecionada";
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-200">
+    <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Top Header Bar */}
-      <header className="h-20 border-b border-slate-900 bg-slate-900/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0">
+      <header className="h-20 border-b border-slate-900 bg-card/50 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => router.push("/aluno/painel")}
-            className="text-slate-400 hover:text-white rounded-lg border border-slate-850 hover:bg-slate-800 h-9 w-9 sm:h-10 sm:w-10"
+            className="text-muted-foreground hover:text-white rounded-lg border border-slate-850 hover:bg-slate-800 h-9 w-9 sm:h-10 sm:w-10"
             title="Voltar ao painel inicial"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -318,7 +318,7 @@ export default function ChatClient({
             <h1 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white truncate max-w-[150px] xs:max-w-[200px] sm:max-w-none">Mentoria de Estudos por Apostila</h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden xs:block">Base de Operações Online</span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest hidden xs:block">Base de Operações Online</span>
             </div>
           </div>
         </div>
@@ -328,7 +328,7 @@ export default function ChatClient({
             variant="ghost"
             onClick={handleClearChat}
             disabled={clearing || !selectedApostilaId || messages.length === 0}
-            className="h-9 sm:h-10 px-2.5 sm:px-3.5 border border-slate-900 hover:border-red-900/40 hover:bg-red-950/20 text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+            className="h-9 sm:h-10 px-2.5 sm:px-3.5 border border-slate-900 hover:border-red-900/40 hover:bg-red-950/20 text-muted-foreground hover:text-red-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
             title="Limpar conversa"
           >
             {clearing ? <Loader2 className="w-3.5 h-3.5 animate-spin sm:mr-1.5" /> : <Trash2 className="w-3.5 h-3.5 sm:mr-1.5" />}
@@ -340,7 +340,7 @@ export default function ChatClient({
       {/* Main Workspace: Split layout */}
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Sidebar Pane: Configuration & Performance stats */}
-        <aside className="w-80 border-r border-slate-900 bg-slate-950/80 p-6 flex flex-col gap-6 overflow-y-auto hidden md:flex shrink-0">
+        <aside className="w-80 border-r border-slate-900 bg-background/80 p-6 flex flex-col gap-6 overflow-y-auto hidden md:flex shrink-0">
           
           {/* List of booklet chats */}
           <div className="space-y-4 flex-1 flex flex-col min-h-0">
@@ -364,10 +364,10 @@ export default function ChatClient({
                         className={`w-full p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex items-start gap-2.5 ${
                           isSelected 
                             ? "bg-blue-600/10 border-blue-500/50 text-white shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
-                            : "bg-slate-900/40 border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                            : "bg-card/40 border-slate-850 text-muted-foreground hover:text-slate-200 hover:bg-slate-900"
                         }`}
                       >
-                        <BookOpen className={`w-4 h-4 mt-0.5 shrink-0 ${isSelected ? "text-blue-400" : "text-slate-500"}`} />
+                        <BookOpen className={`w-4 h-4 mt-0.5 shrink-0 ${isSelected ? "text-blue-400" : "text-muted-foreground"}`} />
                         <span className="text-xs font-bold leading-snug line-clamp-2" title={apo.title}>{formatApostilaTitle(apo.title)}</span>
                       </button>
                     );
@@ -391,8 +391,8 @@ export default function ChatClient({
                           onClick={() => handleSelectApostila(apo.id, apo.isActive)}
                           className={`w-full p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex items-start gap-2.5 ${
                             isSelected 
-                              ? "bg-slate-900 border-slate-800 text-slate-250" 
-                              : "bg-slate-900/10 border-slate-950 text-slate-500 hover:text-slate-400"
+                              ? "bg-card border-border text-slate-250" 
+                              : "bg-card/10 border-slate-950 text-muted-foreground hover:text-slate-400"
                           }`}
                         >
                           <Lock className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${isSelected ? "text-red-400" : "text-slate-700"}`} />
@@ -414,27 +414,27 @@ export default function ChatClient({
               Aproveitamento Global
             </label>
             
-            <Card className="border-slate-900 bg-slate-900/30">
+            <Card className="border-slate-900 bg-card/30">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4 text-yellow-500" />
-                    <span className="text-[10px] font-black text-slate-400 uppercase">Respostas</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase">Respostas</span>
                   </div>
                   <span className="text-xs font-black text-white">{stats.totalQuestions} alvos</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-blue-400" />
-                    <span className="text-[10px] font-black text-slate-400 uppercase">Taxa de Acerto</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase">Taxa de Acerto</span>
                   </div>
                   <span className="text-xs font-black text-emerald-400">{stats.accuracy}%</span>
                 </div>
                 {typeof stats.streakDays === 'number' && (
-                  <div className="flex items-center justify-between border-t border-slate-800/80 pt-2">
+                  <div className="flex items-center justify-between border-t border-border/80 pt-2">
                     <div className="flex items-center gap-2">
                       <Flame className="w-4 h-4 text-orange-500 fill-orange-500/30 animate-pulse" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Sequência (Diária)</span>
+                      <span className="text-[10px] font-black text-muted-foreground uppercase">Sequência (Diária)</span>
                     </div>
                     <span className="text-xs font-black text-orange-400">{stats.streakDays} dias</span>
                   </div>
@@ -443,7 +443,7 @@ export default function ChatClient({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400/30" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Pontos Hoje</span>
+                      <span className="text-[10px] font-black text-muted-foreground uppercase">Pontos Hoje</span>
                     </div>
                     <span className="text-xs font-black text-yellow-400">+{stats.todayPoints}</span>
                   </div>
@@ -454,10 +454,10 @@ export default function ChatClient({
         </aside>
 
         {/* Right Main Area: Chat Box */}
-        <section className="flex-1 flex flex-col bg-slate-900/20 overflow-hidden relative">
+        <section className="flex-1 flex flex-col bg-card/20 overflow-hidden relative">
           
           {/* Mobile Selector Dropdown (Shown only on small screens) */}
-          <div className="p-4 border-b border-slate-900 bg-slate-950/40 flex items-center justify-between md:hidden gap-3 shrink-0">
+          <div className="p-4 border-b border-slate-900 bg-background/40 flex items-center justify-between md:hidden gap-3 shrink-0">
             <div className="flex-1">
               <select
                 value={selectedApostilaId || ""}
@@ -465,7 +465,7 @@ export default function ChatClient({
                   const apo = apostilas.find(a => a.id === e.target.value);
                   if (apo) handleSelectApostila(apo.id, apo.isActive);
                 }}
-                className="w-full h-10 bg-slate-900 border border-slate-800 rounded-xl px-2.5 text-[10px] font-bold text-white focus:outline-none"
+                className="w-full h-10 bg-card border border-border rounded-xl px-2.5 text-[10px] font-bold text-white focus:outline-none"
               >
                 {apostilas.map((apo) => (
                   <option key={apo.id} value={apo.id}>
@@ -474,7 +474,7 @@ export default function ChatClient({
                 ))}
               </select>
             </div>
-            <div className="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center gap-1">
+            <div className="p-2.5 bg-card/80 rounded-xl border border-border flex items-center gap-1">
               <Target className="w-3.5 h-3.5 text-blue-400" />
               <span className="text-[10px] font-black text-white">{stats.accuracy}%</span>
             </div>
@@ -483,17 +483,17 @@ export default function ChatClient({
           {/* Messages Thread Container */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
             {loadingHistory ? (
-              <div className="flex flex-col items-center justify-center h-full py-12 text-slate-400 space-y-3">
+              <div className="flex flex-col items-center justify-center h-full py-12 text-muted-foreground space-y-3">
                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Carregando conversa...</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">Carregando conversa...</span>
               </div>
             ) : !selectedApostilaId ? (
               <div className="max-w-md mx-auto py-24 flex flex-col items-center justify-center text-center space-y-4">
-                <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+                <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
                   <BookOpen className="w-6 h-6" />
                 </div>
                 <h3 className="text-sm font-black text-white uppercase tracking-wider">Selecione uma Apostila</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Não há apostilas disponíveis ou selecionadas para estudo no momento.
                 </p>
               </div>
@@ -504,7 +504,7 @@ export default function ChatClient({
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-white uppercase tracking-wider">Início de Mentoria Tática</h3>
-                  <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-2 max-w-md leading-relaxed">
                     Você abriu o canal de dúvidas para a apostila:<br />
                     <strong className="text-white">"{currentBookletName}"</strong>.
                   </p>
@@ -512,12 +512,12 @@ export default function ChatClient({
 
                 {isApostilaActive && (
                   <div className="w-full max-w-lg grid grid-cols-1 gap-2 pt-4">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-left block pl-2">Sugestões de Dúvidas</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-left block pl-2">Sugestões de Dúvidas</span>
                     {suggestions.map((s, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSend(s)}
-                        className="w-full p-3 bg-slate-900/40 hover:bg-slate-900/80 border border-slate-850 rounded-xl text-left text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer truncate"
+                        className="w-full p-3 bg-card/40 hover:bg-slate-900/80 border border-slate-850 rounded-xl text-left text-xs font-semibold text-muted-foreground hover:text-white transition-all cursor-pointer truncate"
                       >
                         💡 {s}
                       </button>
@@ -540,8 +540,8 @@ export default function ChatClient({
                     {/* Bubble Content */}
                     <div className={`p-4 rounded-2xl max-w-[85%] text-sm shadow-md border ${
                       m.role === "user" 
-                        ? "bg-blue-600/10 border-blue-500/20 text-slate-100 rounded-tr-none" 
-                        : "bg-slate-900 border-slate-850 text-slate-100 rounded-tl-none"
+                        ? "bg-blue-600/10 border-blue-500/20 text-foreground rounded-tr-none" 
+                        : "bg-card border-slate-850 text-foreground rounded-tl-none"
                     }`}>
                       {m.role !== "user" ? (
                         <div 
@@ -549,19 +549,19 @@ export default function ChatClient({
                           dangerouslySetInnerHTML={{ __html: formatMarkdown(m.content) }}
                         />
                       ) : (
-                        <p className="leading-relaxed whitespace-pre-wrap text-left font-medium text-slate-200">{m.content}</p>
+                        <p className="leading-relaxed whitespace-pre-wrap text-left font-medium text-foreground">{m.content}</p>
                       )}
                       
                       {/* Timestamp */}
-                      <span className="text-[9px] font-bold text-slate-500 block text-right mt-2 uppercase tracking-wide">
+                      <span className="text-[9px] font-bold text-muted-foreground block text-right mt-2 uppercase tracking-wide">
                         {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
 
                     {/* User Avatar */}
                     {m.role === "user" && (
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
-                        <User className="w-4 h-4 text-slate-400" />
+                      <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
+                        <User className="w-4 h-4 text-muted-foreground" />
                       </div>
                     )}
 
@@ -574,9 +574,9 @@ export default function ChatClient({
                     <div className="w-8 h-8 rounded-lg bg-blue-950 border border-blue-500/30 flex items-center justify-center shrink-0">
                       <Bot className="w-4 h-4 text-blue-400" />
                     </div>
-                    <div className="p-4 bg-slate-900 border border-slate-850 rounded-2xl rounded-tl-none shadow-md flex items-center gap-2">
+                    <div className="p-4 bg-card border border-slate-850 rounded-2xl rounded-tl-none shadow-md flex items-center gap-2">
                       <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider animate-pulse">Mentor PUMA está analisando...</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider animate-pulse">Mentor PUMA está analisando...</span>
                     </div>
                   </div>
                 )}
@@ -587,17 +587,17 @@ export default function ChatClient({
           </div>
 
           {/* Bottom Send Input Form */}
-          <div className="p-6 border-t border-slate-900 bg-slate-950/60 shrink-0">
+          <div className="p-6 border-t border-slate-900 bg-background/60 shrink-0">
             <div className="max-w-3xl mx-auto relative">
               {!isChatEnabled ? (
                 /* Warn banner for globally disabled AI chat */
-                <div className="flex items-center gap-3 p-4 bg-slate-900/60 border border-amber-900/40 text-slate-400 rounded-xl text-xs font-semibold select-none leading-relaxed">
+                <div className="flex items-center gap-3 p-4 bg-card/60 border border-amber-900/40 text-muted-foreground rounded-xl text-xs font-semibold select-none leading-relaxed">
                   <Lock className="w-4 h-4 text-amber-500 shrink-0" />
                   <span>O chat com o mentor de IA está temporariamente desativado pelo instrutor.</span>
                 </div>
               ) : selectedApostilaId && !isApostilaActive ? (
                 /* Warn banner for disabled chats */
-                <div className="flex items-center gap-3 p-4 bg-slate-900/60 border border-red-900/40 text-slate-400 rounded-xl text-xs font-semibold select-none leading-relaxed">
+                <div className="flex items-center gap-3 p-4 bg-card/60 border border-red-900/40 text-muted-foreground rounded-xl text-xs font-semibold select-none leading-relaxed">
                   <Lock className="w-4 h-4 text-red-500 shrink-0" />
                   <span>Esta apostila foi desativada ou removida pelo instrutor. O envio de novas mensagens está bloqueado, mas você ainda pode revisar o histórico.</span>
                 </div>
@@ -614,7 +614,7 @@ export default function ChatClient({
                       onChange={(e) => setInput(e.target.value)}
                       placeholder="Escreva sua pergunta técnica sobre a matéria..."
                       disabled={sending}
-                      className="flex-1 h-12 bg-slate-900 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+                      className="flex-1 h-12 bg-card border border-border rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
                     />
                     <Button 
                       type="submit" 
@@ -624,7 +624,7 @@ export default function ChatClient({
                       <Send className="w-4 h-4" />
                     </Button>
                   </form>
-                  <div className="flex justify-between items-center mt-2 px-1 text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                  <div className="flex justify-between items-center mt-2 px-1 text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
                     <span>* Dúvidas respondidas em conformidade com a apostila.</span>
                     <span className="text-blue-400 flex items-center gap-1">
                       <BookOpenCheck className="w-3 h-3" /> Foco Ativo no PDF

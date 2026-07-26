@@ -26,7 +26,7 @@ export default function ReportQuestionButton({
   const [error, setError] = useState("");
 
   if (hasAppealLocal) {
-    let badgeColor = "bg-slate-500 text-slate-100";
+    let badgeColor = "bg-slate-500 text-foreground";
     let statusText = "Em Análise";
 
     if (appealStatus === "ANNULLED") {
@@ -44,19 +44,19 @@ export default function ReportQuestionButton({
     }
 
     return (
-      <div className="mt-4 p-4 rounded-lg bg-slate-900/40 border border-slate-700/50">
+      <div className="mt-4 p-4 rounded-lg bg-card/40 border border-border/50">
         <div className="flex items-center gap-2 mb-2">
-          <Flag className="w-4 h-4 text-slate-400" />
-          <span className="text-sm font-semibold text-slate-300">Situação do Recurso:</span>
+          <Flag className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-semibold text-muted-foreground">Situação do Recurso:</span>
           <span className={`px-2 py-0.5 rounded text-xs font-bold ${badgeColor}`}>{statusText}</span>
         </div>
         {appealResponse && (
-          <p className="text-sm text-slate-400 mt-2 italic border-l-2 border-slate-600 pl-3">
+          <p className="text-sm text-muted-foreground mt-2 italic border-l-2 border-border pl-3">
             {appealResponse}
           </p>
         )}
         {!appealResponse && appealStatus === "PENDING" && (
-          <p className="text-sm text-slate-400 mt-2 italic border-l-2 border-slate-600 pl-3">
+          <p className="text-sm text-muted-foreground mt-2 italic border-l-2 border-border pl-3">
             A Inteligência Artificial (Sonnet 5) está analisando esta questão. Atualize a página em breve.
           </p>
         )}
@@ -111,7 +111,7 @@ export default function ReportQuestionButton({
         Atenção: Apenas um recurso pode ser aberto por simulado. Descreva detalhadamente o porquê o gabarito está errado ou a questão deve ser anulada.
       </p>
       <textarea 
-        className="w-full bg-slate-900 border border-slate-700 rounded-md p-2 text-sm text-slate-200 mb-3 focus:outline-none focus:border-red-500/50 min-h-[80px]"
+        className="w-full bg-card border border-border rounded-md p-2 text-sm text-foreground mb-3 focus:outline-none focus:border-red-500/50 min-h-[80px]"
         placeholder="Ex: O gabarito indica a alternativa A como correta, mas a B é a certa segundo a Lei XYZ..."
         value={reason}
         onChange={e => setReason(e.target.value)}
@@ -124,7 +124,7 @@ export default function ReportQuestionButton({
           size="sm" 
           onClick={() => setIsOpen(false)}
           disabled={loading}
-          className="text-slate-400 hover:text-slate-300"
+          className="text-muted-foreground hover:text-slate-300"
         >
           Cancelar
         </Button>

@@ -254,9 +254,9 @@ export default function StudentSelfPacedClient({
 
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-        <span className="text-slate-400 font-bold uppercase tracking-wider text-xs mt-2">Carregando missão...</span>
+        <span className="text-muted-foreground font-bold uppercase tracking-wider text-xs mt-2">Carregando missão...</span>
       </div>
     );
   }
@@ -264,17 +264,17 @@ export default function StudentSelfPacedClient({
   const progressPercent = ((currentIdx + (isAnswered ? 1 : 0)) / simulado.questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 flex items-center justify-center">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8 flex items-center justify-center">
       <div className="w-full max-w-4xl space-y-6">
         
         {/* Header da Missão */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-950/40 border border-blue-500/20 text-blue-400 rounded-lg">
               <BookOpen className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest block">Treinamento de Combate</h2>
+              <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest block">Treinamento de Combate</h2>
               <h1 className="text-lg font-bold text-white truncate max-w-[calc(100vw-120px)] sm:max-w-md" title={simulado.apostilaName || ""}>{formatApostilaTitle(simulado.apostilaName)}</h1>
             </div>
           </div>
@@ -288,12 +288,12 @@ export default function StudentSelfPacedClient({
                   router.push("/aluno/painel");
                 }
               }}
-              className="h-10 px-3.5 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-black text-[10px] uppercase tracking-wider cursor-pointer"
+              className="h-10 px-3.5 bg-card border border-border text-muted-foreground hover:text-white font-black text-[10px] uppercase tracking-wider cursor-pointer"
             >
               Sair
             </Button>
             {/* Timer Progress */}
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
+            <div className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-xl">
               <Clock className={`w-4 h-4 ${hasTimer && timeLeft <= 10 && !isAnswered ? "text-red-500 animate-pulse" : "text-blue-400"}`} />
               <span className={`font-mono ${hasTimer ? "text-base" : "text-xs"} font-black ${hasTimer && timeLeft <= 10 && !isAnswered ? "text-red-500" : "text-white"}`}>
                 {hasTimer ? `${timeLeft}s` : "ILIMITADO"}
@@ -301,7 +301,7 @@ export default function StudentSelfPacedClient({
             </div>
             
             {/* Question Progress */}
-            <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-xs font-bold text-slate-300">
+            <div className="bg-card border border-border px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground">
               ALVO {currentIdx + 1} DE {simulado.questions.length}
             </div>
           </div>
@@ -309,18 +309,18 @@ export default function StudentSelfPacedClient({
 
         {/* Barra de Progresso */}
         <div className="space-y-1">
-          <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
+          <div className="flex justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest">
             <span>Progressão do Simulado</span>
             <span>{Math.round(progressPercent)}% concluído</span>
           </div>
-          <Progress value={progressPercent} className="h-2 bg-slate-900 border border-slate-800" />
+          <Progress value={progressPercent} className="h-2 bg-card border border-border" />
         </div>
 
         {/* Layout Principal da Questão */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Question Enunciado and Alternatives */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800 shadow-2xl relative overflow-hidden backdrop-blur-sm">
+            <Card className="bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
               <CardContent className="p-6 md:p-8 space-y-6">
                 
@@ -339,7 +339,7 @@ export default function StudentSelfPacedClient({
                 <div className="space-y-3">
                   {alternativasList.map((alt, idx) => {
                     const isSelected = selectedAlt === idx;
-                    let altClass = "bg-slate-950/40 border-slate-800 text-slate-300 hover:bg-slate-900/40 hover:text-white";
+                    let altClass = "bg-background/40 border-border text-muted-foreground hover:bg-slate-900/40 hover:text-white";
                     
                     if (isAnswered) {
                       if (idx === correctAltIndex) {
@@ -350,7 +350,7 @@ export default function StudentSelfPacedClient({
                         altClass = "bg-red-950/30 border-red-500/50 text-red-300 shadow-[inset_0_0_15px_rgba(239,68,68,0.05)]";
                       } else {
                         // Gray out other options
-                        altClass = "bg-slate-950/10 border-slate-900/50 text-slate-600 cursor-not-allowed";
+                        altClass = "bg-background/10 border-slate-900/50 text-muted-foreground cursor-not-allowed";
                       }
                     } else if (isSelected) {
                       altClass = "bg-blue-950/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]";
@@ -402,7 +402,7 @@ export default function StudentSelfPacedClient({
           {/* Feedback & Justification Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {isAnswered ? (
-              <Card className={`bg-slate-900/40 border-slate-800 shadow-2xl relative overflow-hidden backdrop-blur-sm flex flex-col h-full`}>
+              <Card className={`bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm flex flex-col h-full`}>
                 <div className={`absolute top-0 left-0 w-full h-1 ${isCorrect ? "bg-emerald-500" : "bg-red-500"}`}></div>
                 
                 <CardHeader>
@@ -428,9 +428,9 @@ export default function StudentSelfPacedClient({
 
                 <CardContent className="flex-1 flex flex-col justify-between space-y-6">
                   {/* Justificativa */}
-                  <div className="bg-slate-950/60 p-4 border border-slate-800 rounded-xl space-y-2 flex-1 overflow-y-auto max-h-[300px] custom-scrollbar">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Análise Didática da IA</span>
-                    <p className="text-sm font-medium text-slate-300">
+                  <div className="bg-background/60 p-4 border border-border rounded-xl space-y-2 flex-1 overflow-y-auto max-h-[300px] custom-scrollbar">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block">Análise Didática da IA</span>
+                    <p className="text-sm font-medium text-muted-foreground">
                       <JustificativaWithCitation text={justificativa} apostilaFilePath={apostilaFilePath} />
                     </p>
                   </div>
@@ -460,13 +460,13 @@ export default function StudentSelfPacedClient({
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-slate-900/40 border-slate-800 shadow-2xl relative overflow-hidden backdrop-blur-sm h-full flex flex-col justify-center">
-                <div className="absolute top-0 left-0 w-full h-1 bg-slate-800"></div>
+              <Card className="bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm h-full flex flex-col justify-center">
+                <div className="absolute top-0 left-0 w-full h-1 bg-muted"></div>
                 <CardContent className="p-6 text-center space-y-4">
                   <HelpCircle className="w-12 h-12 text-slate-700 mx-auto animate-pulse" />
                   <div>
-                    <h3 className="font-bold text-sm text-slate-400 uppercase tracking-wider">Aguardando Resposta</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-[200px] mx-auto leading-relaxed">
+                    <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Aguardando Resposta</h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-[200px] mx-auto leading-relaxed">
                       Selecione uma das 5 alternativas e clique em confirmar antes que o tempo se esgote!
                     </p>
                   </div>

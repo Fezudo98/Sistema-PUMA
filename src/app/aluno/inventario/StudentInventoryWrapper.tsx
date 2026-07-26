@@ -16,7 +16,7 @@ export default function StudentInventoryWrapper({ user }: StudentInventoryWrappe
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 md:p-8 text-white max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background p-4 md:p-8 text-white max-w-7xl mx-auto">
       <InventoryClient 
         role="STUDENT" 
         user={user} 

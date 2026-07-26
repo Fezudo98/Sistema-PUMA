@@ -43,7 +43,7 @@ export function JustificativaWithCitation({ text, apostilaFilePath }: Justificat
         className={`inline-flex items-center gap-1.5 px-2 py-0.5 mx-1 rounded-md text-xs font-bold uppercase tracking-wider transition-all
           ${apostilaFilePath 
             ? "bg-blue-600 hover:bg-blue-500 text-white shadow-sm hover:shadow-[0_0_10px_rgba(37,99,235,0.4)]" 
-            : "bg-slate-800 text-slate-500 cursor-not-allowed"
+            : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         title={apostilaFilePath ? `Abrir PDF na página ${pageNumber}` : "Apostila PDF não encontrada no sistema"}
       >
@@ -61,12 +61,12 @@ export function JustificativaWithCitation({ text, apostilaFilePath }: Justificat
 
   // Se não tem partes além do próprio texto (nenhuma citação encontrada), só mostra o texto
   if (parts.length === 0) {
-    return <span className="leading-relaxed text-slate-300">{text}</span>;
+    return <span className="leading-relaxed text-muted-foreground">{text}</span>;
   }
 
   return (
     <>
-      <span className="leading-relaxed text-slate-300">
+      <span className="leading-relaxed text-muted-foreground">
         {parts.map((part, index) => (
           <React.Fragment key={index}>{part}</React.Fragment>
         ))}

@@ -22,7 +22,7 @@ export function PdfViewerModal({ isOpen, onClose, filePath, initialPage }: PdfVi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl w-full h-[90vh] bg-slate-900 border-slate-700 p-0 overflow-hidden flex flex-col">
+      <DialogContent className="max-w-6xl w-full h-[90vh] bg-card border-border p-0 overflow-hidden flex flex-col">
         {/* Adicionando DialogTitle invisível para acessibilidade e parar o aviso do Radix */}
         <DialogTitle className="sr-only">Visualizador de Citação da Apostila</DialogTitle>
         

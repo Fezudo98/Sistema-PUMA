@@ -46,10 +46,10 @@ export default function ManutencaoPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-slate-950 bg-cover bg-center relative overflow-hidden"
+      className="min-h-screen flex items-center justify-center p-4 bg-background bg-cover bg-center relative overflow-hidden"
       style={{ backgroundImage: "url('/arte_fundo.png')" }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/90 to-slate-950 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/90 to-background pointer-events-none"></div>
 
       <div className="w-full max-w-lg z-10 space-y-6">
         <div className="flex flex-col items-center text-center">
@@ -67,12 +67,12 @@ export default function ManutencaoPage() {
           <h1 className="text-3xl font-black text-white tracking-tight uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             Servidor em <span className="text-amber-500">Manutenção</span>
           </h1>
-          <p className="text-slate-400 font-bold uppercase tracking-wider text-xs mt-1">
+          <p className="text-muted-foreground font-bold uppercase tracking-wider text-xs mt-1">
             Sistema PUMA • 32º Pelotão
           </p>
         </div>
 
-        <Card className="border-amber-500/30 bg-slate-900/90 text-white shadow-[0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-md relative overflow-hidden">
+        <Card className="border-amber-500/30 bg-card/90 text-white shadow-[0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-md relative overflow-hidden">
           {/* Top accent bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600"></div>
 
@@ -81,16 +81,16 @@ export default function ManutencaoPage() {
               <ShieldAlert className="w-5 h-5 text-amber-400" />
               Acesso Temporariamente Suspenso
             </CardTitle>
-            <CardDescription className="text-slate-300 text-sm mt-2 leading-relaxed">
+            <CardDescription className="text-muted-foreground text-sm mt-2 leading-relaxed">
               O servidor está passando por atualizações técnicas, manutenções táticas e melhorias em nosso banco de dados.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6 pt-2 pb-6">
-            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
+            <div className="bg-background/80 border border-border rounded-xl p-4 space-y-3">
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300 space-y-1">
+                <div className="text-xs text-muted-foreground space-y-1">
                   <p className="font-bold text-white uppercase tracking-wider">Previsão de Retorno:</p>
                   <p>Estamos trabalhando com a máxima celeridade. Retornaremos em breve com força total para a continuação de suas instruções e simulados.</p>
                 </div>
@@ -126,7 +126,7 @@ export default function ManutencaoPage() {
                     </>
                   )}
                 </Button>
-                <p className="text-[11px] text-center text-slate-500 flex items-center justify-center gap-1.5 font-medium">
+                <p className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1.5 font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Esta página verifica o retorno automaticamente a cada 8 segundos
                 </p>

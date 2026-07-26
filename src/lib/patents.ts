@@ -28,12 +28,12 @@ const PATENTS: PatentInfo[] = [
     id: "recruta",
     name: "Recruta",
     icon: RecrutaDotIcon, // Recruta gets a basic dot
-    color: "text-slate-400",
-    bg: "bg-slate-900/40",
-    border: "border-slate-700",
+    color: "text-muted-foreground",
+    bg: "bg-card/40",
+    border: "border-border",
     requiredScore: 0,
-    avatarRing: "border-slate-700",
-    nameEffect: "text-slate-300"
+    avatarRing: "border-border",
+    nameEffect: "text-muted-foreground"
   },
   {
     id: "soldado",

@@ -132,18 +132,18 @@ const HERALDICA = [
 
 export default function QuemSomosPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white relative pb-16 selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-background text-white relative pb-16 selection:bg-amber-500 selection:text-slate-950">
       {/* Background radial visual */}
       <div className="fixed inset-0 opacity-15 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-amber-500/15 via-yellow-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Navbar com botões de Retornar */}
-      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 md:px-8 py-4">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/80 px-4 md:px-8 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <Link href="/">
             <Button 
               variant="outline" 
-              className="border-amber-500/40 bg-slate-900/80 hover:bg-amber-500/10 text-amber-300 hover:text-amber-200 font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md"
+              className="border-amber-500/40 bg-card/80 hover:bg-amber-500/10 text-amber-300 hover:text-amber-200 font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md"
             >
               <ArrowLeft className="w-4 h-4 text-amber-400" />
               <span>Retornar ao Início</span>
@@ -163,13 +163,13 @@ export default function QuemSomosPage() {
 
       {/* Hero Section Principal */}
       <main className="max-w-6xl mx-auto px-4 md:px-8 pt-8 md:pt-12 relative z-10 space-y-12">
-        <div className="bg-gradient-to-b from-slate-900/90 via-slate-900/70 to-slate-950 border border-amber-500/30 rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative overflow-hidden">
+        <div className="bg-gradient-to-b from-background/90 via-background/70 to-background border border-amber-500/30 rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 text-center md:text-left">
             
             {/* Quadro da Bandeira */}
             <div className="relative group shrink-0">
               <div className="absolute -inset-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-90 transition duration-500" />
-              <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-slate-950 rounded-2xl border-2 border-amber-500/60 p-3 shadow-2xl flex items-center justify-center overflow-hidden">
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-background rounded-2xl border-2 border-amber-500/60 p-3 shadow-2xl flex items-center justify-center overflow-hidden">
                 <img 
                   src="/bandeira_puma.png" 
                   alt="Bandeira do 32º Pelotão PUMA" 
@@ -189,20 +189,20 @@ export default function QuemSomosPage() {
                 32º PELOTÃO <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500">PUMA</span>
               </h1>
 
-              <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-3xl">
+              <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-3xl">
                 Forjados na disciplina de ferro, na resiliência do sertão nordestino e no compromisso inabalável de proteger e servir à sociedade. Conheça a história, a liderança, os combatentes e a rica heráldica que compõe a alma do nosso pelotão.
               </p>
 
               <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
-                <div className="px-4 py-2 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-2 shadow">
+                <div className="px-4 py-2 bg-muted/90 border border-border/80 rounded-xl text-xs sm:text-sm font-bold text-muted-foreground flex items-center gap-2 shadow">
                   <UserCheck className="w-4 h-4 text-blue-400" />
                   <span>Coord.: <strong className="text-white">TC Everton</strong></span>
                 </div>
-                <div className="px-4 py-2 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-2 shadow">
+                <div className="px-4 py-2 bg-muted/90 border border-border/80 rounded-xl text-xs sm:text-sm font-bold text-muted-foreground flex items-center gap-2 shadow">
                   <Award className="w-4 h-4 text-amber-400" />
                   <span>Monitor: <strong className="text-white">CB Gomes</strong></span>
                 </div>
-                <div className="px-4 py-2 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm font-bold text-slate-300 flex items-center gap-2 shadow">
+                <div className="px-4 py-2 bg-muted/90 border border-border/80 rounded-xl text-xs sm:text-sm font-bold text-muted-foreground flex items-center gap-2 shadow">
                   <Users className="w-4 h-4 text-emerald-400" />
                   <span>Efetivo: <strong className="text-white">32 Combatentes</strong></span>
                 </div>
@@ -215,28 +215,28 @@ export default function QuemSomosPage() {
         {/* Seção de Abas Em Tela Cheia */}
         <div className="space-y-6">
           <Tabs defaultValue="heraldica" className="w-full space-y-8">
-            <TabsList className="flex flex-wrap md:grid md:grid-cols-4 h-auto w-full bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl gap-2 shadow-lg">
+            <TabsList className="flex flex-wrap md:grid md:grid-cols-4 h-auto w-full bg-card/90 border border-border p-1.5 rounded-xl gap-2 shadow-lg">
               <TabsTrigger 
                 value="heraldica" 
-                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 🛡️ Heráldica
               </TabsTrigger>
               <TabsTrigger 
                 value="efetivo" 
-                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 👥 Efetivo (QRAs)
               </TabsTrigger>
               <TabsTrigger 
                 value="brado" 
-                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 🔥 Brado
               </TabsTrigger>
               <TabsTrigger 
                 value="lideranca" 
-                className="flex-1 min-w-[140px] text-slate-400 hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
+                className="flex-1 min-w-[140px] text-muted-foreground hover:text-white hover:bg-slate-800/50 data-[state=active]:!bg-transparent data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-amber-500 data-[state=active]:!to-yellow-500 data-[state=active]:!text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg py-3.5 transition-all shadow-sm cursor-pointer"
               >
                 ⭐ Origem
               </TabsTrigger>
@@ -244,11 +244,11 @@ export default function QuemSomosPage() {
 
             {/* ABA 1: HERÁLDICA DA BANDEIRA */}
             <TabsContent value="heraldica" className="space-y-8 animate-in fade-in-50 duration-300">
-              <div className="text-center bg-slate-900/60 border border-amber-500/20 rounded-2xl p-6 md:p-8 relative overflow-hidden">
+              <div className="text-center bg-card/60 border border-amber-500/20 rounded-2xl p-6 md:p-8 relative overflow-hidden">
                 <h3 className="text-xl sm:text-2xl font-black uppercase text-amber-400 tracking-wide">
                   O Significado Sagrado de Nossos Símbolos
                 </h3>
-                <p className="text-sm sm:text-base text-slate-300 mt-2 max-w-3xl mx-auto">
+                <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-3xl mx-auto">
                   Cada detalhe, cor, animal e armamento estampado em nossa bandeira carrega um lema de vida e uma promessa solene perante a instituição e o povo cearense.
                 </p>
                 <div className="mt-5 flex justify-center">
@@ -264,7 +264,7 @@ export default function QuemSomosPage() {
                   return (
                     <div 
                       key={idx}
-                      className="bg-slate-900/90 border border-slate-800/80 hover:border-amber-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_0_30px_rgba(245,158,11,0.12)] flex flex-col justify-between"
+                      className="bg-card/90 border border-border/80 hover:border-amber-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-[0_0_30px_rgba(245,158,11,0.12)] flex flex-col justify-between"
                     >
                       <div>
                         <div className="flex items-center justify-between mb-3.5">
@@ -278,7 +278,7 @@ export default function QuemSomosPage() {
                         <h4 className="text-lg font-bold text-white tracking-tight mb-3 flex items-center gap-2">
                           {item.title}
                         </h4>
-                        <p className="text-sm text-slate-300 leading-relaxed text-justify">
+                        <p className="text-sm text-muted-foreground leading-relaxed text-justify">
                           {item.description}
                         </p>
                       </div>
@@ -290,11 +290,11 @@ export default function QuemSomosPage() {
 
             {/* ABA 2: OS 32 ALUNOS (QRAS) */}
             <TabsContent value="efetivo" className="space-y-8 animate-in fade-in-50 duration-300">
-              <div className="text-center bg-slate-900/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
+              <div className="text-center bg-card/60 border border-amber-500/20 rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl sm:text-2xl font-black uppercase text-amber-400 tracking-wide">
                   Grade de Combatentes do 32º Pelotão
                 </h3>
-                <p className="text-sm sm:text-base text-slate-300 mt-2 max-w-2xl mx-auto">
+                <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-2xl mx-auto">
                   A força de um pelotão reside na união inquebrável de seus combatentes. Abaixo, a relação oficial com a numeração tática e o QRA de cada um de nossos irmãos de farda.
                 </p>
                 <div className="mt-4 inline-flex items-center gap-2 px-4 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs sm:text-sm font-bold uppercase tracking-wider">
@@ -307,7 +307,7 @@ export default function QuemSomosPage() {
                 {QRAS.map((aluno) => (
                   <div 
                     key={aluno.num}
-                    className="group bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 rounded-xl p-4 text-center transition-all duration-300 hover:scale-[1.03] shadow flex flex-col items-center justify-center gap-1.5 relative overflow-hidden"
+                    className="group bg-card/90 hover:bg-slate-800 border border-border hover:border-amber-500/40 rounded-xl p-4 text-center transition-all duration-300 hover:scale-[1.03] shadow flex flex-col items-center justify-center gap-1.5 relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500/10 rounded-bl-full flex items-start justify-end p-1.5 text-[10px] font-black text-amber-500 opacity-60 group-hover:opacity-100 transition">
                       PM
@@ -318,7 +318,7 @@ export default function QuemSomosPage() {
                     <span className="text-base sm:text-lg font-bold text-white group-hover:text-amber-300 transition tracking-tight">
                       {aluno.qra}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-tighter">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">
                       Aluno CFSD
                     </span>
                   </div>
@@ -329,7 +329,7 @@ export default function QuemSomosPage() {
             {/* ABA 3: COMANDO & ORIGEM */}
             <TabsContent value="lideranca" className="space-y-8 animate-in fade-in-50 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-blue-500/30 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
+                <div className="bg-gradient-to-br from-background via-background to-blue-950/40 border border-blue-500/30 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
                   <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
@@ -344,12 +344,12 @@ export default function QuemSomosPage() {
                       </h4>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-300 leading-relaxed text-justify">
+                  <p className="text-sm text-muted-foreground leading-relaxed text-justify">
                     Responsável pela coordenação geral e supervisão tática e doutrinária dos pelotões do CFSD da PMCE alocados na área. Lidera com rigor, excelência técnica e foco absoluto na formação de policiais valorosos e prontos para a defesa da sociedade cearense.
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/30 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
+                <div className="bg-gradient-to-br from-background via-background to-amber-950/40 border border-amber-500/30 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
                   <div className="absolute -right-6 -top-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl" />
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
@@ -364,14 +364,14 @@ export default function QuemSomosPage() {
                       </h4>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-300 leading-relaxed text-justify">
+                  <p className="text-sm text-muted-foreground leading-relaxed text-justify">
                     O elo diário de comando, disciplina e instrução técnica do 32º Pelotão. Acompanha passo a passo a evolução física, moral e acadêmica dos 32 alunos, cobrando padrão, marcialidade, união inabalável e espírito de corpo da tropa em todas as missões.
                   </p>
                 </div>
               </div>
 
               {/* Informação do Batalhão */}
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="bg-card/80 border border-border rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="space-y-2 text-center md:text-left">
                   <div className="inline-flex items-center gap-2 text-xs font-black text-amber-400 uppercase tracking-widest">
                     <MapPin className="w-4 h-4 text-amber-400" />
@@ -380,15 +380,15 @@ export default function QuemSomosPage() {
                   <h4 className="text-xl sm:text-2xl font-black text-white uppercase">
                     14º Batalhão da PMCE • Maracanaú / CE
                   </h4>
-                  <p className="text-sm text-slate-400 max-w-xl">
+                  <p className="text-sm text-muted-foreground max-w-xl">
                     Berço de formação do nosso pelotão, onde a teoria policial e a prática operacional intensa se fundem para criar o combatente moderno do Sistema PUMA.
                   </p>
                 </div>
                 
                 <div className="shrink-0 flex items-center gap-4">
                   <img src="/14_bpm.png" alt="14º Batalhão" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-105 transition-transform" />
-                  <div className="px-5 py-4 bg-slate-950 rounded-xl border border-slate-800 text-center shadow-inner">
-                    <span className="block text-[10px] sm:text-xs uppercase font-extrabold text-slate-500 tracking-widest">
+                  <div className="px-5 py-4 bg-background rounded-xl border border-border text-center shadow-inner">
+                    <span className="block text-[10px] sm:text-xs uppercase font-extrabold text-muted-foreground tracking-widest">
                       Ano de Formação
                     </span>
                     <span className="block text-2xl sm:text-3xl font-black text-amber-400 tracking-tight mt-0.5">
@@ -401,7 +401,7 @@ export default function QuemSomosPage() {
 
             {/* ABA 4: BRADO DO PELOTÃO */}
             <TabsContent value="brado" className="space-y-8 animate-in fade-in-50 duration-300">
-              <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 border border-amber-500/30 rounded-2xl p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col items-center justify-center text-center">
+              <div className="bg-gradient-to-br from-background via-background to-amber-950/20 border border-amber-500/30 rounded-2xl p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col items-center justify-center text-center">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl" />
                 
                 <Flame className="w-12 h-12 text-amber-500 mb-6 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
@@ -410,7 +410,7 @@ export default function QuemSomosPage() {
                   Brado do 32º Pelotão
                 </h3>
 
-                <div className="space-y-4 text-lg md:text-2xl font-black uppercase tracking-wider text-slate-200 italic font-serif relative z-10 leading-relaxed">
+                <div className="space-y-4 text-lg md:text-2xl font-black uppercase tracking-wider text-foreground italic font-serif relative z-10 leading-relaxed">
                   <p className="hover:text-amber-400 transition-colors duration-300">"Forjados no sol, na garra e na dor.</p>
                   <p className="hover:text-amber-400 transition-colors duration-300">O 32 avança com fé e destemor.</p>
                   <p className="hover:text-amber-400 transition-colors duration-300">Muralha de aço, prontos para a luta.</p>
@@ -426,12 +426,12 @@ export default function QuemSomosPage() {
         </div>
 
         {/* Botão de Retornar Inferior para facilitar a navegação no final da página */}
-        <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="pt-8 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/">
             <Button 
               size="lg"
               variant="outline" 
-              className="w-full sm:w-auto border-amber-500/40 bg-slate-900/80 hover:bg-amber-500/10 text-amber-300 hover:text-amber-200 font-bold px-8 py-6 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+              className="w-full sm:w-auto border-amber-500/40 bg-card/80 hover:bg-amber-500/10 text-amber-300 hover:text-amber-200 font-bold px-8 py-6 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
             >
               <ArrowLeft className="w-5 h-5 text-amber-400" />
               <span className="text-base">Retornar ao Início</span>

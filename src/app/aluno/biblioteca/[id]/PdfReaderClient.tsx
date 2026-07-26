@@ -44,7 +44,7 @@ const HighlightContentEditor = ({ props, addAnnotation }: { props: RenderHighlig
         onChange={(e) => setMessage(e.target.value)}
       />
       <div className="flex gap-2 justify-end mt-1">
-        <Button variant="ghost" size="sm" onClick={props.cancel} className="text-slate-500">
+        <Button variant="ghost" size="sm" onClick={props.cancel} className="text-muted-foreground">
           Cancelar
         </Button>
         <Button 
@@ -198,11 +198,11 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
   const fileUrl = apostila.filePath.startsWith("/") ? apostila.filePath : `/${apostila.filePath}`;
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900">
-      <header className="bg-slate-950 border-b border-slate-800 p-4 flex items-center justify-between shrink-0">
+    <div className="flex flex-col h-screen bg-card">
+      <header className="bg-background border-b border-border p-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/aluno/biblioteca">
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
@@ -215,16 +215,16 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
       <main className="flex-1 overflow-hidden relative" onClick={() => setActiveTooltip(null)}>
         {activeTooltip && (
           <div 
-            className="fixed bg-slate-900 text-white p-4 rounded-xl shadow-2xl border border-slate-700 z-[99999] w-72 transform -translate-x-1/2 -translate-y-full flex flex-col gap-3 cursor-default"
+            className="fixed bg-card text-white p-4 rounded-xl shadow-2xl border border-border z-[99999] w-72 transform -translate-x-1/2 -translate-y-full flex flex-col gap-3 cursor-default"
             style={{ left: activeTooltip.x, top: activeTooltip.y - 12 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div>
               <p className="text-xs font-black text-blue-400 uppercase tracking-wider mb-1">Sua anotação</p>
-              <p className="text-sm text-slate-200 leading-relaxed">{activeTooltip.content}</p>
+              <p className="text-sm text-foreground leading-relaxed">{activeTooltip.content}</p>
             </div>
             
-            <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-between mt-2 pt-3 border-t border-border">
               <button 
                 onClick={() => {
                   deleteAnnotation(activeTooltip.id);
@@ -236,7 +236,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
               </button>
               <button 
                 onClick={() => setActiveTooltip(null)}
-                className="text-slate-400 hover:text-white text-xs font-semibold px-2 py-1 -mr-2 rounded hover:bg-slate-800 transition-colors"
+                className="text-muted-foreground hover:text-white text-xs font-semibold px-2 py-1 -mr-2 rounded hover:bg-slate-800 transition-colors"
               >
                 Fechar
               </button>
@@ -248,7 +248,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
         )}
         
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-full text-slate-400">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <Loader2 className="w-8 h-8 animate-spin mb-4" />
             <p>Carregando anotações...</p>
           </div>
