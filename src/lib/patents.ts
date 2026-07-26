@@ -1,9 +1,17 @@
-import { Shield, Target, Award, Star, Flame, Zap, ShieldAlert, Crosshair, Skull, Medal } from "lucide-react";
+import {
+  RecrutaIcon,
+  SoldadoIcon,
+  CaboIcon,
+  SargentoIcon,
+  SubtenenteIcon,
+  RaioIcon,
+  BopeIcon
+} from "@/components/PatentIcons";
 
 export interface PatentInfo {
   id: string;
   name: string;
-  icon: any; // Lucide icon
+  icon: any; // React SVG Component
   color: string;
   bg: string;
   border: string;
@@ -18,7 +26,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "recruta",
     name: "Recruta",
-    icon: Shield,
+    icon: RecrutaIcon,
     color: "text-slate-400",
     bg: "bg-slate-900/40",
     border: "border-slate-700",
@@ -29,7 +37,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "soldado",
     name: "Soldado Combatente",
-    icon: Crosshair,
+    icon: SoldadoIcon,
     color: "text-blue-400",
     bg: "bg-blue-900/20",
     border: "border-blue-500/30",
@@ -41,7 +49,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "cabo",
     name: "Cabo Especialista",
-    icon: Target,
+    icon: CaboIcon,
     color: "text-emerald-400",
     bg: "bg-emerald-900/20",
     border: "border-emerald-500/30",
@@ -53,7 +61,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "sargento",
     name: "Sargento Tático",
-    icon: Medal,
+    icon: SargentoIcon,
     color: "text-yellow-400",
     bg: "bg-yellow-900/20",
     border: "border-yellow-500/30",
@@ -66,7 +74,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "subtenente",
     name: "Subtenente Veterano",
-    icon: Star,
+    icon: SubtenenteIcon,
     color: "text-orange-400",
     bg: "bg-orange-900/20",
     border: "border-orange-500/30",
@@ -79,7 +87,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "raio",
     name: "Operador RAIO",
-    icon: Zap,
+    icon: RaioIcon,
     color: "text-purple-400",
     bg: "bg-purple-900/20",
     border: "border-purple-500/30",
@@ -92,7 +100,7 @@ const PATENTS: PatentInfo[] = [
   {
     id: "bope",
     name: "Comandante BOPE",
-    icon: Skull,
+    icon: BopeIcon,
     color: "text-red-500",
     bg: "bg-red-950/40",
     border: "border-red-500/50",
