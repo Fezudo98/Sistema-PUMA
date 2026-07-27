@@ -496,15 +496,14 @@ export async function saveSelfPacedAnswer(data: {
     
     let pontuacao = 0;
     if (isCorrect) {
-      // Verifica se o simulado foi criado hoje
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      
+      const now = new Date();
       const simuladoDate = question.simulado?.createdAt || new Date(0);
-      const isHoje = simuladoDate >= hoje;
+      
+      const diffInHours = (now.getTime() - simuladoDate.getTime()) / (1000 * 60 * 60);
+      const isWithin72Hours = diffInHours <= 72;
 
-      // Hoje ganha 100, Histórico (antigo) ganha 50
-      pontuacao = isHoje ? 100 : 50; 
+      // Prazo de 72hrs ganha 100, após isso ganha 50
+      pontuacao = isWithin72Hours ? 100 : 50; 
     }
 
     let safeTempoGasto = Number(tempoGasto) || 0;
