@@ -3,6 +3,7 @@ import StudentDashboardClient from "./DashboardClient";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getCachedGeneralRanking } from "@/lib/ranking";
 
 export default async function AlunoPainel() {
   const user = await getUser();
@@ -119,7 +120,6 @@ export default async function AlunoPainel() {
       accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
     }));
 
-  // Fetch all raffle answers across all students to deduct exclusive questions accurately
   const allRaffleAnswers = await prisma.answer.findMany({
     where: { isRaffle: true },
     select: {
@@ -149,49 +149,8 @@ export default async function AlunoPainel() {
     history
   };
 
-  // Buscar ranking geral da sala (selecionando apenas o estritamente necessário para reduzir peso)
-  const dbStudents = await prisma.user.findMany({
-    where: { role: "STUDENT" },
-    select: {
-      id: true,
-      name: true,
-      numero: true,
-      avatarUrl: true,
-      answers: {
-        select: {
-          createdAt: true,
-          pontuacao: true,
-          isCorrect: true,
-          question: {
-            select: {
-              simuladoId: true,
-              simulado: {
-                select: {
-                  tipo: true,
-                  status: true,
-                  createdAt: true,
-                  _count: { select: { questions: true } }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-
-  const generalRanking = dbStudents.map(student => {
-    const sPerf = computeStudentPerformanceStats(student.answers, student.id, totalRaffleInSimulado, studentRaffleInSimulado);
-    return {
-      id: student.id,
-      name: student.name,
-      numero: (student as any).numero || null,
-      avatarUrl: student.avatarUrl,
-      totalScore: sPerf.totalScore,
-      streakDays: sPerf.streakDays,
-      todayPoints: sPerf.todayPoints
-    };
-  }).sort((a, b) => b.totalScore - a.totalScore);
+  // Fetch general ranking using the cached function to avoid CPU/DB spikes
+  const generalRanking = await getCachedGeneralRanking();
 
   // 2. Fetch daily simulados for today
   const todayStart = new Date();

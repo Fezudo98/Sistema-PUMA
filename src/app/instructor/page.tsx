@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { prisma } from '@/lib/prisma';
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getCachedGeneralRanking } from "@/lib/ranking";
 import EndSimuladoButton from "./EndSimuladoButton";
 import DeleteSimuladoButton from "./DeleteSimuladoButton";
 import StudentListClient from "./StudentListClient";
@@ -87,77 +88,8 @@ export default async function InstructorDashboard() {
     orderBy: { createdAt: "desc" }
   });
 
-  // Fetch Students and aggregate their performance
-  const students = await prisma.user.findMany({
-    where: { role: "STUDENT" },
-    select: {
-      id: true,
-      name: true,
-      numero: true,
-      avatarUrl: true,
-      suspendedUntil: true,
-      answers: {
-        select: {
-          createdAt: true,
-          pontuacao: true,
-          tempoGasto: true,
-          isCorrect: true,
-          question: {
-            select: {
-              simuladoId: true,
-              simulado: {
-                select: {
-                  tipo: true,
-                  status: true,
-                  createdAt: true,
-                  _count: { select: { questions: true } }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-  // Get all raffle answers to compute expected questions accurately
-  const raffleAnswers = await prisma.answer.findMany({
-    where: { isRaffle: true },
-    select: {
-      studentId: true,
-      question: { select: { simuladoId: true } }
-    }
-  });
-
-  // Group raffle answers: total raffle questions per simulado, and raffle questions won per (student, simulado)
-  const totalRaffleInSimulado = new Map<string, number>();
-  const studentRaffleInSimulado = new Map<string, number>();
-
-  raffleAnswers.forEach(ra => {
-    const sId = ra.question.simuladoId;
-    const uId = ra.studentId;
-    
-    totalRaffleInSimulado.set(sId, (totalRaffleInSimulado.get(sId) || 0) + 1);
-    
-    const key = `${uId}_${sId}`;
-    studentRaffleInSimulado.set(key, (studentRaffleInSimulado.get(key) || 0) + 1);
-  });
-
-  const studentsPerformance = students.map(student => {
-    const sPerf = computeStudentPerformanceStats(student.answers, student.id, totalRaffleInSimulado, studentRaffleInSimulado);
-    return {
-      id: student.id,
-      name: student.name,
-      numero: (student as any).numero,
-      avatarUrl: student.avatarUrl,
-      totalAnswers: sPerf.totalAnswers,
-      accuracy: sPerf.accuracy,
-      totalScore: sPerf.totalScore,
-      avgTime: sPerf.avgTime,
-      streakDays: sPerf.streakDays,
-      todayPoints: sPerf.todayPoints,
-      suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null
-    };
-  }).sort((a, b) => b.totalScore - a.totalScore); // Sort by highest score
+  // Load general ranking using the heavily cached function to prevent DB spikes
+  const studentsPerformance = await getCachedGeneralRanking();
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-8">

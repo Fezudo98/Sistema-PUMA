@@ -21,6 +21,8 @@ model User {
   numero   Int?
   answers  Answer[]
   suspendedUntil DateTime?
+
+  @@index([role])
 }
 
 model Simulado {
@@ -38,6 +40,9 @@ model Simulado {
   hasAppealed       Boolean    @default(false)
   createdAt         DateTime   @default(now())
   questions         Question[]
+
+  @@index([instructorId])
+  @@index([tipo, status])
 }
 
 model Question {
@@ -56,6 +61,8 @@ model Question {
   appealedBy     String?
   appealResponse String?
   answers        Answer[]
+
+  @@index([simuladoId])
 }
 
 model Answer {
@@ -70,6 +77,11 @@ model Answer {
   pontuacao   Int
   isRaffle    Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@index([studentId])
+  @@index([questionId])
+  @@index([isRaffle])
+  @@index([studentId, isCorrect])
 }
 
 model Apostila {
@@ -98,6 +110,8 @@ model ChatMessage {
   apostilaId    String?
   apostilaTitle String?
   createdAt     DateTime @default(now())
+
+  @@index([studentId, apostilaId])
 }
 
 model SystemSetting {
