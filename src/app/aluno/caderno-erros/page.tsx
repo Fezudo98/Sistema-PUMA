@@ -35,7 +35,8 @@ export default async function CadernoErrosPage() {
     },
     orderBy: {
       createdAt: "desc"
-    }
+    },
+    take: 300 // LIMITA PARA PREVENIR ESTOURO DE MEMÓRIA (OOM) NA VPS E NO NAVEGADOR
   });
 
   return (

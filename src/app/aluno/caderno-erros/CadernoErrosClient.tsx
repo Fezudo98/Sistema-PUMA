@@ -80,7 +80,13 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
 
                   <div className="pl-9 space-y-3">
                     {(() => {
-                      const alts = JSON.parse(mistake.question.alternativas || '[]');
+                      let alts: string[] = [];
+                      try {
+                        alts = JSON.parse(mistake.question.alternativas || '[]');
+                      } catch (e) {
+                        alts = ["Erro ao carregar alternativas."];
+                      }
+                      
                       return alts.map((alt: string, idx: number) => {
                         const isStudentChoice = mistake.alternativa === String(idx);
                         const isRealCorrect = mistake.question.correta === String(idx);
