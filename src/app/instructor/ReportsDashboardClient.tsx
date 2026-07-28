@@ -170,7 +170,7 @@ export default function ReportsDashboardClient() {
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }}
                         labelStyle={{ color: '#94a3b8' }}
-                        formatter={(value: number) => [value, 'Questões']}
+                        formatter={(value: any) => [value, 'Questões']}
                         labelFormatter={(label) => `Data: ${label}`}
                       />
                       <Line type="monotone" dataKey="respostas" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#60a5fa' }} />
@@ -200,7 +200,7 @@ export default function ReportsDashboardClient() {
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }}
                         cursor={{ fill: '#1e293b', opacity: 0.4 }}
-                        formatter={(value: number) => [`${value}%`, 'Acerto']}
+                        formatter={(value: any) => [`${value}%`, 'Acerto']}
                         labelFormatter={(label) => formatApostilaTitle(label as string)}
                       />
                       <Bar dataKey="acerto" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} />

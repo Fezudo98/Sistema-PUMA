@@ -10,9 +10,9 @@ export async function getInstructorReports(startDateIso: string, endDateIso: str
   }
 
   try {
-    // Evita problemas de timezone setando os limites em UTC
-    const startDate = new Date(startDateIso + "T00:00:00.000Z");
-    const endDate = new Date(endDateIso + "T23:59:59.999Z");
+    // Força o fuso horário de Brasília (UTC-3) para garantir que as estatísticas do dia local sejam capturadas perfeitamente
+    const startDate = new Date(startDateIso + "T00:00:00.000-03:00");
+    const endDate = new Date(endDateIso + "T23:59:59.999-03:00");
 
     const dateFilter = {
       gte: startDate,
