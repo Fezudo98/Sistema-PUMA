@@ -10,9 +10,9 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredMistakes = initialMistakes.filter(mistake => 
-    mistake.question.texto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mistake.question.justificativa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mistake.question.simulado?.apostilaName?.toLowerCase().includes(searchTerm.toLowerCase())
+    (mistake.question?.texto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (mistake.question?.justificativa || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (mistake.question?.simulado?.apostilaName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -56,7 +56,7 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-1 bg-background border border-border rounded text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <BookOpen className="w-3 h-3 text-blue-400" />
-                    {formatApostilaTitle(mistake.question.simulado?.apostilaName || "Questão Avulsa")}
+                    {formatApostilaTitle(mistake.question?.simulado?.apostilaName || "Questão Avulsa")}
                   </span>
                 </div>
                 <div className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
@@ -74,7 +74,7 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                       </div>
                     </div>
                     <div className="text-sm sm:text-base text-heading font-medium leading-relaxed whitespace-pre-wrap">
-                      {mistake.question.texto}
+                      {mistake.question?.texto || "Questão indisponível"}
                     </div>
                   </div>
 
@@ -82,14 +82,14 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                     {(() => {
                       let alts: string[] = [];
                       try {
-                        alts = JSON.parse(mistake.question.alternativas || '[]');
+                        alts = JSON.parse(mistake.question?.alternativas || '[]');
                       } catch (e) {
                         alts = ["Erro ao carregar alternativas."];
                       }
                       
                       return alts.map((alt: string, idx: number) => {
                         const isStudentChoice = mistake.alternativa === String(idx);
-                        const isRealCorrect = mistake.question.correta === String(idx);
+                        const isRealCorrect = mistake.question?.correta === String(idx);
 
                         let styleClass = "border-border bg-background/50 text-muted-foreground";
                         let icon = null;
@@ -124,7 +124,7 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                   </div>
                 </div>
 
-                {mistake.question.justificativa && (
+                {mistake.question?.justificativa && (
                   <div className="mt-6 pt-5 border-t border-border">
                     <div className="bg-indigo-950/10 border border-indigo-900/30 rounded-xl p-4 sm:p-5 relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500"></div>
@@ -133,7 +133,7 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                         Comentário da IA
                       </h4>
                       <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                        {mistake.question.justificativa}
+                        {mistake.question?.justificativa}
                       </p>
                     </div>
                   </div>
