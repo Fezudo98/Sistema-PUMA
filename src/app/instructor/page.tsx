@@ -17,6 +17,7 @@ import StudentListClient from "./StudentListClient";
 import ApostilaManagerClient from "./ApostilaManagerClient";
 import SettingsClient from "./SettingsClient";
 import InventoryClient from "@/components/InventoryClient";
+import ReportsDashboardClient from "./ReportsDashboardClient";
 import { formatApostilaTitle } from "@/lib/utils";
 export default async function InstructorDashboard() {
   const user = await getUser();
@@ -137,9 +138,10 @@ export default async function InstructorDashboard() {
           </div>
         </header>
 
-        <Tabs defaultValue="simulados" className="w-full">
+        <Tabs defaultValue="relatorios" className="w-full">
           <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6">
-            <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:flex sm:!h-14 bg-card border border-border p-1 !h-auto gap-1 rounded-xl">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:flex sm:!h-14 bg-card border border-border p-1 !h-auto gap-1 rounded-xl">
+              <TabsTrigger value="relatorios" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-purple-600 data-[state=active]:text-heading font-bold text-muted-foreground">Relatórios</TabsTrigger>
               <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Ao Vivo</TabsTrigger>
               <TabsTrigger value="especiais" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-purple-600 data-[state=active]:text-heading font-bold text-muted-foreground">Especiais</TabsTrigger>
               <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Tropa</TabsTrigger>
@@ -163,6 +165,10 @@ export default async function InstructorDashboard() {
               </Link>
             </div>
           </div>
+
+          <TabsContent value="relatorios" className="mt-0">
+            <ReportsDashboardClient />
+          </TabsContent>
 
           <TabsContent value="simulados" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
