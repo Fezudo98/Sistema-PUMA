@@ -26,6 +26,7 @@ export async function getInstructorReports(startDateIso: string, endDateIso: str
     const answers = await prisma.answer.findMany({
       where: {
         createdAt: dateFilter,
+        student: { isTestUser: false }
       },
       include: {
         question: {

@@ -29,7 +29,7 @@ const calculateRankingData = async () => {
 
   // 2. Fetch all students and their answers with minimal fields
   const dbStudents = await prisma.user.findMany({
-    where: { role: "STUDENT" },
+    where: { role: "STUDENT", isTestUser: false },
     select: {
       id: true,
       name: true,

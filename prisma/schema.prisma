@@ -21,6 +21,7 @@ model User {
   numero   Int?
   answers  Answer[]
   suspendedUntil DateTime?
+  isTestUser Boolean  @default(false)
 
   @@index([role])
 }

@@ -52,12 +52,12 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const answersMap = new Map();
   answers.forEach(a => answersMap.set(a.questionId, a));
 
-  // Buscar todas as respostas de sorteio de outros alunos para este simulado
   const otherRaffleCount = await prisma.answer.count({
     where: {
       question: { simuladoId: id },
       isRaffle: true,
-      studentId: { not: user.userId }
+      studentId: { not: user.userId },
+      student: { isTestUser: false }
     }
   });
 
@@ -88,7 +88,8 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
     where: {
       question: {
         simuladoId: id
-      }
+      },
+      student: { isTestUser: false }
     },
     include: {
       student: true

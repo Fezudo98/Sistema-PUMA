@@ -15,6 +15,7 @@ export default async function SimuladoReviewPage({ params }: { params: { id: str
       questions: {
         include: {
           answers: {
+            where: { student: { isTestUser: false } },
             include: { student: true }
           }
         },
