@@ -477,6 +477,12 @@ export default function StudentDashboardClient({
                   Vade Mecum
                 </Button>
               </Link>
+              <Link href="/aluno/caderno-erros" className="flex-1 sm:flex-none">
+                <Button className="w-full h-14 px-6 bg-rose-950/80 hover:bg-rose-900 border border-rose-800 hover:border-rose-700 text-rose-300 hover:text-rose-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.15)]">
+                  <ShieldAlert className="w-4 h-4 text-rose-400" />
+                  Caderno de Erros
+                </Button>
+              </Link>
               <Link href="/aluno/chat" className="flex-1 sm:flex-none">
                 <Button className="w-full h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-heading font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <MessageSquare className="w-4 h-4" />
