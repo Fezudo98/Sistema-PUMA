@@ -29,6 +29,13 @@ export default async function StudentSelfPacedPage({
     redirect("/aluno/painel");
   }
 
+  // Se for especial, checar expiração
+  if (simulado.tipo === "SPECIAL" && simulado.expiresAt) {
+    if (new Date(simulado.expiresAt) < new Date()) {
+      redirect("/aluno/painel");
+    }
+  }
+
   // 2. Verificar se o aluno já completou este simulado
   const questionIds = simulado.questions.map((q) => q.id);
   let studentAnswersCount = 0;

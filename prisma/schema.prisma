@@ -39,6 +39,7 @@ model Simulado {
   studentTeams      String?    // JSON map { studentId: teamId }
   hasAppealed       Boolean    @default(false)
   createdAt         DateTime   @default(now())
+  expiresAt         DateTime?
   questions         Question[]
 
   @@index([instructorId])

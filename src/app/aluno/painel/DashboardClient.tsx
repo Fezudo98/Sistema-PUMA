@@ -182,6 +182,7 @@ export default function StudentDashboardClient({
   activeRooms = [],
   dailySimulados = [],
   pastDailySimulados = [],
+  specialSimulados = [],
   isGeneratingDaily = false
 }: { 
   user: any; 
@@ -190,6 +191,7 @@ export default function StudentDashboardClient({
   activeRooms?: any[]; 
   dailySimulados?: any[];
   pastDailySimulados?: any[];
+  specialSimulados?: any[];
   isGeneratingDaily?: boolean;
 }) {
   const [codigo, setCodigo] = useState("");
@@ -564,6 +566,70 @@ export default function StudentDashboardClient({
                  )}
                </CardContent>
               </Card>
+
+              {/* Missões Especiais */}
+              {specialSimulados && specialSimulados.length > 0 && (
+                <Card className="border-border bg-card/40 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-pink-500"></div>
+                  <CardHeader className="pb-3 border-b border-border/50">
+                    <CardTitle className="text-lg text-heading flex items-center gap-2">
+                      <Target className="w-5 h-5 text-purple-500" />
+                      Missões Especiais
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground">
+                      Bateria de exercícios especiais designada pelos instrutores.
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="space-y-3">
+                      {specialSimulados.map((sim, i) => (
+                        <div key={i} className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
+                          sim.isCompleted 
+                            ? "bg-emerald-950/10 border-emerald-900/30 grayscale-[50%]" 
+                            : sim.isExpired
+                              ? "bg-muted/10 border-border opacity-60"
+                              : "bg-background border-purple-500/30 hover:border-purple-500/50"
+                        }`}>
+                          <div className="flex justify-between items-start gap-4">
+                            <div>
+                              <h4 className={`text-sm font-bold truncate pr-4 ${sim.isCompleted ? 'text-emerald-400/80' : sim.isExpired ? 'text-muted-foreground' : 'text-purple-400'}`}>
+                                {formatApostilaTitle(sim.apostilaName)}
+                              </h4>
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                                <Target className="w-3 h-3" />
+                                {sim.questionsCount} Alvos Especiais
+                              </p>
+                              {sim.expiresAt && !sim.isCompleted && (
+                                <p className={`text-[10px] font-bold mt-2 uppercase tracking-wider ${sim.isExpired ? 'text-red-400' : 'text-purple-400/80'}`}>
+                                  {sim.isExpired ? 'Prazo Expirado' : `Válido até: ${new Date(sim.expiresAt).toLocaleDateString()}`}
+                                </p>
+                              )}
+                            </div>
+                            
+                            {sim.isCompleted ? (
+                              <div className="shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-950/30 px-2 py-1 rounded border border-emerald-900/50">
+                                <Check className="w-3.5 h-3.5" />
+                                Cumprida
+                              </div>
+                            ) : sim.isExpired ? (
+                              <div className="shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-950/30 px-2 py-1 rounded border border-red-900/50">
+                                Fechada
+                              </div>
+                            ) : (
+                              <Link href={`/aluno/simulado/${sim.id}`} className="shrink-0">
+                                <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-[10px] font-black uppercase tracking-widest h-8 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                                  Iniciar Missão <Play className="w-3 h-3 ml-1.5" />
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Simulados Diários / Estudo Individual */}
               <Card className="border-border bg-card/40 relative overflow-hidden">

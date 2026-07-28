@@ -261,6 +261,33 @@ export default async function AlunoPainel() {
     }
   });
 
+  // 4. Fetch Especiais
+  const specialSimulados = await prisma.simulado.findMany({
+    where: {
+      tipo: "SPECIAL",
+    },
+    include: {
+      questions: { select: { id: true } }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  const specialSimuladosWithStatus = specialSimulados.map((sim) => {
+    const questionIds = sim.questions.map((q: { id: string }) => q.id);
+    const studentAnswersCount = answers.filter(a => questionIds.includes(a.questionId)).length;
+    const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
+    const isExpired = sim.expiresAt ? new Date(sim.expiresAt) < new Date() : false;
+
+    return {
+      id: sim.id,
+      apostilaName: sim.apostilaName || "Missão Especial",
+      questionsCount: questionIds.length,
+      isCompleted,
+      isExpired,
+      expiresAt: sim.expiresAt ? sim.expiresAt.toISOString() : null
+    };
+  });
+
   // Trigger missing Vade Mecum generation in the background
   const { checkAndGenerateMissingVadeMecums } = await import("@/app/actions/vadeMecum");
   checkAndGenerateMissingVadeMecums().catch((err) => {
@@ -275,6 +302,7 @@ export default async function AlunoPainel() {
       activeRooms={activeRooms} 
       dailySimulados={dailySimuladosWithStatus}
       pastDailySimulados={pastDailySimuladosWithStatus}
+      specialSimulados={specialSimuladosWithStatus}
       isGeneratingDaily={isGeneratingDaily}
     />
   );

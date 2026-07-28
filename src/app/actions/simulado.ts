@@ -68,6 +68,8 @@ export async function createSimulado(data: {
   difficulty?: string;
   isTeamCompetition?: boolean;
   teamNames?: string[];
+  tipo?: string;
+  expiresAt?: Date;
   questions: {
     enunciado: string;
     alternativas: string[];
@@ -94,7 +96,9 @@ export async function createSimulado(data: {
       data: {
         codigoSala,
         instructorId: user.userId,
-        status: "WAITING",
+        status: data.tipo === "SPECIAL" ? "ACTIVE" : "WAITING", // SPECIAL já nasce ACTIVE
+        tipo: data.tipo || "LIVE",
+        expiresAt: data.expiresAt || null,
         apostilaName: data.apostilaName,
         topics: data.topics,
         difficulty: data.difficulty || "AVANCADO",
