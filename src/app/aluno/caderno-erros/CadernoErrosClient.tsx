@@ -10,7 +10,7 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredMistakes = initialMistakes.filter(mistake => 
-    (mistake.question?.texto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (mistake.question?.enunciado || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (mistake.question?.justificativa || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (mistake.question?.simulado?.apostilaName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -74,7 +74,7 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                       </div>
                     </div>
                     <div className="text-sm sm:text-base text-heading font-medium leading-relaxed whitespace-pre-wrap">
-                      {mistake.question?.texto || "Questão indisponível"}
+                      {mistake.question?.enunciado || "Questão indisponível"}
                     </div>
                   </div>
 
