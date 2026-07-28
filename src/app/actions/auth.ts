@@ -73,7 +73,7 @@ export async function registerUser(formData: FormData) {
 
 export async function getTakenNumbers() {
   const students = await prisma.user.findMany({
-    where: { role: "STUDENT", numero: { not: null } },
+    where: { role: "STUDENT", numero: { not: null }, isTestUser: false },
     select: { numero: true }
   });
   return students.map(s => s.numero as number);

@@ -321,7 +321,7 @@ export async function checkAndGenerateDailySimulados() {
         let studentNames: string[] = [];
         try {
           const students = await prisma.user.findMany({
-            where: { role: "STUDENT" },
+            where: { role: "STUDENT", isTestUser: false },
             select: { name: true }
           });
           studentNames = Array.from(new Set(students.map((s: any) => s.name.trim()).filter(Boolean)));
