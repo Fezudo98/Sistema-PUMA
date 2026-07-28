@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma';
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { getCachedGeneralRanking } from "@/lib/ranking";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import EndSimuladoButton from "./EndSimuladoButton";
 import DeleteSimuladoButton from "./DeleteSimuladoButton";
 import StudentListClient from "./StudentListClient";
@@ -119,6 +120,7 @@ export default async function InstructorDashboard() {
                 Quem Somos Nós
               </Button>
             </Link>
+            <ThemeSwitcher />
             <div className="flex items-center gap-3">
               <HeaderAvatar 
                 initials={user.name.substring(0, 2).toUpperCase()} 
