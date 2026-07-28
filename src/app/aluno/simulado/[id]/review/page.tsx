@@ -69,8 +69,9 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
   const isLive = simulado.tipo === "LIVE";
   const isLiveFinished = isLive && simulado.status === "FINISHED";
   const isDailyCompleted = simulado.tipo === "DAILY" && answeredQuestions >= totalQuestions;
+  const isSpecialCompleted = simulado.tipo === "SPECIAL" && answeredQuestions >= totalQuestions;
 
-  if (!isLiveFinished && !isDailyCompleted) {
+  if (!isLiveFinished && !isDailyCompleted && !isSpecialCompleted) {
     redirect(`/aluno/simulado/${id}`);
   }
 
