@@ -10,9 +10,9 @@ export async function getInstructorReports(startDateIso: string, endDateIso: str
   }
 
   try {
-    const startDate = new Date(startDateIso);
-    const endDate = new Date(endDateIso);
-    endDate.setHours(23, 59, 59, 999); // End of day
+    // Evita problemas de timezone setando os limites em UTC
+    const startDate = new Date(startDateIso + "T00:00:00.000Z");
+    const endDate = new Date(endDateIso + "T23:59:59.999Z");
 
     const dateFilter = {
       gte: startDate,
@@ -52,7 +52,7 @@ export async function getInstructorReports(startDateIso: string, endDateIso: str
     while (curr <= endDate) {
       const dateStr = curr.toISOString().split("T")[0];
       engagementMap.set(dateStr, 0);
-      curr.setDate(curr.getDate() + 1);
+      curr.setUTCDate(curr.getUTCDate() + 1);
     }
 
     answers.forEach(a => {
