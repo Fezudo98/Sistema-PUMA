@@ -88,8 +88,8 @@ export default function CadernoErrosClient({ initialMistakes }: { initialMistake
                       }
                       
                       return alts.map((alt: string, idx: number) => {
-                        const isStudentChoice = mistake.alternativa === String(idx);
-                        const isRealCorrect = mistake.question?.correta === String(idx);
+                        const isStudentChoice = Number(mistake.alternativa) === idx;
+                        const isRealCorrect = Number(mistake.question?.correta) === idx;
 
                         let styleClass = "border-border bg-background/50 text-muted-foreground";
                         let icon = null;
