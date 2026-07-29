@@ -121,7 +121,7 @@ export default async function InstructorDashboard() {
                 Quem Somos Nós
               </Button>
             </Link>
-            <ThemeSwitcher />
+            <ThemeSwitcher hasRaioUnlocked={true} />
             <div className="flex items-center gap-3">
               <HeaderAvatar 
                 initials={user.name.substring(0, 2).toUpperCase()} 

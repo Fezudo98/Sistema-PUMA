@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ hasRaioUnlocked = false }: { hasRaioUnlocked?: boolean }) {
   const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -50,10 +50,12 @@ export function ThemeSwitcher() {
           <Moon className="mr-2 h-4 w-4 text-blue-500" />
           <span>Modo Escuro (Padrão)</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("raio")} className="cursor-pointer font-black text-muted-foreground hover:text-foreground">
-          <Zap className="mr-2 h-4 w-4 text-yellow-500" />
-          <span>Modo Tático (RAIO) ⚡</span>
-        </DropdownMenuItem>
+        {hasRaioUnlocked && (
+          <DropdownMenuItem onClick={() => setTheme("raio")} className="cursor-pointer font-black text-muted-foreground hover:text-foreground">
+            <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+            <span>Modo Tático (RAIO) ⚡</span>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

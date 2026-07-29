@@ -378,7 +378,7 @@ export default function StudentDashboardClient({
                 );
               })()}
             </button>
-            <ThemeSwitcher />
+            <ThemeSwitcher hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 30} />
             <Button variant="ghost" onClick={handleSair} className="text-muted-foreground hover:text-red-400">
               <LogOut className="w-5 h-5" />
             </Button>
