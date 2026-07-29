@@ -26,7 +26,8 @@ export default async function AlunoPainel() {
     numero: (dbUser as any)?.numero || null,
     aiAnalysis: dbUser?.aiAnalysis || null,
     aiAnalysisSimuladoCount: dbUser?.aiAnalysisSimuladoCount || null,
-    aiAnalysisDate: dbUser?.aiAnalysisDate ? dbUser.aiAnalysisDate.toISOString() : null
+    aiAnalysisDate: dbUser?.aiAnalysisDate ? dbUser.aiAnalysisDate.toISOString() : null,
+    isTestUser: dbUser?.isTestUser || false
   };
 
   const answers = await prisma.answer.findMany({
