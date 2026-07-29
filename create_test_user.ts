@@ -5,25 +5,29 @@ const prisma = new PrismaClient();
 
 async function main() {
   const hash = await bcrypt.hash('123456', 10);
-  const exists = await prisma.user.findUnique({ where: { username: 'alunoteste' } });
+  
+  // Clean up any old lowercase ones
+  await prisma.user.deleteMany({ where: { username: 'alunoteste' } });
+
+  const exists = await prisma.user.findUnique({ where: { username: 'ALUNOTESTE' } });
   
   if (exists) {
     await prisma.user.update({
-      where: { username: 'alunoteste' },
+      where: { username: 'ALUNOTESTE' },
       data: { isTestUser: true, role: 'STUDENT' }
     });
-    console.log('Usuário alunoteste atualizado com sucesso.');
+    console.log('Usuário ALUNOTESTE atualizado com sucesso.');
   } else {
     await prisma.user.create({
       data: {
-        name: 'Aluno Teste',
-        username: 'alunoteste',
+        name: 'ALUNO TESTE',
+        username: 'ALUNOTESTE',
         senha: hash,
         role: 'STUDENT',
         isTestUser: true
       }
     });
-    console.log('Usuário alunoteste criado com sucesso.');
+    console.log('Usuário ALUNOTESTE criado com sucesso.');
   }
 }
 
