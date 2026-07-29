@@ -30,8 +30,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={true}
+          defaultTheme="system"
+          enableSystem
+          themes={["light", "dark", "raio"]}
+          disableTransitionOnChange
         >
           {children}
         </ThemeProvider>

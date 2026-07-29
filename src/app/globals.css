@@ -128,6 +128,53 @@
   --sidebar-ring: #3b82f6;
 }
 
+/* ===== RAIO THEME (PMCE Tactical Theme) ===== */
+.raio {
+  --background: #050505;
+  --foreground: #f8fafc;
+  --heading: #ffffff;
+  --surface: #0a0a0a;
+  --surface-elevated: #141414;
+  --card: #0a0a0a;
+  --card-foreground: #f8fafc;
+  --popover: #0a0a0a;
+  --popover-foreground: #f8fafc;
+  
+  --primary: #facc15;
+  --primary-foreground: #000000;
+  
+  --secondary: #1e3a8a;
+  --secondary-foreground: #f8fafc;
+  
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
+  
+  --accent: #2563eb;
+  --accent-foreground: #ffffff;
+  
+  --destructive: #dc2626;
+  
+  --border: #262626;
+  --input: #262626;
+  
+  --ring: #facc15;
+  
+  --chart-1: #facc15;
+  --chart-2: #2563eb;
+  --chart-3: #1e3a8a;
+  --chart-4: #64748b;
+  --chart-5: #dc2626;
+  
+  --sidebar: #050505;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #facc15;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #171717;
+  --sidebar-accent-foreground: #facc15;
+  --sidebar-border: #262626;
+  --sidebar-ring: #facc15;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
