@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { createHash } from "crypto";
+import { prisma } from "@/lib/prisma";
 
 // 1. Cache L1 de Curto Prazo (10 minutos) para evitar requisições idênticas ou cliques duplos
 const generationCache = new Map<string, { timestamp: number; questions: any[] }>();
@@ -25,11 +26,10 @@ export async function POST(req: NextRequest) {
     const dificuldade = "AVANCADO"; // Apenas questões avançadas
     const topics = formData.get("topics") as string | null;
 
-    const { PrismaClient } = require("@prisma/client");
     let studentNames: string[] = [];
     try {
       const students = await prisma.user.findMany({
-        where: { role: "STUDENT" },
+        where: { role: "STUDENT", isTestUser: false },
         select: { name: true }
       });
       studentNames = Array.from(new Set(students.map((s: any) => s.name.trim()).filter(Boolean)));
