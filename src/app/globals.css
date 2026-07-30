@@ -186,3 +186,19 @@
     @apply font-sans;
   }
 }
+
+@keyframes flash {
+  0%, 50%, 100% { opacity: 0; }
+  10%, 60% { opacity: 0.8; }
+  20%, 70% { opacity: 0.2; }
+}
+
+@keyframes strike {
+  0% { transform: scale(3) translateY(-100vh) rotate(-15deg); opacity: 0; }
+  10% { transform: scale(1.5) translateY(0) rotate(0deg); opacity: 1; filter: brightness(2); }
+  20% { opacity: 0; }
+  30% { opacity: 1; filter: brightness(3); }
+  50% { opacity: 0; }
+  60% { opacity: 1; filter: brightness(1.5); }
+  100% { transform: scale(1) translateY(0); opacity: 0; }
+}
