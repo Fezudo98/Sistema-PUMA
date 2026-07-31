@@ -378,7 +378,7 @@ export default function StudentDashboardClient({
                 );
               })()}
             </button>
-            <ThemeSwitcher hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 30} />
+            <ThemeSwitcher hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 25} />
             <Button variant="ghost" onClick={handleSair} className="text-muted-foreground hover:text-red-400">
               <LogOut className="w-5 h-5" />
             </Button>
@@ -493,6 +493,47 @@ export default function StudentDashboardClient({
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* Gamification: Recompensas de Ofensiva */}
+        <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-5 sm:p-6 shadow-lg flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-amber-500" />
+              <h3 className="font-black text-heading uppercase tracking-wide">Trilha de Desbloqueios</h3>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider block">Meta Atual</span>
+              <span className="text-xs font-black text-primary">
+                {(stats?.streakDays || 0) < 25 ? "TEMA RAIO ⚡" : "TEMA BEPI 🦅"} ({(stats?.streakDays || 0) < 25 ? 25 : 50} DIAS)
+              </span>
+            </div>
+          </div>
+          
+          <div className="space-y-2 relative">
+            <div className="flex items-end justify-between text-xs font-bold text-muted-foreground mb-1">
+              <span>{(stats?.streakDays || 0)} Dias</span>
+              <span>{(stats?.streakDays || 0) < 25 ? 25 : 50} Dias</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-3.5 overflow-hidden border border-border/50">
+              <div 
+                className={`h-full transition-all duration-1000 ${
+                  (stats?.streakDays || 0) < 25 
+                    ? "bg-gradient-to-r from-yellow-600 to-yellow-400" 
+                    : "bg-gradient-to-r from-emerald-600 to-emerald-400"
+                }`}
+                style={{ width: `${Math.min(((stats?.streakDays || 0) / ((stats?.streakDays || 0) < 25 ? 25 : 50)) * 100, 100)}%` }}
+              />
+            </div>
+            {/* Markers */}
+            <div className="absolute top-7 w-full flex justify-between px-1 pointer-events-none">
+               <span className="text-[10px] text-muted-foreground/50 font-bold">|</span>
+               <span className="text-[10px] text-muted-foreground/50 font-bold">|</span>
+            </div>
+          </div>
+          <p className="text-[11px] font-medium text-muted-foreground text-center mt-1">
+            Mantenha sua ofensiva diária resolvendo simulados para desbloquear Fardamentos Táticos para o sistema.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
