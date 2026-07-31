@@ -3,64 +3,49 @@
 <div align="center">
   <img src="public/logo.png" alt="Brasão 32º Pelotão PUMA" width="140" height="140" />
   <h3>32º Pelotão do Curso de Formação de Oficiais / Praças — Polícia Militar do Ceará</h3>
-  <p><strong>Plataforma Web Avançada de Simulados ao Vivo, Inteligência Artificial e Mentor Tático</strong></p>
+  <p><strong>Plataforma Web Avançada de Simulados ao Vivo, Inteligência Artificial e Gamificação Tática</strong></p>
 </div>
 
 ---
 
 Bem-vindo ao **Sistema PUMA**, uma plataforma de treinamento tático de precisão desenvolvida sob medida para a preparação de policiais e turmas de concurso de alto nível da **Polícia Militar do Ceará (PMCE)**. 
 
-O sistema combina dinâmicas de sala de aula em tempo real (via WebSockets), **Inteligência Artificial Generativa (Google Gemini)** com análise comportamental e um robusto sistema de **Gamificação Militar com Brevês de Honra**, projetados para simular a pressão real de combate, treinar a tomada de decisão sob estresse e monitorar o tempo de reação de cada recruta milissegundo a milissegundo.
+O sistema combina dinâmicas de sala de aula em tempo real (via WebSockets), **Inteligência Artificial Generativa (Google Gemini)** com análise comportamental e um robusto sistema de **Gamificação Militar, Brevês de Honra e Fardamentos Visuais**, projetados para simular a pressão real de combate, treinar a tomada de decisão sob estresse e monitorar a evolução tática de cada recruta.
 
 ---
 
 ## 🚀 Destaques & Diferenciais Operacionais
 
-### 🛡️ Identidade Visual & Glassmorphism Tático
-- **Estética Militar Premium:** Interface escurecida (*Dark Mode*) moderna, com acentos em âmbar dourado e verde esmeralda, bordas luminosas e sombras dinâmicas.
-- **Brasão PUMA Fundido (`mix-blend-screen`):** A identidade do **32º Pelotão PUMA** integra-se perfeitamente às barras de navegação superior e telas de autenticação, eliminando fundos sólidos e proporcionando um visual tecnológico de centro de comando.
-- **Responsividade Total:** Adaptado perfeitamente para telões de projetor em sala de aula, notebooks dos instrutores e smartphones dos combatentes em campo.
+### 🛡️ Identidade Visual, Glassmorphism & Microanimações Premium
+- **Estética Militar Avançada:** Interface responsiva com opções de *Modo Claro*, *Modo Escuro (Padrão)* e fardamentos visuais desbloqueáveis.
+- **Tema Tático (RAIO ⚡):** Ao desbloquear e ativar o tema RAIO, o sistema passa por um *override* completo de CSS (variáveis Táticas), adotando a paleta Ouro e Preto do Batalhão de Policiamento de Rondas de Ações Intensivas e Ostensivas.
+- **Efeitos Procedurais (Canvas WebGL):** Transição de temas turbinada com um algoritmo procedural em HTML5 Canvas que gera **relâmpagos ramificados ultra-realistas** caindo pela tela, acompanhados de um clarão estroboscópico e a sobreposição do Brasão Oficial do RAIO.
+- **Responsividade Total (Mobile-First):** Layouts fluidos adaptados perfeitamente para telões de projetor em sala de aula, notebooks dos instrutores e touchscreens dos combatentes em campo.
 
 ---
 
 ### 🤖 Inteligência Artificial Integrada (Google Gemini)
-- **Geração Automática de Simulados por PDF:** Faça o upload de apostilas, leis, Vade Mecum ou manuais em PDF. A IA realiza a leitura integral do material e extrai questões com enunciado, 5 alternativas (`A` a `E`) e justificativa técnica embasada na doutrina.
+- **Geração Automática de Simulados por PDF:** Faça o upload de apostilas, leis, Vade Mecum ou manuais em PDF. A IA realiza a leitura integral do material e extrai questões complexas com enunciado, alternativas e justificativa técnica embasada na doutrina.
 - **Mentor Policial IA (`/aluno/chat`):** Uma IA interativa treinada com jargões militares e conhecimento jurídico/policial que orienta o aluno, responde dúvidas com base no conteúdo integral das apostilas ativas e aconselha sobre como corrigir deficiências nos simulados recentes.
-- **Análise Comportamental Diária (`/api/aluno/analysis`):** Geração de relatórios automáticos 1x ao dia (com cache de dados em banco para economia de tokens), avaliando a precisão de disparo, tempo de reação e consistência tática do militar.
-- **Alta Disponibilidade com Fallback Duplo:** Sistema equipado com chave principal (`GEMINI_API_KEY`) e chave reserva (`GEMINI_API_KEY_FALLBACK`) para alternância automática em caso de instabilidade momentânea da API.
+- **Análise Comportamental Diária:** Geração de relatórios automáticos 1x ao dia avaliando a precisão de disparo, tempo de reação e consistência tática do militar.
 
 ---
 
 ### 👨‍✈️ Centro de Comando do Instrutor (`/instructor`)
-- **Controle de Sala Ao Vivo (`LIVE`):** Comande a progressão da turma como um mestre de sala. Avance questões, pause o tempo, anule itens controversos, encerre missões antecipadamente e projete o gabarito no telão principal com estatísticas de erro/acerto em tempo real.
-- **Roleta Tática (Sorteio de Alvo):** Ative o modo "Sorteio" durante o simulado para escolher aleatoriamente um único recruta que deverá responder a questão perante todo o pelotão. A pontuação é computada com exclusividade, garantindo que a taxa global dos demais alunos permaneça intacta e justa.
-- **Gestão de Vagas e Pelotão (Vaga 01 a 34+):** Cadastro ágil de alunos identificados por número de capacete/vaga no pelotão e nome de guerra (QRA).
-- **Dossiê Operacional & Redefinição Rápida de Senhas:** Acesso a relatórios de desempenho individual, histórico completo de respostas, suspensão disciplinar temporária e redefinição instantânea de senha (com senha padrão `PMCE123` ou personalizada).
-- **Pódio e Relatórios Analíticos:** Exibição celebrativa do **Top 3 Combatentes** ao final do simulado e visão geral de aproveitamento da turma em cada alternativa.
+- **Controle de Sala Ao Vivo (`LIVE`):** Comande a progressão da turma como um mestre de sala. Avance questões, pause o tempo, anule itens controversos e projete o gabarito no telão principal com estatísticas de erro/acerto em tempo real.
+- **Roleta Tática (Sorteio de Alvo):** Escolha aleatoriamente um único recruta que deverá responder a questão perante todo o pelotão. A pontuação é computada com exclusividade, garantindo que a taxa global dos demais alunos não seja afetada.
+- **Métricas e Relatórios PDF:** Emissão de relatórios técnicos de desempenho mensais detalhando o aproveitamento e evolução do pelotão, provando matematicamente a eficácia do uso da plataforma.
+- **Dossiê Operacional & Gestão do Pelotão:** Acesso a históricos individuais de respostas, suspensão disciplinar temporária e controle de patentes.
 
 ---
 
 ### 🪖 Quartel General do Aluno (`/aluno/painel`)
-- **Dashboard de Estatísticas Vitais:** Monitoramento claro dos 4 pilares operacionais:
-  1. **Total de Simulados Concluídos:** Contagem de missões finalizadas com êxito.
-  2. **Taxa Global de Acertos (`Accuracy`):** Aproveitamento geral do militar calibrado com rigor matemático.
-  3. **Pontos Totais:** Acúmulo de pontuação por acerto rápido e missões especiais.
-  4. **Tempo Médio de Reação:** Média de segundos gastos para análise e disparo por questão.
-- **Missões do Dia & Simulados de Estudo (`SELF_PACED`):** Listagem de missões com identificação nítida da apostila de origem em duas linhas visíveis, facilitando a escolha da bateria de exercícios.
-- **Mural de Brevês (Gamificação Militar):** Conquiste medalhas e distinções de mérito ao atingir metas de alto desempenho no campo de batalha virtual:
-  - 🏅 **Recruta Padrão:** Concedido ao concluir os primeiros passos no sistema.
-  - 🛡️ **Veterano de Combate:** Concluídos pelo menos 10 simulados no sistema.
-  - 🎯 **Atirador de Elite (Sniper):** Atingir 100% de precisão em um simulado com 20 ou mais questões.
-  - ⚡ **Pronto Resposta (Raio):** Acerto $\ge 85\%$ com tempo médio de reação $\le 15\text{s}$ em simulado de 15+ questões.
-  - 🌟 **Padrão PM:** Acumular 150.000 pontos e manter taxa global de acertos $\ge 92\%$.
-  - 💀 **Caveira:** Concluir no mínimo 40 simulados avançados com taxa global de acertos $\ge 97\%$ e 100.000+ pontos.
-- **Proteção Dupla contra Tiros Acidentais:** Mecanismo de confirmação em duas etapas para seleção de alternativas em dispositivos móveis ou telas touch, impedindo cliques involuntários sob pressão.
-
----
-
-### ⚖️ Calibragem e Justiça Matemática (Taxa Global)
-O sistema opera sob a diretriz estrita de que **a Taxa Global de Acertos (`Accuracy`) computa exclusivamente os alvos de simulados 100% concluídos**. 
-- Simulados que ainda estão em andamento, missões abandonadas ou salas ao vivo encerradas prematuramente pelo instrutor sem que o aluno tenha respondido a totalidade das questões são automaticamente desconsiderados no denominador da fórmula, impedindo quedas injustas na nota e no histórico do combatente.
+- **Dashboard de Estatísticas Vitais:** Monitoramento claro dos pilares operacionais (Total de Simulados, Taxa Global de Acertos, Pontos Totais, Tempo Médio de Reação e Ofensiva de Dias).
+- **Trilha de Desbloqueios (Streaks):** Sistema dinâmico de recompensas baseado em sequência de dias (Ofensiva). Ao atingir marcos como **25 Dias**, o aluno desbloqueia novos Fardamentos Visuais (ex: Tema RAIO). A barra de progresso evolui automaticamente de cor e aponta a próxima meta (ex: TEMA BEPI - 50 Dias).
+- **Caderno de Erros (Revisão Tática):** Repositório inteligente e automático que armazena todas as questões erradas pelo aluno, permitindo revisão focada de falhas operacionais anteriores.
+- **Biblioteca & Vade Mecum:** Acesso consolidado aos materiais teóricos, PDFs e regulamentos da PMCE.
+- **Inventário 32º PEL:** Galeria pessoal onde o militar visualiza seus temas, itens conquistados e sua progressão.
+- **Mural de Brevês (Badges):** Conquiste medalhas de mérito (*Sniper, Raio, Caveira, Veterano*) ao atingir metas de alto desempenho no campo de batalha virtual.
 
 ---
 
@@ -74,19 +59,19 @@ O Sistema PUMA é construído sobre uma arquitetura moderna, escalável e de bai
 | **Linguagem** | [TypeScript 5+](https://www.typescriptlang.org) | Tipagem estática rigorosa para estabilidade do código |
 | **Tempo Real** | [Socket.io](https://socket.io) (`server.ts`) | WebSockets para sincronização instantânea de salas ao vivo |
 | **Banco de Dados & ORM** | [Prisma ORM](https://www.prisma.io) + SQLite / PostgreSQL | Abstração relacional robusta e type-safe |
-| **Estilização** | [Tailwind CSS](https://tailwindcss.com) + `shadcn/ui` | Design system moderno com Dark Mode e animações customizadas |
-| **Inteligência Artificial** | [Google Generative AI](https://ai.google.dev) (`Gemini 3.5 Flash`) | Processamento de linguagem natural e geração de simulados via PDF |
+| **Estilização** | [Tailwind CSS 4](https://tailwindcss.com) + `shadcn/ui` | Design system moderno com Dark Mode e animações CSS/Canvas |
+| **Inteligência Artificial** | [Google Generative AI](https://ai.google.dev) (`Gemini 1.5 Flash`) | Processamento de linguagem natural e geração de simulados |
 | **Ícones & UI** | [Lucide React](https://lucide.dev) | Biblioteca de ícones vetoriais modernos e leves |
 
 ---
 
 ## ⚙️ Instalação & Execução Local
 
-Siga o passo a passo abaixo para rodar o ambiente de desenvolvimento local em sua máquina ou servidor:
+Siga o passo a passo abaixo para rodar o ambiente de desenvolvimento local em sua máquina ou VPS:
 
 ### 1. Pré-requisitos
-- **Node.js** (versão 18, 20 ou superior)
-- **NPM** ou **Yarn**
+- **Node.js** (versão 20 ou superior recomendada)
+- **Git** e **PM2** (para produção)
 
 ### 2. Instalação de Dependências
 Clone o repositório e instale os pacotes no terminal:
@@ -96,8 +81,30 @@ cd "sistema pmce"
 npm install
 ```
 
-### 3. Configuração do Ambiente (`.env`)
-Crie o arquivo `.env` na raiz do projeto contendo as chaves da API e a URL do banco:
+### 3. Configuração do Banco de Dados
+Sincronize as tabelas do Prisma ORM:
+```bash
+npx prisma db push
+```
+
+### 4. Criação do Aluno Fantasma (Para Testes de UI)
+Para injetar o aluno oficial de testes de layout (ignorado pelas métricas de ranking globais):
+```bash
+npx tsx create_test_user.ts
+```
+*(Login: `ALUNOTESTE` | Senha: `123456`)*
+
+### 5. Compilação e Build
+```bash
+npm run build
+```
+
+### 6. Subindo o Servidor
+```bash
+npm run start
+# Ou em produção via PM2:
+# pm2 start npm --name "puma" -- run start
+```
 ```env
 # Chaves da API do Google Gemini (IA)
 GEMINI_API_KEY="SUA_CHAVE_PRINCIPAL_AQUI"
