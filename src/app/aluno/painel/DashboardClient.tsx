@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, AlertTriangle, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, FileText, Package, Flame } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { AlunoSidebar, getStoredSidebarCollapsed, storeSidebarCollapsed } from "@/components/AlunoSidebar";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
@@ -209,6 +210,17 @@ export default function StudentDashboardClient({
   const [generatedToday, setGeneratedToday] = useState<boolean>(false);
   const router = useRouter();
   const [currentLeiIndex, setCurrentLeiIndex] = useState(0);
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    setSidebarCollapsed(getStoredSidebarCollapsed());
+  }, []);
+
+  const handleToggleSidebarCollapsed = (next: boolean) => {
+    setSidebarCollapsed(next);
+    storeSidebarCollapsed(next);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -321,18 +333,33 @@ export default function StudentDashboardClient({
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground lg:flex">
+      <AlunoSidebar
+        mobileOpen={sidebarMobileOpen}
+        onCloseMobile={() => setSidebarMobileOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={handleToggleSidebarCollapsed}
+      />
+
+      <div className="min-w-0 flex-1">
       {/* Top Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src="/logo.png" alt="Logo PUMA" width={52} height={52} className="drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] object-contain hover:scale-105 transition-transform duration-300" />
-            <div>
-              <h1 className="text-xl font-bold text-heading tracking-tight">Sistema PUMA</h1>
-              <p className="text-xs text-blue-400 font-medium uppercase tracking-wider">Painel do Aluno</p>
+      <header className="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <button
+              onClick={() => setSidebarMobileOpen(true)}
+              className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-heading lg:hidden"
+              title="Abrir menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <Image src="/logo.png" alt="Logo PUMA" width={52} height={52} className="w-9 h-9 sm:w-[52px] sm:h-[52px] shrink-0 drop-shadow-[0_0_15px_rgba(245,158,11,0.35)] object-contain hover:scale-105 transition-transform duration-300" />
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-bold text-heading tracking-tight whitespace-nowrap">Sistema PUMA</h1>
+              <p className="text-xs text-blue-400 font-medium uppercase tracking-wider hidden sm:block">Painel do Aluno</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <div className="text-right hidden sm:block">
               <div className="flex items-center justify-end gap-2 mb-0.5">
@@ -455,38 +482,8 @@ export default function StudentDashboardClient({
             </div>
 
             <div className="flex flex-wrap items-center gap-3 w-full">
-              <Link href="/quem-somos" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 hover:border-amber-700 text-amber-300 hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
-                  <Shield className="w-4 h-4 text-amber-400" />
-                  Quem Somos Nós
-                </Button>
-              </Link>
-              <Link href="/aluno/inventario" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-300 hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
-                  <Package className="w-4 h-4 text-emerald-400" />
-                  Inventário 32º PEL
-                </Button>
-              </Link>
-              <Link href="/aluno/biblioteca" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800 hover:border-blue-700 text-blue-300 hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                  <BookOpen className="w-4 h-4 text-blue-400" />
-                  Biblioteca
-                </Button>
-              </Link>
-              <Link href="/aluno/vademecum" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-6 bg-background/80 hover:bg-card border border-border hover:border-border text-muted-foreground hover:text-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
-                  <FileText className="w-4 h-4 text-blue-400" />
-                  Vade Mecum
-                </Button>
-              </Link>
-              <Link href="/aluno/caderno-erros" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-6 bg-rose-950/80 hover:bg-rose-900 border border-rose-800 hover:border-rose-700 text-rose-300 hover:text-rose-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.15)]">
-                  <ShieldAlert className="w-4 h-4 text-rose-400" />
-                  Caderno de Erros
-                </Button>
-              </Link>
-              <Link href="/aluno/chat" className="flex-1 sm:flex-none">
-                <Button className="w-full h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-heading font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
+              <Link href="/aluno/chat" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto h-14 px-7 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-heading font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all transform hover:scale-105 cursor-pointer flex items-center justify-center gap-2">
                   <MessageSquare className="w-4 h-4" />
                   Abrir Chat IA
                 </Button>
@@ -1077,7 +1074,7 @@ export default function StudentDashboardClient({
                 <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Pontos Totais</p>
               </Card>
               <Card className="border-border bg-card/60 p-3.5 flex flex-col items-center justify-center text-center">
-                <AlertTriangle className="w-7 h-7 text-orange-500 mb-1.5" />
+                <Clock className="w-7 h-7 text-orange-500 mb-1.5" />
                 <p className="text-2xl font-black text-heading">{stats?.avgTime || 0}s</p>
                 <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Tempo Médio</p>
               </Card>
@@ -1154,6 +1151,7 @@ export default function StudentDashboardClient({
           </div>
         </div>
       </main>
+      </div>
 
       {/* Armaria Modal */}
       <Dialog open={isArmariaOpen} onOpenChange={setIsArmariaOpen}>
