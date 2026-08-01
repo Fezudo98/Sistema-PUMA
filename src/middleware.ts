@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { getJwtSecret } from '@/lib/env';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "simula_pmce_secret_local");
+const JWT_SECRET = getJwtSecret();
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

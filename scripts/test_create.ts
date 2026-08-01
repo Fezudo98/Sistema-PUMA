@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { createSimulado } from "./src/app/actions/simulado";
+import { createSimulado } from "../src/app/actions/simulado";
 
 const prisma = new PrismaClient();
 

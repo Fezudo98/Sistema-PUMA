@@ -60,3 +60,6 @@ dev.db
 conectar_vps.bat
 *.bat
 test-claude.ts
+
+# Configuração local do Claude Code (permissões da sessão, não do projeto)
+.claude/settings.local.json

@@ -32,14 +32,16 @@ export function ThemeSwitcher({ hasRaioUnlocked = false }: { hasRaioUnlocked?: b
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full border-border bg-muted/50 hover:bg-accent relative group overflow-hidden">
-          <div className="absolute inset-0 group-hover:bg-primary/10 transition-colors pointer-events-none" />
-          {currentTheme === "light" && <Sun className="h-4 w-4 text-amber-500 transition-all" />}
-          {currentTheme === "dark" && <Moon className="h-4 w-4 text-blue-500 transition-all" />}
-          {currentTheme === "raio" && <Zap className="h-4 w-4 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)] transition-all" />}
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="outline" size="icon" className="rounded-full border-border bg-muted/50 hover:bg-accent relative group overflow-hidden" />
+        }
+      >
+        <div className="absolute inset-0 group-hover:bg-primary/10 transition-colors pointer-events-none" />
+        {currentTheme === "light" && <Sun className="h-4 w-4 text-amber-500 transition-all" />}
+        {currentTheme === "dark" && <Moon className="h-4 w-4 text-blue-500 transition-all" />}
+        {currentTheme === "raio" && <Zap className="h-4 w-4 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)] transition-all" />}
+        <span className="sr-only">Toggle theme</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-card border-border rounded-xl">
         <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer font-bold text-muted-foreground hover:text-foreground">

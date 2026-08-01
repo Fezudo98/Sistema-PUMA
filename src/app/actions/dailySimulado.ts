@@ -6,6 +6,7 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
 import { revalidatePath } from "next/cache";
+import { getUser } from "@/app/actions/auth";
 
 function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
   if (!alternativas || !Array.isArray(alternativas) || alternativas.length === 0) {
@@ -467,9 +468,15 @@ export async function saveSelfPacedAnswer(data: {
   alternativa: number;
   tempoGasto: number;
 }) {
-  const { questionId, studentId, alternativa, tempoGasto } = data;
+  const { questionId, alternativa, tempoGasto } = data;
 
   try {
+    const currentUser = await getUser();
+    if (!currentUser || currentUser.role !== "STUDENT") {
+      return { error: "Não autorizado." };
+    }
+    const studentId = currentUser.userId;
+
     // 1. Evitar respostas duplicadas
     const existingAnswer = await prisma.answer.findFirst({
       where: {
@@ -538,8 +545,14 @@ export async function saveSelfPacedAnswer(data: {
   }
 }
 
-export async function completeSelfPacedSimulado(studentId: string, currentSimuladoId: string) {
+export async function completeSelfPacedSimulado(_studentId: string, currentSimuladoId: string) {
   try {
+    const currentUser = await getUser();
+    if (!currentUser || currentUser.role !== "STUDENT") {
+      return { error: "Não autorizado." };
+    }
+    const studentId = currentUser.userId;
+
     const student = await prisma.user.findUnique({
       where: { id: studentId },
       include: {

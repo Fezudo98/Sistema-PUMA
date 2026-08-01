@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { computeStudentPerformanceStats } from './src/lib/stats';
+import { computeStudentPerformanceStats } from '../src/lib/stats';
 
 const prisma = new PrismaClient();
 

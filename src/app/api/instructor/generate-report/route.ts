@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getUser } from "@/app/actions/auth";
+import { generateWithGeminiFallback } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getUser();
+    if (!user || user.role !== "INSTRUCTOR") {
+      return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+    }
+
     const { startDate, endDate, metrics } = await req.json();
 
     if (!metrics) {
@@ -41,33 +47,7 @@ INSTRUÇÕES DE ESCRITA:
 7. O tom deve ser sério, militarizado (termos como tropa, pelotão, combate, linha de frente, preparo), motivacional e altamente profissional.
 8. Retorne APENAS o documento Markdown gerado. Sem textos extras, sem \`\`\`markdown. O texto já será renderizado direto em HTML no PDF.`;
 
-    const generateWithFallback = async (content: string) => {
-      const apiKeys = [
-        { label: "principal", key: process.env.GEMINI_API_KEY || "" },
-        { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
-        { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" }
-      ].filter(k => Boolean(k.key));
-
-      if (apiKeys.length === 0) throw new Error("Sem chaves do Gemini.");
-
-      const modelVersions = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-flash"];
-
-      for (const modelVersion of modelVersions) {
-        for (let i = 0; i < apiKeys.length; i++) {
-          const { key } = apiKeys[i];
-          try {
-            const genAI = new GoogleGenerativeAI(key);
-            const model = genAI.getGenerativeModel({ model: modelVersion });
-            return await model.generateContent(content);
-          } catch (error: any) {
-            console.warn(`Fallback falhou no modelo ${modelVersion}:`, error.message);
-          }
-        }
-      }
-      throw new Error("Todas as tentativas falharam.");
-    };
-
-    const result = await generateWithFallback(prompt);
+    const result = await generateWithGeminiFallback(prompt);
     let responseText = result.response.text();
     
     // Clean up possible markdown code blocks if the AI still adds them

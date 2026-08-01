@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
-
-function isRateLimitError(errorMsg: string): boolean {
-  if (!errorMsg) return false;
-  const lower = errorMsg.toLowerCase();
-  return lower.includes("429") || lower.includes("too many requests") || lower.includes("quota") || lower.includes("exhausted") || lower.includes("503") || lower.includes("service unavailable") || lower.includes("high demand") || lower.includes("overloaded");
-}
+import { SchemaType } from "@google/generative-ai";
+import { getUser } from "@/app/actions/auth";
+import { prisma } from "@/lib/prisma";
+import { generateWithGeminiFallback, cleanLatex } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getUser();
+    if (!user || user.role !== "INSTRUCTOR") {
+      return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const questionsFile = formData.get("pdf") as File | null;
     const apostilaId = formData.get("apostilaId") as string | null;
@@ -38,10 +40,8 @@ export async function POST(req: NextRequest) {
     if (apostilaId && apostilaId !== "nenhuma") {
       const fs = require("fs").promises;
       const path = require("path");
-      const { PrismaClient } = require("@prisma/client");
-      const prisma = new PrismaClient();
       const apostila = await prisma.apostila.findUnique({ where: { id: apostilaId } });
-      
+
       if (apostila) {
         baseApostilaName = apostila.title;
         const filePath = path.join(process.cwd(), "public", apostila.filePath);
@@ -87,19 +87,16 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    const genConfig = { 
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
-      }
+    const generationConfig = {
+      responseMimeType: "application/json",
+      responseSchema: responseSchema,
     };
 
-    let prompt = `Você é um extrator de questões especialista. 
+    let prompt = `Você é um extrator de questões especialista.
     Seu trabalho é ler o material enviado (arquivo de questões) e extrair TODAS as questões de múltipla escolha para o formato JSON.
-    
+
     REGRA CRÍTICA: Não invente novas questões! Apenas extraia as questões que estão no arquivo enviado pelo instrutor.
-    
+
     INSTRUÇÕES:
     1. Organize cada questão com seu enunciado e suas alternativas.
     2. Se a questão não tiver 5 alternativas, crie ou adapte alternativas até totalizar 5, mantendo o nível e a coerência técnica.
@@ -118,44 +115,11 @@ export async function POST(req: NextRequest) {
       contentParts.push(referencePdfPart);
     }
 
-    const generateWithFallback = async (content: any[]) => {
-      const apiKeys = [
-        { label: "principal", key: process.env.GEMINI_API_KEY || "" },
-        { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
-        { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" },
-        { label: "fallback_3", key: process.env.GEMINI_API_KEY_FALLBACK_3 || "" },
-        { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
-      ].filter(k => Boolean(k.key));
-
-      if (apiKeys.length === 0) throw new Error("Sem chaves do Gemini.");
-
-      const modelVersions = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-flash"];
-
-      for (const modelVersion of modelVersions) {
-        for (let i = 0; i < apiKeys.length; i++) {
-          const { key } = apiKeys[i];
-          try {
-            const genAI = new GoogleGenerativeAI(key);
-            const model = genAI.getGenerativeModel({ model: modelVersion, generationConfig: genConfig.generationConfig } as any);
-            return await model.generateContent(content);
-          } catch (error: any) {
-            console.warn(`Fallback falhou no modelo ${modelVersion}:`, error.message);
-          }
-        }
-      }
-      throw new Error("Todas as tentativas falharam.");
-    };
-
-    const result = await generateWithFallback(contentParts);
+    const result = await generateWithGeminiFallback(contentParts, generationConfig);
     const responseText = result.response.text();
     let questions = JSON.parse(responseText);
 
     // Formata o JSON gerado
-    const cleanLatex = (str: string) => {
-      if (!str) return "";
-      return str.replace(/\\\$/g, "$").replace(/\$\$/g, "").replace(/\$/g, "");
-    };
-
     questions = questions.map((q: any) => {
       if (Array.isArray(q.alternativas)) {
         q.alternativas = q.alternativas.map((alt: string) => {

@@ -10,8 +10,8 @@ export async function GET(request: Request) {
 
   const secret = process.env.CRON_SECRET || "";
 
-  // Se houver um segredo configurado em produção, valida
-  if (secret && token !== secret && key !== secret) {
+  // Sem CRON_SECRET configurado, a rota fica sempre fechada (fail-closed).
+  if (!secret || (token !== secret && key !== secret)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 

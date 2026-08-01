@@ -63,9 +63,36 @@ import { parse } from 'url';
 import next from 'next';
 import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
+import { jwtVerify } from 'jose';
 import { computeStudentPerformanceStats } from './src/lib/stats';
+import { getJwtSecret } from './src/lib/env';
 
 const prisma = new PrismaClient();
+const JWT_SECRET = getJwtSecret();
+
+function getTokenFromCookieHeader(cookieHeader: string | undefined): string | null {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
+  return match ? match[1] : null;
+}
+
+interface VerifiedIdentity {
+  userId: string;
+  role: string;
+  name: string;
+}
+
+async function verifyIdentityFromCookieHeader(cookieHeader: string | undefined): Promise<VerifiedIdentity | null> {
+  const token = getTokenFromCookieHeader(cookieHeader);
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    if (!payload.userId || !payload.role) return null;
+    return { userId: payload.userId as string, role: payload.role as string, name: (payload.name as string) || '' };
+  } catch {
+    return null;
+  }
+}
 
 async function getSimuladoRanking(simuladoId: string) {
   try {
@@ -299,6 +326,10 @@ const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 // Track socket connection info to handle disconnects
 const socketInfo = new Map<string, { roomCode: string; userId: string; role: string; name: string }>();
 
+// Identidade verificada (a partir do JWT do cookie) de cada socket conectado.
+// Nunca confiar em role/userId/name enviados pelo próprio cliente no payload dos eventos.
+const verifiedSockets = new Map<string, VerifiedIdentity>();
+
 const TEAM_COLORS = [
   { color: "#3b82f6", bg: "rgba(59, 130, 246, 0.15)", border: "rgba(59, 130, 246, 0.4)" },
   { color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.4)" },
@@ -349,26 +380,9 @@ app.prepare().then(() => {
             where: { key: "MAINTENANCE_MODE" }
           });
           if (setting?.value === "true") {
-            // Verifica nos cookies se é um instrutor logado
-            const cookieHeader = req.headers.cookie || '';
-            const tokenMatch = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
-            const token = tokenMatch ? tokenMatch[1] : null;
-            let isInstructor = false;
-            if (token) {
-              try {
-                // Tenta decodificar o payload JWT (formato base64url: header.payload.signature)
-                const parts = token.split('.');
-                if (parts.length === 3) {
-                  const base64Url = parts[1];
-                  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                  const payloadJson = Buffer.from(base64, 'base64').toString('utf8');
-                  const payload = JSON.parse(payloadJson);
-                  if (payload?.role === 'INSTRUCTOR') {
-                    isInstructor = true;
-                  }
-                }
-              } catch (e) {}
-            }
+            // Verifica nos cookies se é um instrutor logado (com verificação real de assinatura)
+            const identity = await verifyIdentityFromCookieHeader(req.headers.cookie);
+            const isInstructor = identity?.role === 'INSTRUCTOR';
 
             if (!isInstructor) {
               res.writeHead(307, { Location: '/manutencao' });
@@ -402,14 +416,22 @@ app.prepare().then(() => {
     pingInterval: 10000
   });
 
-  io.on('connection', (socket) => {
-    console.log(`[Socket] User connected: ${socket.id}`);
+  io.on('connection', async (socket) => {
+    const identity = await verifyIdentityFromCookieHeader(socket.handshake.headers.cookie);
+    if (!identity) {
+      console.warn(`[Socket] Conexão recusada (token ausente/inválido): ${socket.id}`);
+      socket.disconnect(true);
+      return;
+    }
+    verifiedSockets.set(socket.id, identity);
+
+    console.log(`[Socket] User connected: ${socket.id} (${identity.role} ${identity.name})`);
 
     // Join Room
     socket.on('join_room', async ({ roomCode, user }) => {
       socket.join(roomCode);
-      
-      socketInfo.set(socket.id, { roomCode, userId: user.userId || user.id, role: user.role, name: user.name });
+
+      socketInfo.set(socket.id, { roomCode, userId: identity.userId, role: identity.role, name: identity.name });
 
       if (!rooms.has(roomCode)) {
         const dbSimulado = await prisma.simulado.findUnique({
@@ -555,9 +577,10 @@ app.prepare().then(() => {
       const room = rooms.get(roomCode)!;
       let studentAnswer = null;
 
-      if (user.role === 'STUDENT') {
-        const uid = user.userId || user.id;
-        
+      if (identity.role === 'STUDENT') {
+        const uid = identity.userId;
+        const displayName = identity.name;
+
         // Cancel pending disconnect timeout if any
         if (disconnectTimeouts.has(uid)) {
           clearTimeout(disconnectTimeouts.get(uid)!);
@@ -567,18 +590,18 @@ app.prepare().then(() => {
 
         const existingStudent = room.students.find(s => s.id === uid);
         if (!existingStudent) {
-          room.students.push({ id: uid, name: user.name, avatarUrl: user.avatarUrl });
+          room.students.push({ id: uid, name: displayName, avatarUrl: user?.avatarUrl });
         } else {
-          existingStudent.avatarUrl = user.avatarUrl;
+          existingStudent.avatarUrl = user?.avatarUrl;
         }
 
         // Atualizar pico de conexões ativas na sala
         room.maxConnectedCount = Math.max(room.maxConnectedCount || 0, room.students.length);
-        
+
         if (!room.studentScores[uid]) {
-          room.studentScores[uid] = { id: uid, name: user.name, score: 0, avatarUrl: user.avatarUrl, streak: 0 };
+          room.studentScores[uid] = { id: uid, name: displayName, score: 0, avatarUrl: user?.avatarUrl, streak: 0 };
         } else {
-          room.studentScores[uid].avatarUrl = user.avatarUrl;
+          room.studentScores[uid].avatarUrl = user?.avatarUrl;
         }
 
         // Alocar aleatoriamente e proporcionalmente o aluno em uma equipe se ainda não tiver equipe
@@ -615,7 +638,7 @@ app.prepare().then(() => {
           });
         }
       } else {
-        if (user.simuladoId) room.simuladoId = user.simuladoId;
+        if (user?.simuladoId) room.simuladoId = user.simuladoId;
       }
 
       // Envia room_update privado para o aluno que acabou de entrar, contendo a resposta restaurada
@@ -657,6 +680,7 @@ app.prepare().then(() => {
 
     // Instructor starts simulado
     socket.on('start_simulado', async ({ roomCode, simuladoId }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.status === 'WAITING') {
         room.status = 'ACTIVE';
@@ -681,6 +705,7 @@ app.prepare().then(() => {
 
     // Instructor ends simulado
     socket.on('end_simulado', async ({ roomCode, simuladoId }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room) {
         room.status = 'FINISHED';
@@ -704,6 +729,7 @@ app.prepare().then(() => {
 
     // Instructor launches next question
     socket.on('next_question', async ({ roomCode, question, isLast }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (!room) return;
 
@@ -755,6 +781,7 @@ app.prepare().then(() => {
 
     // Instructor launches next question in raffle mode
     socket.on('next_question_raffle', async ({ roomCode, question, isLast }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (!room || room.students.length === 0) return;
 
@@ -821,6 +848,7 @@ app.prepare().then(() => {
 
     // Instructor forcefully ends time
     socket.on('end_time', async ({ roomCode }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.currentQuestion) {
         if (room.timerInterval) {
@@ -836,6 +864,7 @@ app.prepare().then(() => {
 
     // Instructor reveals result
     socket.on('reveal_result', async ({ roomCode }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.currentQuestion) {
         const question = room.currentQuestion;
@@ -962,6 +991,7 @@ app.prepare().then(() => {
 
     // Instructor pauses time
     socket.on('pause_time', async ({ roomCode }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.timerInterval && !room.isPaused) {
         clearInterval(room.timerInterval);
@@ -973,6 +1003,7 @@ app.prepare().then(() => {
 
     // Instructor resumes time
     socket.on('resume_time', async ({ roomCode }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.isPaused && room.currentQuestion) {
         room.isPaused = false;
@@ -996,6 +1027,7 @@ app.prepare().then(() => {
 
     // Instructor cancels question
     socket.on('cancel_question', async ({ roomCode }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.currentQuestion) {
         // Se cancelado, emitir para o cliente voltar pra espera
@@ -1007,7 +1039,9 @@ app.prepare().then(() => {
     });
 
     // Student submits answer
-    socket.on('submit_answer', async ({ roomCode, questionId, studentId, alternativa, tempoGasto }) => {
+    socket.on('submit_answer', async ({ roomCode, questionId, alternativa, tempoGasto }) => {
+      if (identity.role !== 'STUDENT') return;
+      const studentId = identity.userId;
       const room = rooms.get(roomCode);
       if (!room || !room.currentQuestion) return;
       if (room.currentQuestion.id !== questionId) return;
@@ -1123,6 +1157,7 @@ app.prepare().then(() => {
 
     // Instructor reassigns student manually to a team
     socket.on('reassign_student_team', async ({ roomCode, studentId, targetTeamId }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.isTeamCompetition && room.teams) {
         if (room.teams.some(t => t.id === targetTeamId)) {
@@ -1141,6 +1176,7 @@ app.prepare().then(() => {
 
     // Instructor automatically shuffles/rebalances all students into teams
     socket.on('shuffle_teams', async ({ roomCode }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.isTeamCompetition && room.teams && room.teams.length > 0) {
         const allStudentIds = Object.keys(room.studentScores);
@@ -1167,6 +1203,7 @@ app.prepare().then(() => {
 
     // Instructor ends simulado
     socket.on('end_simulado', async ({ roomCode, simuladoId }) => {
+      if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room) {
         room.status = 'FINISHED';
@@ -1183,6 +1220,7 @@ app.prepare().then(() => {
 
     socket.on('disconnect', () => {
       console.log(`[Socket] User disconnected: ${socket.id}`);
+      verifiedSockets.delete(socket.id);
       const info = socketInfo.get(socket.id);
       if (info) {
         socketInfo.delete(socket.id);

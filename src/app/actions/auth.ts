@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "simula_pmce_secret_local");
+import { getJwtSecret } from "@/lib/env";
+const JWT_SECRET = getJwtSecret();
 
 function sanitizeString(str: string) {
   if (!str) return "";
@@ -120,7 +121,7 @@ export async function loginUser(formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.set("token", token, {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30 // 30 days
