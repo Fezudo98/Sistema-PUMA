@@ -52,6 +52,9 @@ dev.db
 /public/uploads/
 /uploads/
 
+# Worker do PDF.js copiado automaticamente de node_modules (ver scripts/copy_pdf_worker.js)
+/public/pdf-worker/
+
 # Logs
 /logs/
 *.log

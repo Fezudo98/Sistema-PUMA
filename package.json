@@ -5,14 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "dev:server": "tsx server.ts",
-    "build": "prisma generate && NODE_OPTIONS=\"--max-old-space-size=768\" next build --webpack",
+    "build": "prisma generate && node scripts/copy_pdf_worker.js && NODE_OPTIONS=\"--max-old-space-size=768\" next build --webpack",
     "build:server": "tsc server.ts --module commonjs --target es2022 --noEmit false --esModuleInterop true --moduleResolution node --skipLibCheck true",
     "start": "next start",
     "start:prod": "node server.js",
     "backfill:streak": "tsx scripts/backfill_answers_createdAt.ts",
     "backfill:badges": "tsx scripts/backfill_badges.ts",
     "fix:questions": "tsx scripts/cleanup_bad_questions.ts",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && node scripts/copy_pdf_worker.js",
     "lint": "next lint"
   },
   "dependencies": {

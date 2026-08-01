@@ -6,19 +6,15 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // PDF Viewer imports
-import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
-import { 
-  highlightPlugin, 
-  MessageIcon, 
-  RenderHighlightTargetProps, 
+import {
+  highlightPlugin,
+  MessageIcon,
+  RenderHighlightTargetProps,
   RenderHighlightContentProps,
   RenderHighlightsProps
 } from "@react-pdf-viewer/highlight";
-
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import "@react-pdf-viewer/highlight/lib/styles/index.css";
+import { PdfViewer } from "@/components/PdfViewer";
 
 interface Apostila {
   id: string;
@@ -38,18 +34,17 @@ const HighlightContentEditor = ({ props, addAnnotation }: { props: RenderHighlig
     >
       <textarea
         rows={3}
-        className="border p-2 rounded text-sm w-full outline-none focus:border-blue-500"
+        className="border p-3 rounded text-base w-full outline-none focus:border-blue-500 min-h-[5.5rem]"
         placeholder="Escreva sua anotação aqui..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
       <div className="flex gap-2 justify-end mt-1">
-        <Button variant="ghost" size="sm" onClick={props.cancel} className="text-muted-foreground">
+        <Button variant="ghost" onClick={props.cancel} className="text-muted-foreground min-h-11 px-4">
           Cancelar
         </Button>
-        <Button 
-          size="sm" 
-          className="bg-blue-600 hover:bg-blue-700 text-heading"
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 text-heading min-h-11 px-4"
           onClick={() => {
             addAnnotation(message, props.highlightAreas);
             props.cancel();
@@ -133,10 +128,9 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
         zIndex: 1,
       }}
     >
-      <Button 
-        size="sm" 
-        onClick={props.toggle} 
-        className="bg-blue-600 hover:bg-blue-700 text-heading flex items-center gap-2"
+      <Button
+        onClick={props.toggle}
+        className="bg-blue-600 hover:bg-blue-700 text-heading flex items-center gap-2 min-h-11 px-4"
       >
         <MessageIcon />
         Adicionar Anotação
@@ -253,13 +247,7 @@ export default function PdfReaderClient({ apostila, userId }: { apostila: Aposti
             <p>Carregando anotações...</p>
           </div>
         ) : (
-          <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
-            <Viewer
-              fileUrl={fileUrl}
-              plugins={[defaultLayoutPluginInstance, highlightPluginInstance]}
-              theme="dark"
-            />
-          </Worker>
+          <PdfViewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance, highlightPluginInstance]} />
         )}
       </main>
     </div>

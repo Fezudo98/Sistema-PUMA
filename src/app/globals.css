@@ -187,6 +187,104 @@
   }
 }
 
+/* ===== Leitor de PDF (@react-pdf-viewer) — reveste a lib com o tema do app =====
+   A lib expõe cores via custom properties --rpv-*, então só remapeamos os valores
+   para as variáveis do tema (funciona nos 3 temas: claro, escuro e raio). */
+.puma-pdf-viewer {
+  height: 100%;
+  width: 100%;
+
+  --rpv-core__button-background-color: transparent;
+  --rpv-core__button-color: var(--foreground);
+  --rpv-core__minimal-button-color: var(--foreground);
+  --rpv-core__minimal-button--hover-background-color: var(--muted);
+  --rpv-core__minimal-button--selected-background-color: var(--primary);
+  --rpv-core__minimal-button--disabled-color: var(--muted-foreground);
+
+  --rpv-core__popover-body-background-color: var(--popover);
+  --rpv-core__popover-body-border-color: var(--border);
+  --rpv-core__popover-body-color: var(--popover-foreground);
+  --rpv-core__menu-item-color: var(--popover-foreground);
+  --rpv-core__menu-item--hover-background-color: var(--muted);
+  --rpv-core__menu-item--disabled-color: var(--muted-foreground);
+  --rpv-core__menu-divider-border-bottom-color: var(--border);
+
+  --rpv-core__textbox-background-color: var(--input);
+  --rpv-core__textbox-border-color: var(--border);
+  --rpv-core__textbox-color: var(--foreground);
+
+  --rpv-core__tooltip-body-background-color: var(--popover);
+  --rpv-core__tooltip-body-color: var(--popover-foreground);
+  --rpv-core__arrow-border-color: var(--border);
+
+  --rpv-core__doc-loading-background-color: var(--background);
+  --rpv-core__doc-error-background-color: var(--background);
+  --rpv-core__doc-error-text-background-color: var(--card);
+  --rpv-core__doc-error-text-color: var(--foreground);
+
+  --rpv-core__modal-overlay-background-color: rgba(0, 0, 0, 0.6);
+  --rpv-core__modal-body-background-color: var(--card);
+  --rpv-core__modal-body-border-color: var(--border);
+
+  --rpv-core__separator-border-bottom-color: var(--border);
+  --rpv-core__spinner-border-color: var(--border);
+  --rpv-core__spinner-border-transparent-color: var(--primary);
+  --rpv-core__inner-page-background-color: var(--muted);
+
+  --rpv-core__primary-button-background-color: var(--primary);
+  --rpv-core__primary-button-color: var(--primary-foreground);
+
+  --rpv-toolbar__label--color: var(--muted-foreground);
+  --rpv-zoom__popover-target-color: var(--foreground);
+  --rpv-zoom__popover-target-arrow-border-color: var(--border);
+
+  --rpv-default-layout__toolbar-background-color: var(--card);
+  --rpv-default-layout__toolbar-border-bottom-color: var(--border);
+  --rpv-default-layout__sidebar-headers-background-color: var(--card);
+  --rpv-default-layout__sidebar-border-color: var(--border);
+  --rpv-default-layout__sidebar--opened-background-color: var(--card);
+  --rpv-default-layout__sidebar-content--opened-background-color: var(--card);
+  --rpv-default-layout__sidebar-content--opened-border-color: var(--border);
+  --rpv-default-layout__sidebar-content--opened-color: var(--foreground);
+  --rpv-default-layout__body-background-color: var(--muted);
+  --rpv-default-layout__container-border-color: var(--border);
+
+  --rpv-thumbnail__container-background-color: var(--card);
+  --rpv-thumbnail__item--selected-background-color: var(--primary);
+  --rpv-attachment__item-color: var(--foreground);
+  --rpv-attachment__item--hover-background-color: var(--muted);
+  --rpv-bookmark__item-color: var(--foreground);
+  --rpv-bookmark__item--hover-background-color: var(--muted);
+
+  --rpv-search__highlight-background-color: rgba(250, 204, 21, 0.4);
+  --rpv-search__highlight--current-background-color: rgba(250, 204, 21, 0.75);
+}
+
+/* Alvos de toque maiores (a lib usa botões de 2rem/32px por padrão) e permite
+   rolagem horizontal da toolbar em vez de espremer/cortar itens em telas estreitas. */
+.puma-pdf-viewer .rpv-core__minimal-button {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.625rem;
+}
+
+.puma-pdf-viewer .rpv-toolbar {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.puma-pdf-viewer .rpv-toolbar__left,
+.puma-pdf-viewer .rpv-toolbar__center,
+.puma-pdf-viewer .rpv-toolbar__right {
+  flex-shrink: 0;
+}
+
+/* Painel lateral (miniaturas/marcadores/anexos) não pode estourar telas pequenas */
+.puma-pdf-viewer .rpv-default-layout__sidebar-content--opened {
+  max-width: 85vw;
+}
+
 @keyframes flash {
   0%, 50%, 100% { opacity: 0; }
   10%, 60% { opacity: 0.8; }

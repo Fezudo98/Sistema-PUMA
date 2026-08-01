@@ -1,10 +1,8 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { PdfViewer } from "@/components/PdfViewer";
 
 interface PdfViewerModalProps {
   isOpen: boolean;
@@ -27,14 +25,7 @@ export function PdfViewerModal({ isOpen, onClose, filePath, initialPage }: PdfVi
         <DialogTitle className="sr-only">Visualizador de Citação da Apostila</DialogTitle>
         
         <div className="flex-1 overflow-hidden">
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-            <Viewer
-              fileUrl={fileUrl}
-              plugins={[defaultLayoutPluginInstance]}
-              initialPage={initialPage}
-              theme="dark"
-            />
-          </Worker>
+          <PdfViewer fileUrl={fileUrl} plugins={[defaultLayoutPluginInstance]} initialPage={initialPage} />
         </div>
       </DialogContent>
     </Dialog>
