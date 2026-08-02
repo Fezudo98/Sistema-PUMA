@@ -13,7 +13,6 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -108,12 +107,16 @@ export function AlunoSidebar({ mobileOpen, onCloseMobile, collapsed, onToggleCol
         )}
         aria-label="Menu de navegação do aluno"
       >
-        <div className="flex h-20 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
-          <Link href="/aluno/painel" className="flex min-w-0 items-center gap-2.5" onClick={onCloseMobile}>
-            <Image src="/logo.png" alt="Logo PUMA" width={36} height={36} className="shrink-0 object-contain" />
-            {!collapsed && (
-              <span className="truncate text-sm font-black uppercase tracking-wider text-heading">Menu Tático</span>
-            )}
+        <div className={cn("flex h-16 sm:h-20 shrink-0 items-center gap-2 border-b border-border px-4", collapsed ? "lg:justify-center lg:px-0" : "justify-between")}>
+          <Link
+            href="/aluno/painel"
+            className="flex min-w-0 items-center"
+            onClick={onCloseMobile}
+            title="Painel do Aluno"
+          >
+            <span className={cn("truncate text-sm font-black uppercase tracking-wider text-heading", collapsed && "lg:hidden")}>
+              Menu Tático
+            </span>
           </Link>
           <button
             onClick={onCloseMobile}
