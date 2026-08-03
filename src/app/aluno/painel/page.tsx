@@ -5,15 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { getCachedGeneralRanking } from "@/lib/ranking";
 
+const PAST_DAILY_SIMULADOS_LIMIT = 60;
+const SPECIAL_SIMULADOS_LIMIT = 50;
+
 export default async function AlunoPainel() {
   const user = await getUser();
-  
+
   if (!user || user.role !== "STUDENT") {
     redirect("/aluno");
   }
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.userId } });
-  
+
   if (!dbUser) {
     redirect("/api/auth/force-logout");
   }
@@ -30,28 +33,92 @@ export default async function AlunoPainel() {
     isTestUser: dbUser?.isTestUser || false
   };
 
-  const answers = await prisma.answer.findMany({
-    where: { studentId: user.userId },
-    include: {
-      question: {
-        include: {
-          simulado: {
-            include: {
-              _count: {
-                select: { questions: true }
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
+
+  // Consultas independentes entre si rodam em paralelo em vez de uma atrás da outra.
+  const [
+    answers,
+    generalRanking,
+    dailySimulados,
+    activeApostilasCount,
+    apostilasAtivas,
+    pastDailySimulados,
+    activeRooms,
+    specialSimulados
+  ] = await Promise.all([
+    prisma.answer.findMany({
+      where: { studentId: user.userId },
+      include: {
+        question: {
+          include: {
+            simulado: {
+              include: {
+                _count: {
+                  select: { questions: true }
+                }
               }
             }
           }
         }
-      }
-    },
-    orderBy: { id: "desc" }
-  });
+      },
+      orderBy: { id: "desc" }
+    }),
+    getCachedGeneralRanking(),
+    prisma.simulado.findMany({
+      where: {
+        tipo: "DAILY",
+        createdAt: { gte: todayStart, lte: todayEnd }
+      },
+      include: {
+        questions: { select: { id: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    }),
+    prisma.apostila.count({ where: { isActive: true } }),
+    prisma.apostila.findMany({ where: { isActive: true } }),
+    prisma.simulado.findMany({
+      where: {
+        tipo: "DAILY",
+        createdAt: { lt: todayStart }
+      },
+      include: {
+        questions: { select: { id: true } }
+      },
+      orderBy: { createdAt: "desc" },
+      take: PAST_DAILY_SIMULADOS_LIMIT
+    }),
+    prisma.simulado.findMany({
+      where: {
+        status: { in: ["WAITING", "ACTIVE"] },
+        tipo: "LIVE"
+      },
+      select: {
+        id: true,
+        codigoSala: true,
+        status: true,
+        createdAt: true,
+        apostilaName: true,
+        difficulty: true
+      },
+      orderBy: { createdAt: "desc" }
+    }),
+    prisma.simulado.findMany({
+      where: { tipo: "SPECIAL" },
+      include: {
+        questions: { select: { id: true } }
+      },
+      orderBy: { createdAt: "desc" },
+      take: SPECIAL_SIMULADOS_LIMIT
+    })
+  ]);
 
   const totalAnswers = answers.length;
-  const correctAnswers = answers.filter(a => a.isCorrect).length;
 
-  // Buscar todas as respostas de sorteio vencidas por outros alunos nesses simulados
+  // Buscar apenas as respostas de sorteio vencidas por OUTROS alunos nos simulados
+  // que este aluno participou (nunca a tabela inteira do sistema).
   const simuladoIds = Array.from(new Set(answers.map(a => a.question.simuladoId)));
   const otherRaffleAnswers = await prisma.answer.findMany({
     where: {
@@ -68,15 +135,6 @@ export default async function AlunoPainel() {
   otherRaffleAnswers.forEach(ora => {
     const sId = ora.question.simuladoId;
     otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
-  });
-
-  const participatedSimulados = new Map<string, number>();
-  answers.forEach(a => {
-    const simuladoId = a.question.simuladoId;
-    const totalQ = (a.question.simulado as any)._count?.questions || 0;
-    const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
-    const expectedQ = Math.max(0, totalQ - otherRaffleCount);
-    participatedSimulados.set(simuladoId, expectedQ);
   });
 
   const totalScore = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
@@ -106,7 +164,7 @@ export default async function AlunoPainel() {
     sStats.score += a.pontuacao;
     sStats.answeredCount++;
   }
-  
+
   const history = Array.from(historyMap.values())
     .filter(h => {
       const isFinished = h.tipo === "LIVE" ? h.status === "FINISHED" : true;
@@ -121,23 +179,7 @@ export default async function AlunoPainel() {
       accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
     }));
 
-  const allRaffleAnswers = await prisma.answer.findMany({
-    where: { isRaffle: true },
-    select: {
-      studentId: true,
-      question: { select: { simuladoId: true } }
-    }
-  });
-  const totalRaffleInSimulado = new Map<string, number>();
-  const studentRaffleInSimulado = new Map<string, number>();
-  allRaffleAnswers.forEach(ra => {
-    const sId = ra.question.simuladoId;
-    const uId = ra.studentId;
-    totalRaffleInSimulado.set(sId, (totalRaffleInSimulado.get(sId) || 0) + 1);
-    studentRaffleInSimulado.set(`${uId}_${sId}`, (studentRaffleInSimulado.get(`${uId}_${sId}`) || 0) + 1);
-  });
-
-  const perfStats = computeStudentPerformanceStats(answers, user.userId, totalRaffleInSimulado, studentRaffleInSimulado);
+  const perfStats = computeStudentPerformanceStats(answers, user.userId, otherRaffleCounts);
 
   const stats = {
     simuladosCount: history.length,
@@ -150,35 +192,7 @@ export default async function AlunoPainel() {
     history
   };
 
-  // Fetch general ranking using the cached function to avoid CPU/DB spikes
-  const generalRanking = await getCachedGeneralRanking();
-
-  // 2. Fetch daily simulados for today
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
-
-  const dailySimulados = await prisma.simulado.findMany({
-    where: {
-      tipo: "DAILY",
-      createdAt: {
-        gte: todayStart,
-        lte: todayEnd
-      }
-    },
-    include: {
-      questions: {
-        select: { id: true }
-      }
-    },
-    orderBy: { createdAt: "desc" }
-  });
-
-  // 3. Primeiro login do dia: se houver apostilas ativas sem simulado gerado hoje, dispara em background
-  const activeApostilasCount = await prisma.apostila.count({
-    where: { isActive: true }
-  });
+  // Primeiro login do dia: se houver apostilas ativas sem simulado gerado hoje, dispara em background
   const isGeneratingDaily = activeApostilasCount > 0 && dailySimulados.length < activeApostilasCount;
 
   if (isGeneratingDaily) {
@@ -188,16 +202,18 @@ export default async function AlunoPainel() {
     });
   }
 
-  const apostilasAtivas = await prisma.apostila.findMany({ where: { isActive: true } });
+  // Set com as questões já respondidas pelo aluno, calculado uma única vez para
+  // evitar varrer o array de respostas inteiro para cada simulado abaixo.
+  const answeredQuestionIds = new Set(answers.map(a => a.questionId));
 
   const dailySimuladosWithStatus = dailySimulados.map((sim) => {
     const questionIds = sim.questions.map((q: { id: string }) => q.id);
-    const studentAnswersCount = answers.filter(a => questionIds.includes(a.questionId)).length;
-    
+    const studentAnswersCount = questionIds.filter(id => answeredQuestionIds.has(id)).length;
+
     const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
-    
+
     const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
-    
+
     return {
       id: sim.id,
       apostilaName: sim.apostilaName || "Simulado de Estudo",
@@ -207,30 +223,14 @@ export default async function AlunoPainel() {
     };
   });
 
-  // 3. Fetch past daily simulados (before today)
-  const pastDailySimulados = await prisma.simulado.findMany({
-    where: {
-      tipo: "DAILY",
-      createdAt: {
-        lt: todayStart
-      }
-    },
-    include: {
-      questions: {
-        select: { id: true }
-      }
-    },
-    orderBy: { createdAt: "desc" }
-  });
-
   const pastDailySimuladosWithStatus = pastDailySimulados.map((sim) => {
     const questionIds = sim.questions.map((q: { id: string }) => q.id);
-    const studentAnswersCount = answers.filter(a => questionIds.includes(a.questionId)).length;
-    
+    const studentAnswersCount = questionIds.filter(id => answeredQuestionIds.has(id)).length;
+
     const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
-    
+
     const linkedApostila = apostilasAtivas.find(a => a.title === sim.apostilaName);
-    
+
     return {
       id: sim.id,
       apostilaName: sim.apostilaName || "Simulado de Estudo",
@@ -241,41 +241,9 @@ export default async function AlunoPainel() {
     };
   });
 
-  // Buscar simulados ativos (WAITING ou ACTIVE) e apenas do tipo LIVE
-  const activeRooms = await prisma.simulado.findMany({
-    where: {
-      status: {
-        in: ["WAITING", "ACTIVE"]
-      },
-      tipo: "LIVE"
-    },
-    select: {
-      id: true,
-      codigoSala: true,
-      status: true,
-      createdAt: true,
-      apostilaName: true,
-      difficulty: true
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
-
-  // 4. Fetch Especiais
-  const specialSimulados = await prisma.simulado.findMany({
-    where: {
-      tipo: "SPECIAL",
-    },
-    include: {
-      questions: { select: { id: true } }
-    },
-    orderBy: { createdAt: "desc" }
-  });
-
   const specialSimuladosWithStatus = specialSimulados.map((sim) => {
     const questionIds = sim.questions.map((q: { id: string }) => q.id);
-    const studentAnswersCount = answers.filter(a => questionIds.includes(a.questionId)).length;
+    const studentAnswersCount = questionIds.filter(id => answeredQuestionIds.has(id)).length;
     const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
     const isExpired = sim.expiresAt ? new Date(sim.expiresAt) < new Date() : false;
 
@@ -296,11 +264,11 @@ export default async function AlunoPainel() {
   });
 
   return (
-    <StudentDashboardClient 
-      user={clientUser} 
-      stats={stats} 
-      generalRanking={generalRanking} 
-      activeRooms={activeRooms} 
+    <StudentDashboardClient
+      user={clientUser}
+      stats={stats}
+      generalRanking={generalRanking}
+      activeRooms={activeRooms}
       dailySimulados={dailySimuladosWithStatus}
       pastDailySimulados={pastDailySimuladosWithStatus}
       specialSimulados={specialSimuladosWithStatus}

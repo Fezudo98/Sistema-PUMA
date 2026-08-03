@@ -45,6 +45,7 @@ model Simulado {
 
   @@index([instructorId])
   @@index([tipo, status])
+  @@index([tipo, createdAt])
 }
 
 model Question {
@@ -82,6 +83,7 @@ model Answer {
 
   @@index([studentId])
   @@index([questionId])
+  @@index([questionId, studentId])
   @@index([isRaffle])
   @@index([studentId, isCorrect])
 }
