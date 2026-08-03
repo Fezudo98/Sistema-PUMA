@@ -10,21 +10,26 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { formatApostilaTitle } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-export default function ReportsDashboardClient() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [generatingPdf, setGeneratingPdf] = useState(false);
-  const [metrics, setMetrics] = useState<any>(null);
+interface ReportsDashboardClientProps {
+  initialMetrics?: any;
+  initialStartDate?: string;
+  initialEndDate?: string;
+}
 
-  // Default to last 30 days
+export default function ReportsDashboardClient({ initialMetrics, initialStartDate, initialEndDate }: ReportsDashboardClientProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(!initialMetrics);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [metrics, setMetrics] = useState<any>(initialMetrics ?? null);
+
+  // Default to last 30 days (ou o período já carregado pelo servidor)
   const [startDate, setStartDate] = useState(() => {
+    if (initialStartDate) return initialStartDate;
     const d = new Date();
     d.setDate(d.getDate() - 30);
     return d.toISOString().split("T")[0];
   });
-  const [endDate, setEndDate] = useState(() => {
-    return new Date().toISOString().split("T")[0];
-  });
+  const [endDate, setEndDate] = useState(() => initialEndDate || new Date().toISOString().split("T")[0]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -38,7 +43,11 @@ export default function ReportsDashboardClient() {
   };
 
   useEffect(() => {
-    fetchData();
+    // Se o servidor já mandou os dados prontos (período padrão), não busca de novo ao montar.
+    if (!initialMetrics) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGenerateAIReport = async () => {

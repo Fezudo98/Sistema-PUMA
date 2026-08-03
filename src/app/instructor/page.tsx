@@ -8,8 +8,9 @@ import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { prisma } from '@/lib/prisma';
 import HeaderAvatar from "@/components/HeaderAvatar";
-import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getLocalDayString } from "@/lib/stats";
 import { getCachedGeneralRanking } from "@/lib/ranking";
+import { getInstructorReports } from "@/app/actions/reports";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import EndSimuladoButton from "./EndSimuladoButton";
 import DeleteSimuladoButton from "./DeleteSimuladoButton";
@@ -103,6 +104,13 @@ export default async function InstructorDashboard() {
   // Load general ranking using the heavily cached function to prevent DB spikes
   const studentsPerformance = await getCachedGeneralRanking();
 
+  // Pré-carrega os relatórios (últimos 30 dias) no servidor: a aba "Relatórios" é a
+  // que abre por padrão, então evita o spinner/round-trip toda vez que o instrutor volta pra cá.
+  const reportsEndDate = getLocalDayString(new Date());
+  const reportsStartDate = getLocalDayString(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  const initialReports = await getInstructorReports(reportsStartDate, reportsEndDate);
+  const initialReportsMetrics = "success" in initialReports && initialReports.success ? initialReports.data : null;
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
@@ -167,7 +175,11 @@ export default async function InstructorDashboard() {
           </div>
 
           <TabsContent value="relatorios" className="mt-0">
-            <ReportsDashboardClient />
+            <ReportsDashboardClient
+              initialMetrics={initialReportsMetrics}
+              initialStartDate={reportsStartDate}
+              initialEndDate={reportsEndDate}
+            />
           </TabsContent>
 
           <TabsContent value="simulados" className="mt-0">
