@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getCachedGeneralRanking } from "@/lib/ranking";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import fs from "fs/promises";
@@ -172,10 +173,14 @@ export async function getChatHistoryAction(apostilaId: string) {
     });
     const isApostilaActive = !!activeApostila;
 
-    const messages = await prisma.chatMessage.findMany({
+    // Carrega só as últimas 200 mensagens dessa conversa (mais que suficiente pra
+    // exibir e dar contexto), em vez do histórico inteiro acumulado sem limite.
+    const recentMessages = await prisma.chatMessage.findMany({
       where: { studentId: user.userId, apostilaId },
-      orderBy: { createdAt: "asc" }
+      orderBy: { createdAt: "desc" },
+      take: 200
     });
+    const messages = recentMessages.reverse();
 
     return { success: true, messages, isSuspended: false, isApostilaActive };
   } catch (error: any) {
@@ -239,26 +244,54 @@ export async function sendChatMessageAction(content: string, apostilaId: string)
 
     // Enfileiramos a chamada ao Gemini para evitar concorrência e cota estourada
     const assistantMsg = await queueGenerationTask(async () => {
-      // 2. Carregar estatísticas do aluno
-      const stats = await prisma.answer.findMany({
-        where: { studentId: user.userId },
-        include: {
-          question: {
-            include: {
-              simulado: {
-                include: { _count: { select: { questions: true } } }
+      // 2. Carregar estatísticas do aluno. Reaproveita o ranking geral (com cache de 60s)
+      // em vez de rebuscar e reprocessar o histórico de respostas inteiro a cada mensagem.
+      const generalRanking = await getCachedGeneralRanking();
+      const cachedPerf = generalRanking.find((r: any) => r.id === user.userId);
+
+      let totalAnswers: number;
+      let accuracy: number;
+      let streakDays: number;
+      let todayPoints: number;
+
+      if (cachedPerf) {
+        totalAnswers = cachedPerf.totalAnswers;
+        accuracy = cachedPerf.accuracy;
+        streakDays = cachedPerf.streakDays;
+        todayPoints = cachedPerf.todayPoints;
+      } else {
+        // Fallback (ex.: contas de teste que não entram no ranking geral)
+        const fallbackAnswers = await prisma.answer.findMany({
+          where: { studentId: user.userId },
+          include: {
+            question: {
+              include: {
+                simulado: {
+                  include: { _count: { select: { questions: true } } }
+                }
               }
             }
           }
+        });
+        const perf = computeStudentPerformanceStats(fallbackAnswers, user.userId);
+        totalAnswers = perf.totalAnswers;
+        accuracy = perf.accuracy;
+        streakDays = perf.streakDays;
+        todayPoints = perf.todayPoints;
+      }
+
+      // Assuntos com erros: busca só as últimas respostas erradas (bem mais leve que
+      // carregar o histórico inteiro), aproveitando o índice [studentId, isCorrect].
+      const wrongQuestions = await prisma.answer.findMany({
+        where: { studentId: user.userId, isCorrect: false },
+        orderBy: { id: "desc" },
+        take: 5,
+        select: {
+          alternativa: true,
+          question: { select: { enunciado: true, justificativa: true } }
         }
       });
-      const perf = computeStudentPerformanceStats(stats, user.userId);
-      const totalAnswers = perf.totalAnswers;
-      const accuracy = perf.accuracy;
-      
-      // Assuntos com erros
-      const wrongQuestions = stats.filter(a => !a.isCorrect);
-      const wrongSummary = wrongQuestions.slice(-5).map(a => `- Questão: ${a.question.enunciado} (Sua resposta incorreta: alternativa ${a.alternativa}, justificativa da questão: ${a.question.justificativa})`).join("\n");
+      const wrongSummary = wrongQuestions.reverse().map(a => `- Questão: ${a.question.enunciado} (Sua resposta incorreta: alternativa ${a.alternativa}, justificativa da questão: ${a.question.justificativa})`).join("\n");
 
       // 3. Carregar contexto integral da apostila em foco (sem corte de caracteres, enviando 100% do PDF)
       const rawText = await getCachedApostilaText(apostila);
@@ -281,7 +314,7 @@ export async function sendChatMessageAction(content: string, apostilaId: string)
 Suas diretrizes fundamentais:
 1. TOM NATURAL E PRESTATIVO: Fale de forma fluida, amigável e natural (como o ChatGPT ou o Gemini). Não seja grosseiro nem excessivamente rígido.
 2. ATENDIMENTO SOB DEMANDA: Foque 100% no que o aluno pediu. Responda dúvidas, formule questões de prova/teste ou crie materiais de estudo (flashcards, resumos) baseando-se no material fornecido abaixo.
-3. CONTEXTO DE DESEMPENHO SILENCIOSO: Você sabe que o Recruta resolveu ${totalAnswers} questões com aproveitamento de ${accuracy}%, está com sequência diária de ${perf.streakDays} dia(s) e fez +${perf.todayPoints} pontos hoje (Erros recentes: ${wrongSummary || "nenhum"}). NÃO mencione esses números ou estatísticas a menos que seja questionado diretamente ou para elogiar a sequência no início.
+3. CONTEXTO DE DESEMPENHO SILENCIOSO: Você sabe que o Recruta resolveu ${totalAnswers} questões com aproveitamento de ${accuracy}%, está com sequência diária de ${streakDays} dia(s) e fez +${todayPoints} pontos hoje (Erros recentes: ${wrongSummary || "nenhum"}). NÃO mencione esses números ou estatísticas a menos que seja questionado diretamente ou para elogiar a sequência no início.
 4. LIMITE DE CONHECIMENTO CRÍTICO E EXCLUSIVO (ATENÇÃO EXTREMA):
    - Você deve se pautar EXCLUSIVAMENTE nas apostilas ativas fornecidas abaixo.
    - NÃO utilize conhecimento prévio seu ou da internet sobre leis, regimentos, portarias, códigos ou matérias de concursos que não estejam explicitamente detalhadas no texto fornecido abaixo.
