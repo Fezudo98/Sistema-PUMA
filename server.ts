@@ -134,8 +134,17 @@ async function getSimuladoRanking(simuladoId: string) {
   }
 }
 
+// Evita empilhar checagens pesadas de brevê pro mesmo aluno, e espalha (jitter) o
+// disparo delas no tempo — sem isso, quando o cronômetro de uma questão zera, dezenas
+// de alunos disparam essa query pesada no MESMO instante, competindo pelo SQLite.
+const pendingBadgeChecks = new Set<string>();
+
 async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSimuladoId: string) {
+  if (pendingBadgeChecks.has(studentId)) return;
+  pendingBadgeChecks.add(studentId);
   try {
+    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 1350));
+
     const student = await prisma.user.findUnique({
       where: { id: studentId },
       include: {
@@ -284,6 +293,8 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
     }
   } catch (error) {
     console.error("Error checking badges:", error);
+  } finally {
+    pendingBadgeChecks.delete(studentId);
   }
 }
 
