@@ -35,6 +35,7 @@ export default function NovoSimulado() {
 
   // Team Competition State
   const [isTeamCompetition, setIsTeamCompetition] = useState(false);
+  const [isRaceMode, setIsRaceMode] = useState(false);
   const [teamCount, setTeamCount] = useState(2);
   const [teamNames, setTeamNames] = useState<string[]>(["Equipe Alpha", "Equipe Bravo"]);
 
@@ -122,6 +123,7 @@ export default function NovoSimulado() {
         apostilaName: nameOfApostila, 
         topics,
         isTeamCompetition,
+        isRaceMode: isTeamCompetition ? isRaceMode : false,
         teamNames: isTeamCompetition ? teamNames.slice(0, teamCount) : undefined
       }));
       
@@ -297,6 +299,21 @@ export default function NovoSimulado() {
 
                 {isTeamCompetition && (
                   <div className="pt-3 border-t border-border/80 space-y-4 ml-7.5 animate-in fade-in slide-in-from-top-2">
+                    <div className="bg-amber-950/20 border border-amber-500/30 rounded-lg p-3.5 space-y-2">
+                      <label className="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-amber-300 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={isRaceMode}
+                          onChange={e => setIsRaceMode(e.target.checked)}
+                          className="w-5 h-5 rounded border-border bg-background text-amber-500 focus:ring-amber-500 cursor-pointer"
+                        />
+                        Modo Corrida ⚡
+                      </label>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
+                        Vira uma corrida: só o primeiro aluno a acertar (de qualquer equipe) marca ponto pra sua equipe naquela questão — quem responde depois, certo ou errado, não pontua. Se o primeiro aluno de uma equipe a responder errar, essa equipe fica fora da disputa daquela questão (as outras seguem correndo normalmente).
+                      </p>
+                    </div>
+
                     <div className="space-y-2">
                       <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Quantidade de Equipes</label>
                       <Select value={teamCount.toString()} onValueChange={(v) => handleTeamCountChange(parseInt(v || "2"))}>

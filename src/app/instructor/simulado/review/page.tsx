@@ -26,6 +26,7 @@ export default function ReviewSimulado() {
   const [isRaffleMode, setIsRaffleMode] = useState(false);
   const [dificuldade, setDificuldade] = useState("AVANCADO");
   const [isTeamCompetition, setIsTeamCompetition] = useState(false);
+  const [isRaceMode, setIsRaceMode] = useState(false);
   const [teamNames, setTeamNames] = useState<string[] | undefined>();
 
   // Estados de Edição
@@ -56,6 +57,9 @@ export default function ReviewSimulado() {
       if (parsed.isTeamCompetition) {
         setIsTeamCompetition(true);
         setTeamNames(parsed.teamNames);
+        if (parsed.isRaceMode) {
+          setIsRaceMode(true);
+        }
       }
     }
   }, [router]);
@@ -121,6 +125,7 @@ export default function ReviewSimulado() {
       topics,
       difficulty: dificuldade,
       isTeamCompetition,
+      isRaceMode,
       teamNames,
       questions
     });
@@ -217,7 +222,21 @@ export default function ReviewSimulado() {
                 {isRaffleMode ? "Ativado" : "Desativado"}
               </span>
             </div>
-            
+
+            {/* Modo Equipe / Corrida */}
+            {isTeamCompetition && (
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1">Modo Equipe</span>
+                <span className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
+                  isRaceMode
+                    ? "bg-amber-950/40 border-amber-500/30 text-amber-400"
+                    : "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                }`}>
+                  {isRaceMode ? "Corrida (1º acerto vale)" : "Ativado"}
+                </span>
+              </div>
+            )}
+
             {/* Tópicos */}
             {topics && (
               <div className="flex flex-col">

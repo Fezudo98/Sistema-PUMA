@@ -317,12 +317,13 @@ interface RoomState {
   studentScores: Record<string, { id: string; name: string; score: number; avatarUrl?: string | null; streak: number }>;
   answersReceived: number;
   raffleWinnerId: string | null;
-  questionEndedData: { 
-    correta: number; 
+  questionEndedData: {
+    correta: number;
     justificativa: string;
     percentages?: number[];
     unansweredPercentage?: number;
     answersByAlt?: Record<string, Array<{ name: string; avatarUrl: string | null }>>;
+    raceWinner?: { studentId: string; name: string; teamId: string | null } | null;
   } | null;
   pendingNotifications: string[];
   answeredStudentIds: string[];
@@ -330,6 +331,11 @@ interface RoomState {
   isTeamCompetition?: boolean;
   teams?: { id: string; name: string; color: string; bg: string; border: string; score: number }[];
   studentTeams?: Record<string, string>;
+  // Modo Corrida (só relevante quando isTeamCompetition = true)
+  raceMode?: boolean;
+  raceWinner: { studentId: string; name: string; teamId: string | null } | null;
+  disqualifiedTeams: Set<string>;
+  teamFirstAnswered: Set<string>;
 }
 const rooms = new Map<string, RoomState>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
@@ -340,6 +346,10 @@ const socketInfo = new Map<string, { roomCode: string; userId: string; role: str
 // Identidade verificada (a partir do JWT do cookie) de cada socket conectado.
 // Nunca confiar em role/userId/name enviados pelo próprio cliente no payload dos eventos.
 const verifiedSockets = new Map<string, VerifiedIdentity>();
+
+// Modo Corrida: bônus fixo pra quem for o primeiro a acertar (empata com o bônus
+// máximo de velocidade do modo normal: 100 base + até 50 de bônus).
+const RACE_WIN_BONUS = 150;
 
 const TEAM_COLORS = [
   { color: "#3b82f6", bg: "rgba(59, 130, 246, 0.15)", border: "rgba(59, 130, 246, 0.4)" },
@@ -557,7 +567,11 @@ app.prepare().then(() => {
           maxConnectedCount: 0,
           isTeamCompetition,
           teams,
-          studentTeams
+          studentTeams,
+          raceMode: !!dbSimulado?.isRaceMode,
+          raceWinner: null,
+          disqualifiedTeams: new Set(),
+          teamFirstAnswered: new Set()
         });
 
         if (dbSimulado) {
@@ -665,6 +679,7 @@ app.prepare().then(() => {
         answeredStudentIds: room.answeredStudentIds || [],
         restoredAnswer: studentAnswer ? { alternativa: studentAnswer.alternativa, isCorrect: studentAnswer.isCorrect } : null,
         isTeamCompetition: room.isTeamCompetition,
+        raceMode: room.raceMode,
         teams: room.teams,
         studentTeams: room.studentTeams
       });
@@ -681,6 +696,7 @@ app.prepare().then(() => {
         questionEndedData: room.questionEndedData,
         answeredStudentIds: room.answeredStudentIds || [],
         isTeamCompetition: room.isTeamCompetition,
+        raceMode: room.raceMode,
         teams: room.teams,
         studentTeams: room.studentTeams
       });
@@ -707,6 +723,7 @@ app.prepare().then(() => {
           raffleWinnerId: room.raffleWinnerId,
           questionEndedData: room.questionEndedData,
           isTeamCompetition: room.isTeamCompetition,
+          raceMode: room.raceMode,
           teams: room.teams,
           studentTeams: room.studentTeams
         });
@@ -731,6 +748,7 @@ app.prepare().then(() => {
           raffleWinnerId: room.raffleWinnerId,
           questionEndedData: room.questionEndedData,
           isTeamCompetition: room.isTeamCompetition,
+          raceMode: room.raceMode,
           teams: room.teams,
           studentTeams: room.studentTeams
         });
@@ -753,6 +771,9 @@ app.prepare().then(() => {
       room.raffleWinnerId = null;
       room.questionEndedData = null;
       room.answeredStudentIds = [];
+      room.raceWinner = null;
+      room.disqualifiedTeams = new Set();
+      room.teamFirstAnswered = new Set();
 
       await prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } });
 
@@ -817,6 +838,9 @@ app.prepare().then(() => {
         currentRoom.isPaused = false;
         currentRoom.questionEndedData = null;
         currentRoom.answeredStudentIds = [];
+        currentRoom.raceWinner = null;
+        currentRoom.disqualifiedTeams = new Set();
+        currentRoom.teamFirstAnswered = new Set();
 
         await prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } });
 
@@ -974,21 +998,23 @@ app.prepare().then(() => {
         const unansweredPercentage = totalAnswers > 0 ? Math.round((unansweredCount / totalAnswers) * 100) : 0;
 
         // Armazena no estado em memória para reconectados
-        room.questionEndedData = { 
-          correta: question.correta, 
+        room.questionEndedData = {
+          correta: question.correta,
           justificativa: question.justificativa,
           percentages,
           unansweredPercentage,
-          answersByAlt
+          answersByAlt,
+          raceWinner: room.raceWinner
         };
-        
+
         io.to(roomCode).emit('question_ended', {
           questionId: question.id,
           correta: question.correta,
           justificativa: question.justificativa,
           percentages,
           unansweredPercentage,
-          answersByAlt
+          answersByAlt,
+          raceWinner: room.raceWinner
         });
         
         emitRankingAndTeams(io, roomCode, room);
@@ -1044,7 +1070,10 @@ app.prepare().then(() => {
         // Se cancelado, emitir para o cliente voltar pra espera
         room.currentQuestion = null;
         room.answeredStudentIds = [];
-        
+        room.raceWinner = null;
+        room.disqualifiedTeams = new Set();
+        room.teamFirstAnswered = new Set();
+
         io.to(roomCode).emit('question_cancelled');
       }
     });
@@ -1072,9 +1101,34 @@ app.prepare().then(() => {
       }
 
       const isCorrect = Number(room.currentQuestion.correta) === Number(alternativa);
-      
+      const isRaceMode = !!room.isTeamCompetition && !!room.raceMode;
+      const myTeamId = isRaceMode ? (room.studentTeams?.[studentId] || null) : null;
+
       let pontuacao = 0;
-      if (isCorrect) {
+      let raceJustWon = false;
+
+      if (isRaceMode) {
+        // O primeiro membro de cada equipe a responder "define" a equipe naquela
+        // questão: se ele errar, a equipe fica fora da corrida (as outras seguem).
+        if (myTeamId && !room.teamFirstAnswered.has(myTeamId)) {
+          room.teamFirstAnswered.add(myTeamId);
+          if (!isCorrect) {
+            room.disqualifiedTeams.add(myTeamId);
+          }
+        }
+        const teamDisqualified = myTeamId ? room.disqualifiedTeams.has(myTeamId) : false;
+
+        // Só o primeiro acerto GERAL (entre todas as equipes ainda na corrida) pontua.
+        if (isCorrect && !room.raceWinner && !teamDisqualified) {
+          pontuacao = RACE_WIN_BONUS;
+          room.raceWinner = {
+            studentId,
+            name: room.studentScores[studentId]?.name || '',
+            teamId: myTeamId
+          };
+          raceJustWon = true;
+        }
+      } else if (isCorrect) {
         // Velocidade importa: quanto menor o tempo gasto, maior o bônus
         const tempoRestante = Math.max(0, room.currentQuestion.tempoLimite - tempoGasto);
         const bonus = Math.max(0, Math.floor((tempoRestante / room.currentQuestion.tempoLimite) * 50));
@@ -1143,10 +1197,21 @@ app.prepare().then(() => {
       }
 
       room.answersReceived += 1;
-      io.to(roomCode).emit('instructor_student_answered', { 
+      io.to(roomCode).emit('instructor_student_answered', {
         count: room.answersReceived,
         answeredStudentIds: room.answeredStudentIds
       });
+
+      if (raceJustWon && room.raceWinner) {
+        const winnerTeam = room.teams?.find(t => t.id === room.raceWinner!.teamId);
+        io.to(roomCode).emit('race_winner', {
+          studentId: room.raceWinner.studentId,
+          name: room.raceWinner.name,
+          teamId: room.raceWinner.teamId,
+          teamName: winnerTeam?.name || null,
+          teamColor: winnerTeam?.color || null
+        });
+      }
 
       const targetAnswers = room.raffleWinnerId ? 1 : (room.maxConnectedCount || room.students.length);
       if (room.answersReceived >= targetAnswers && room.timerInterval) {

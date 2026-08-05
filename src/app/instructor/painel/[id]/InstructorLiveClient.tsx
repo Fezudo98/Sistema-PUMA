@@ -5,7 +5,7 @@ import { io, Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
-import { Clock, Users, Play, Target, Square, Pause, CheckCircle, Trophy, Flame, Snowflake, Ban, BarChart2, ChevronRight } from "lucide-react";
+import { Clock, Users, Play, Target, Square, Pause, CheckCircle, Trophy, Flame, Snowflake, Ban, BarChart2, ChevronRight, Zap } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { endSimulado } from "@/app/actions/simulado";
@@ -36,6 +36,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const [isTeamCompetition, setIsTeamCompetition] = useState<boolean>(false);
   const [teams, setTeams] = useState<any[]>([]);
   const [studentTeams, setStudentTeams] = useState<Record<string, string>>({});
+  const [raceMode, setRaceMode] = useState<boolean>(false);
 
   useEffect(() => {
     if (isRaffling && students.length > 0) {
@@ -78,6 +79,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
         setAnsweredStudentIds(data.answeredStudentIds);
       }
       if (data.isTeamCompetition !== undefined) setIsTeamCompetition(data.isTeamCompetition);
+      if (data.raceMode !== undefined) setRaceMode(data.raceMode);
       if (data.teams) setTeams(data.teams);
       if (data.studentTeams) setStudentTeams(data.studentTeams);
 
@@ -160,6 +162,24 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       setRaffleWinner(null);
       setIsRaffling(false);
       setAnsweredStudentIds([]);
+    });
+
+    s.on("race_winner", (data) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      const text = `⚡ ${data.name}${data.teamName ? ` (${data.teamName})` : ""} foi o mais rápido e marcou ponto pra equipe!`;
+      setNotifications(prev => [...prev.slice(-4), { id, text }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 6000);
+    });
+
+    s.on("team_eliminated", (data) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      const text = `💀 ${data.teamName || "Uma equipe"} errou primeiro e foi eliminada dessa questão!`;
+      setNotifications(prev => [...prev.slice(-4), { id, text }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 6000);
     });
 
     s.on("raffle_started", ({ winner }) => {
@@ -531,10 +551,26 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                   <CardHeader className="py-3">
                     <CardTitle className="text-emerald-400 text-xs md:text-sm uppercase tracking-widest font-black">Gabarito Divulgado</CardTitle>
                   </CardHeader>
-                  <CardContent className="pb-4">
+                  <CardContent className="pb-4 space-y-3">
                     <p className="text-lg md:text-xl font-bold text-heading flex items-center justify-between">
                       Alternativa Correta: <span className="text-emerald-400 text-4xl md:text-5xl font-black">{String.fromCharCode(65 + questionEndedData.correta)}</span>
                     </p>
+                    {raceMode && (
+                      <div className={`text-xs md:text-sm font-bold p-3 rounded-lg border flex items-center gap-2 ${
+                        questionEndedData.raceWinner
+                          ? "bg-amber-950/20 border-amber-500/40 text-amber-300"
+                          : "bg-background/50 border-border text-muted-foreground"
+                      }`}>
+                        <Zap className={`w-4 h-4 shrink-0 ${questionEndedData.raceWinner ? "text-amber-400" : "text-muted-foreground"}`} />
+                        {questionEndedData.raceWinner ? (
+                          <span>
+                            <strong className="text-heading">{questionEndedData.raceWinner.name}</strong> marcou o ponto da corrida pra equipe dele(a).
+                          </span>
+                        ) : (
+                          <span>Ninguém marcou o ponto da corrida nesta questão.</span>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -546,6 +582,11 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                     <div className="flex items-center gap-2 font-black text-sm md:text-base text-heading uppercase tracking-wider">
                       <Trophy className="w-5 h-5 text-emerald-400 animate-bounce" />
                       Disputa por Equipes ({teams.length})
+                      {raceMode && (
+                        <span className="flex items-center gap-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-500/40">
+                          <Zap className="w-3 h-3" /> Corrida
+                        </span>
+                      )}
                     </div>
                     <Button
                       onClick={() => socket?.emit("shuffle_teams", { roomCode: simulado.codigoSala })}

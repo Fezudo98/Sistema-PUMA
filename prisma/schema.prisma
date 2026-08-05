@@ -36,6 +36,7 @@ model Simulado {
   topics            String?
   difficulty        String     @default("AVANCADO") // Apenas AVANCADO
   isTeamCompetition Boolean    @default(false)
+  isRaceMode        Boolean    @default(false) // Modo Corrida: só o 1º acerto geral marca ponto pra equipe
   teamNames         String?    // JSON array com nomes das equipes
   studentTeams      String?    // JSON map { studentId: teamId }
   hasAppealed       Boolean    @default(false)

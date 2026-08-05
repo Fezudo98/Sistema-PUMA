@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target, BarChart2, Users } from "lucide-react";
+import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target, BarChart2, Users, Zap, Skull } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useSearchParams } from "next/navigation";
@@ -40,6 +40,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [isTeamCompetition, setIsTeamCompetition] = useState<boolean>(false);
   const [teams, setTeams] = useState<any[]>([]);
   const [studentTeams, setStudentTeams] = useState<Record<string, string>>({});
+  const [raceMode, setRaceMode] = useState<boolean>(false);
+  const [raceLocked, setRaceLocked] = useState<{ studentId: string; name: string; teamId: string | null; teamName: string | null } | null>(null);
+  const [myTeamEliminated, setMyTeamEliminated] = useState<boolean>(false);
 
   // Refs to avoid stale state in Socket.io event listeners
   const selectedAltRef = useRef<number>(-1);
@@ -47,6 +50,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const currentQuestionRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
   const raffleWinnerRef = useRef<any>(null);
+  const studentTeamsRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     selectedAltRef.current = selectedAlt;
@@ -67,6 +71,10 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   useEffect(() => {
     raffleWinnerRef.current = raffleWinner;
   }, [raffleWinner]);
+
+  useEffect(() => {
+    studentTeamsRef.current = studentTeams;
+  }, [studentTeams]);
 
   // Limpa o toast de badge após 6 segundos
   useEffect(() => {
@@ -132,6 +140,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         setStatus("FINISHED");
       }
       if (data.isTeamCompetition !== undefined) setIsTeamCompetition(data.isTeamCompetition);
+      if (data.raceMode !== undefined) setRaceMode(data.raceMode);
       if (data.teams) setTeams(data.teams);
       if (data.studentTeams) setStudentTeams(data.studentTeams);
       if (data.status === "ACTIVE" && data.currentQuestion) {
@@ -199,10 +208,35 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setIsTimeUp(false);
       setHasConfirmed(false);
       setAnsweredStudentIds([]);
-      
+      setRaceLocked(null);
+      setMyTeamEliminated(false);
+
       if (!questionData.raffleWinnerId) {
         setRaffleWinner(null);
       }
+    });
+
+    s.on("race_winner", (data) => {
+      setRaceLocked(data);
+      const id = Math.random().toString(36).substr(2, 9);
+      const text = `⚡ ${data.name}${data.teamName ? ` (${data.teamName})` : ""} foi o mais rápido e marcou ponto pra equipe!`;
+      setNotifications(prev => [...prev.slice(-4), { id, text }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 6000);
+    });
+
+    s.on("team_eliminated", (data) => {
+      const myTeamId = studentTeamsRef.current[user.userId || user.id];
+      if (data.teamId === myTeamId) {
+        setMyTeamEliminated(true);
+      }
+      const id = Math.random().toString(36).substr(2, 9);
+      const text = `💀 ${data.teamName || "Uma equipe"} errou primeiro e foi eliminada dessa questão!`;
+      setNotifications(prev => [...prev.slice(-4), { id, text }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 6000);
     });
 
     s.on("instructor_student_answered", (data) => {
@@ -296,6 +330,8 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setRaffleWinner(null);
       setIsRaffling(false);
       setAnsweredStudentIds([]);
+      setRaceLocked(null);
+      setMyTeamEliminated(false);
       try {
         localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
       } catch (e) {}
@@ -383,6 +419,11 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                 <span className="font-black text-heading uppercase tracking-wider text-sm sm:text-base">
                   Sua Equipe: {myTeam.name}
                 </span>
+                {raceMode && (
+                  <span className="flex items-center gap-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-500/40">
+                    <Zap className="w-3 h-3" /> Corrida
+                  </span>
+                )}
               </div>
             );
           }
@@ -446,6 +487,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   <span style={{ backgroundColor: myTeam.color }} className="w-2.5 h-2.5 rounded-full"></span>
                   <span className="text-heading truncate max-w-[110px]">{myTeam.name}</span>
                   <span className="text-emerald-400 font-mono ml-0.5">({myTeam.totalScore || 0} pts)</span>
+                  {raceMode && <Zap className="w-3 h-3 text-amber-400 shrink-0" />}
                 </div>
               );
             }
@@ -579,6 +621,33 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               </>
             )}
 
+            {raceMode && !questionEndedData && (
+              myTeamEliminated ? (
+                <div className="mb-4 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.15)] animate-in fade-in zoom-in-95">
+                  <Skull className="w-7 h-7 text-red-500 shrink-0" />
+                  <div>
+                    <p className="text-red-400 font-black text-sm uppercase tracking-widest">Sua Equipe Foi Eliminada</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">O primeiro colega a responder errou. Sua equipe não pontua mais nesta questão.</p>
+                  </div>
+                </div>
+              ) : raceLocked ? (
+                <div className="mb-4 p-4 bg-amber-900/20 border border-amber-500/50 rounded-lg flex items-center gap-3 shadow-[0_0_15px_rgba(245,158,11,0.15)] animate-in fade-in zoom-in-95">
+                  <Zap className="w-7 h-7 text-amber-500 shrink-0" />
+                  <div>
+                    <p className="text-amber-400 font-black text-sm uppercase tracking-widest">Corrida Encerrada</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      <strong className="text-heading">{raceLocked.name}</strong>{raceLocked.teamName ? ` (${raceLocked.teamName})` : ""} já marcou o ponto. Sua resposta ainda conta pro seu histórico, mas não pontua mais nesta questão.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4 p-3 bg-amber-900/10 border border-amber-500/30 rounded-lg flex items-center gap-2.5">
+                  <Zap className="w-5 h-5 text-amber-400 shrink-0" />
+                  <p className="text-amber-400/90 text-xs font-bold uppercase tracking-wide">Modo Corrida: só o primeiro acerto marca ponto pra equipe!</p>
+                </div>
+              )
+            )}
+
             {questionEndedData && (
               <Card className={`border mb-6 ${
                 isObserver 
@@ -623,6 +692,26 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                           Você ficou como observador nesta rodada.<br/>
                           O alvo (<span className="text-heading">{raffleWinner?.name}</span>) <strong className={targetGotItRight ? "text-emerald-400" : "text-red-400"}>{targetGotItRight ? "ACERTOU 👍" : "ERROU 👎"}</strong> a questão.
                         </>
+                      )}
+                    </div>
+                  )}
+                  {raceMode && (
+                    <div className={`text-sm font-bold p-3 rounded-lg border leading-relaxed flex items-center gap-2.5 ${
+                      questionEndedData.raceWinner
+                        ? "bg-amber-950/20 border-amber-500/40 text-amber-300"
+                        : "bg-background/50 border-border/80 text-muted-foreground"
+                    }`}>
+                      <Zap className={`w-5 h-5 shrink-0 ${questionEndedData.raceWinner ? "text-amber-400" : "text-muted-foreground"}`} />
+                      {questionEndedData.raceWinner ? (
+                        questionEndedData.raceWinner.studentId === user.userId ? (
+                          <span>Foi você! Você foi o mais rápido a acertar e marcou o ponto pra sua equipe. 🎉</span>
+                        ) : (
+                          <span>
+                            <strong className="text-heading">{questionEndedData.raceWinner.name}</strong> foi o mais rápido a acertar e marcou o ponto pra equipe dele nesta questão.
+                          </span>
+                        )
+                      ) : (
+                        <span>Nenhuma equipe marcou ponto nesta questão (ninguém acertou a tempo, ou todas as equipes elegíveis erraram primeiro).</span>
                       )}
                     </div>
                   )}

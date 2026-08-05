@@ -67,6 +67,7 @@ export async function createSimulado(data: {
   topics?: string;
   difficulty?: string;
   isTeamCompetition?: boolean;
+  isRaceMode?: boolean;
   teamNames?: string[];
   tipo?: string;
   expiresAt?: Date;
@@ -103,6 +104,7 @@ export async function createSimulado(data: {
         topics: data.topics,
         difficulty: data.difficulty || "AVANCADO",
         isTeamCompetition: !!data.isTeamCompetition,
+        isRaceMode: !!data.isTeamCompetition && !!data.isRaceMode,
         teamNames: data.teamNames ? JSON.stringify(data.teamNames) : null,
         questions: {
           create: data.questions.map((q) => {
