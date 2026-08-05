@@ -27,12 +27,15 @@ npm run build:server
 npm run build
 
 # 5. Reiniciar o processo PM2
+# IMPORTANTE: sempre via server.js (servidor customizado com Socket.io das salas ao
+# vivo) — nunca "npm start"/"next start" puro, que não tem handler de /socket.io/.
 echo "Reiniciando o servidor PUMA no PM2..."
 if pm2 show puma-server > /dev/null 2>&1; then
-    pm2 reload puma-server
+    pm2 reload puma-server --update-env
 else
-    pm2 start npm --name "puma-server" -- run start
+    NODE_ENV=production pm2 start server.js --name "puma-server" --node-args="--max-old-space-size=512"
 fi
+pm2 save
 
 echo
 echo "========================================================"
