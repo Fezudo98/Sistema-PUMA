@@ -134,6 +134,52 @@ async function getSimuladoRanking(simuladoId: string) {
   }
 }
 
+// Pontuação GERAL (soma de todos os simulados) de cada aluno — usada só pra exibir a
+// patente correta no ranking final de uma sala ao vivo. A pontuação de uma única sala
+// (centenas/poucos milhares) nunca bate os patamares de patente (dezenas de milhares),
+// então usar `score` da sala sozinho sempre resultava em "Recruta" pra todo mundo.
+async function getStudentsTotalScores(studentIds: string[]): Promise<Record<string, number>> {
+  const result: Record<string, number> = {};
+  if (studentIds.length === 0) return result;
+  try {
+    const students = await prisma.user.findMany({
+      where: { id: { in: studentIds } },
+      select: {
+        id: true,
+        answers: {
+          select: {
+            createdAt: true,
+            pontuacao: true,
+            tempoGasto: true,
+            isCorrect: true,
+            question: {
+              select: {
+                simuladoId: true,
+                simulado: {
+                  select: {
+                    tipo: true,
+                    status: true,
+                    createdAt: true,
+                    _count: { select: { questions: true } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    students.forEach(s => {
+      const sPerf = computeStudentPerformanceStats(s.answers as any, s.id);
+      result[s.id] = sPerf.totalScore;
+    });
+  } catch (err) {
+    console.error("Error calculating total scores for patents:", err);
+  }
+  return result;
+}
+
 // Evita empilhar checagens pesadas de brevê pro mesmo aluno, e espalha (jitter) o
 // disparo delas no tempo — sem isso, quando o cronômetro de uma questão zera, dezenas
 // de alunos disparam essa query pesada no MESMO instante, competindo pelo SQLite.
@@ -314,7 +360,7 @@ interface RoomState {
   timerInterval: NodeJS.Timeout | null;
   isPaused: boolean;
   students: { id: string; name: string; avatarUrl?: string | null }[];
-  studentScores: Record<string, { id: string; name: string; score: number; avatarUrl?: string | null; streak: number }>;
+  studentScores: Record<string, { id: string; name: string; score: number; avatarUrl?: string | null; streak: number; totalScore?: number }>;
   answersReceived: number;
   raffleWinnerId: string | null;
   questionEndedData: {
@@ -1285,7 +1331,14 @@ app.prepare().then(() => {
         room.status = 'FINISHED';
         if (room.timerInterval) clearInterval(room.timerInterval);
         await prisma.simulado.update({ where: { id: simuladoId }, data: { status: 'FINISHED' } });
-        
+
+        // Busca a pontuação geral de cada aluno pra exibir a patente (divisas) correta
+        // no ranking final, em vez da pontuação desta sala isolada.
+        const totalScores = await getStudentsTotalScores(Object.keys(room.studentScores));
+        Object.values(room.studentScores).forEach(s => {
+          s.totalScore = totalScores[s.id] ?? 0;
+        });
+
         // Garante que o último estado do ranking seja enviado antes de deletar a sala
         emitRankingAndTeams(io, roomCode, room);
         

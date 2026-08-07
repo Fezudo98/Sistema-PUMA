@@ -16,7 +16,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
   const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState(simulado.status);
   const [students, setStudents] = useState<any[]>([]);
-  const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null}[]>([]);
+  const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null, totalScore?: number}[]>([]);
   const [notifications, setNotifications] = useState<{id: string, text: string}[]>([]);
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
@@ -708,7 +708,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                               {index + 1}
                             </span>
                             {(() => {
-                              const p = getPatentByScore(aluno.score || 0);
+                              const p = getPatentByScore(aluno.totalScore ?? aluno.score ?? 0);
                               return (
                                 <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
                                   {aluno.avatarUrl ? (
@@ -723,7 +723,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                             })()}
                             <span className="font-bold text-foreground text-sm md:text-base lg:text-lg truncate flex items-center gap-1.5">
                               {(() => {
-                                const p = getPatentByScore(aluno.score || 0);
+                                const p = getPatentByScore(aluno.totalScore ?? aluno.score ?? 0);
                                 const PIcon = p.icon;
                                 return (
                                   <>
