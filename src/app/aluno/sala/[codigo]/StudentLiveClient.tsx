@@ -32,7 +32,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [selectedGuess, setSelectedGuess] = useState<"ACERTAR" | "ERRAR" | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [displayStudent, setDisplayStudent] = useState<any>(null);
-  const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null}[]>([]);
+  const [ranking, setRanking] = useState<{id: string, name: string, score: number, streak: number, avatarUrl?: string | null, totalScore?: number}[]>([]);
   const [notifications, setNotifications] = useState<{id: string, text: string}[]>([]);
   const [unlockedBadges, setUnlockedBadges] = useState<any[]>([]);
   const [answeredStudentIds, setAnsweredStudentIds] = useState<string[]>([]);
@@ -1036,7 +1036,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                         </td>
                         <td className="px-4 py-3 flex items-center gap-3">
                           {(() => {
-                            const p = getPatentByScore(aluno.score || 0);
+                            const p = getPatentByScore(aluno.totalScore ?? aluno.score ?? 0);
                             return (
                               <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
                                 {aluno.avatarUrl ? (
@@ -1051,7 +1051,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                           })()}
                           <div className="flex items-center gap-1.5">
                             {(() => {
-                              const p = getPatentByScore(aluno.score || 0);
+                              const p = getPatentByScore(aluno.totalScore ?? aluno.score ?? 0);
                               const PIcon = p.icon;
                               return (
                                 <>
