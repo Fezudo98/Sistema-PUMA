@@ -175,6 +175,53 @@
   --sidebar-ring: #facc15;
 }
 
+/* ===== BEPI THEME (Batalhão Especializado de Policiamento do Interior - Sertão) ===== */
+.bepi {
+  --background: #1c1712;
+  --foreground: #f2e9d8;
+  --heading: #f5eee0;
+  --surface: #221b14;
+  --surface-elevated: #2e2419;
+  --card: #221b14;
+  --card-foreground: #f2e9d8;
+  --popover: #221b14;
+  --popover-foreground: #f2e9d8;
+
+  --primary: #c9a227;
+  --primary-foreground: #1c1712;
+
+  --secondary: #4b5320;
+  --secondary-foreground: #f2e9d8;
+
+  --muted: #2e2419;
+  --muted-foreground: #b8a888;
+
+  --accent: #a8683a;
+  --accent-foreground: #f2e9d8;
+
+  --destructive: #7f1d1d;
+
+  --border: #4a3728;
+  --input: #4a3728;
+
+  --ring: #c9a227;
+
+  --chart-1: #c9a227;
+  --chart-2: #4b5320;
+  --chart-3: #a8683a;
+  --chart-4: #8a8267;
+  --chart-5: #7f1d1d;
+
+  --sidebar: #1c1712;
+  --sidebar-foreground: #f2e9d8;
+  --sidebar-primary: #c9a227;
+  --sidebar-primary-foreground: #1c1712;
+  --sidebar-accent: #2e2419;
+  --sidebar-accent-foreground: #c9a227;
+  --sidebar-border: #4a3728;
+  --sidebar-ring: #c9a227;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -189,7 +236,7 @@
 
 /* ===== Leitor de PDF (@react-pdf-viewer) — reveste a lib com o tema do app =====
    A lib expõe cores via custom properties --rpv-*, então só remapeamos os valores
-   para as variáveis do tema (funciona nos 3 temas: claro, escuro e raio). */
+   para as variáveis do tema (funciona nos 4 temas: claro, escuro, raio e bepi). */
 .puma-pdf-viewer {
   height: 100%;
   width: 100%;

@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LightningEffect } from "@/components/LightningEffect";
+import { BepiEffect } from "@/components/BepiEffect";
 
 export default function RootLayout({
   children,
@@ -33,11 +34,12 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          themes={["light", "dark", "raio"]}
+          themes={["light", "dark", "raio", "bepi"]}
           disableTransitionOnChange
         >
           {children}
           <LightningEffect />
+          <BepiEffect />
         </ThemeProvider>
       </body>
     </html>
