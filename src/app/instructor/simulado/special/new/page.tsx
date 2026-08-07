@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { FileUp, Loader2, ArrowLeft, BookOpen, Save, Target, Check, Clock } from "lucide-react";
+import { FileUp, Loader2, ArrowLeft, BookOpen, Save, Target, Check, Clock, Radio, User } from "lucide-react";
 import Link from "next/link";
 import { formatApostilaTitle } from "@/lib/utils";
 import { createSimulado } from "@/app/actions/simulado";
@@ -34,8 +34,12 @@ export default function NovoSimuladoEspecial() {
   const [selectedApostilaId, setSelectedApostilaId] = useState<string>("nenhuma");
   const [file, setFile] = useState<File | null>(null);
 
-  // Expiration State
+  // Expiration State (modo Individual)
   const [daysToExpire, setDaysToExpire] = useState("7");
+
+  // Modo de Resolução: Individual (cada aluno no seu ritmo) ou Ao Vivo (sala em tempo real)
+  const [isLiveMode, setIsLiveMode] = useState(false);
+  const [tempoPorQuestao, setTempoPorQuestao] = useState("60");
 
   // Questions State
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -90,22 +94,34 @@ export default function NovoSimuladoEspecial() {
 
   const handleSave = async () => {
     setLoading(true);
-    
-    const expiresDate = new Date();
-    expiresDate.setDate(expiresDate.getDate() + parseInt(daysToExpire));
 
-    const res = await createSimulado({
-      tempoPorQuestao: 3600, // 1 hora de tolerância no banco (aluno faz livre)
-      apostilaName: apostilaName,
-      difficulty: "AVANCADO",
-      tipo: "SPECIAL",
-      expiresAt: expiresDate,
-      questions
-    });
+    const res = isLiveMode
+      ? await createSimulado({
+          tempoPorQuestao: parseInt(tempoPorQuestao),
+          apostilaName: apostilaName,
+          difficulty: "AVANCADO",
+          tipo: "LIVE",
+          questions
+        })
+      : await createSimulado({
+          tempoPorQuestao: 3600, // 1 hora de tolerância no banco (aluno faz livre)
+          apostilaName: apostilaName,
+          difficulty: "AVANCADO",
+          tipo: "SPECIAL",
+          expiresAt: (() => {
+            const expiresDate = new Date();
+            expiresDate.setDate(expiresDate.getDate() + parseInt(daysToExpire));
+            return expiresDate;
+          })(),
+          questions
+        });
 
     if (res.error) {
       alert("Erro ao salvar: " + res.error);
       setLoading(false);
+    } else if (isLiveMode) {
+      // Sala ao vivo: leva o instrutor direto para o painel de controle da sala
+      router.push(`/instructor/painel/${res.simuladoId}`);
     } else {
       router.push(`/instructor`);
     }
@@ -183,26 +199,82 @@ export default function NovoSimuladoEspecial() {
                   </Select>
                 </div>
 
-                {/* Validade */}
+                {/* Modo de Resolução */}
                 <div className="space-y-3">
-                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-purple-500" />
-                    Validade da Missão
+                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                    Modo de Resolução
                   </label>
-                  <Select value={daysToExpire} onValueChange={setDaysToExpire}>
-                    <SelectTrigger className="h-12 text-base bg-background border-border text-heading">
-                      <SelectValue placeholder="Prazo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Dia (24h)</SelectItem>
-                      <SelectItem value="3">3 Dias</SelectItem>
-                      <SelectItem value="7">7 Dias</SelectItem>
-                      <SelectItem value="15">15 Dias</SelectItem>
-                      <SelectItem value="30">30 Dias</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">Após este prazo, a missão será trancada e ninguém mais poderá resolver.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsLiveMode(false)}
+                      className={`text-left p-4 rounded-xl border-2 transition-all ${
+                        !isLiveMode
+                          ? "border-purple-500 bg-purple-950/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                          : "border-border bg-background/40 hover:border-purple-500/40"
+                      }`}
+                    >
+                      <User className={`w-5 h-5 mb-2 ${!isLiveMode ? "text-purple-400" : "text-muted-foreground"}`} />
+                      <p className={`text-sm font-bold ${!isLiveMode ? "text-heading" : "text-muted-foreground"}`}>Individual</p>
+                      <p className="text-xs text-muted-foreground mt-1">Cada aluno resolve sozinho, no próprio ritmo, até o prazo de validade.</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsLiveMode(true)}
+                      className={`text-left p-4 rounded-xl border-2 transition-all ${
+                        isLiveMode
+                          ? "border-purple-500 bg-purple-950/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                          : "border-border bg-background/40 hover:border-purple-500/40"
+                      }`}
+                    >
+                      <Radio className={`w-5 h-5 mb-2 ${isLiveMode ? "text-purple-400" : "text-muted-foreground"}`} />
+                      <p className={`text-sm font-bold ${isLiveMode ? "text-heading" : "text-muted-foreground"}`}>Ao Vivo</p>
+                      <p className="text-xs text-muted-foreground mt-1">Sala em tempo real com código, igual aos simulados ao vivo do sistema.</p>
+                    </button>
+                  </div>
                 </div>
+
+                {isLiveMode ? (
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-purple-500" />
+                      Tempo por Questão
+                    </label>
+                    <Select value={tempoPorQuestao} onValueChange={setTempoPorQuestao}>
+                      <SelectTrigger className="h-12 text-base bg-background border-border text-heading">
+                        <SelectValue placeholder="Tempo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30">30 segundos</SelectItem>
+                        <SelectItem value="45">45 segundos</SelectItem>
+                        <SelectItem value="60">60 segundos</SelectItem>
+                        <SelectItem value="90">90 segundos</SelectItem>
+                        <SelectItem value="120">120 segundos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Ao salvar, você entra direto na sala de controle e recebe um código para os alunos entrarem.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-purple-500" />
+                      Validade da Missão
+                    </label>
+                    <Select value={daysToExpire} onValueChange={setDaysToExpire}>
+                      <SelectTrigger className="h-12 text-base bg-background border-border text-heading">
+                        <SelectValue placeholder="Prazo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 Dia (24h)</SelectItem>
+                        <SelectItem value="3">3 Dias</SelectItem>
+                        <SelectItem value="7">7 Dias</SelectItem>
+                        <SelectItem value="15">15 Dias</SelectItem>
+                        <SelectItem value="30">30 Dias</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Após este prazo, a missão será trancada e ninguém mais poderá resolver.</p>
+                  </div>
+                )}
 
                 <Button type="submit" disabled={loading} className="w-full h-14 bg-purple-600 hover:bg-purple-500 font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(168,85,247,0.4)]">
                   {loading ? (
@@ -240,7 +312,9 @@ export default function NovoSimuladoEspecial() {
 
                 <Button onClick={handleSave} disabled={loading} className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                   {loading ? (
-                    <><Loader2 className="w-5 h-5 mr-3 animate-spin" /> Lançando Missão Especial...</>
+                    <><Loader2 className="w-5 h-5 mr-3 animate-spin" /> {isLiveMode ? "Abrindo Sala ao Vivo..." : "Lançando Missão Especial..."}</>
+                  ) : isLiveMode ? (
+                    <><Radio className="w-5 h-5 mr-3" /> Confirmar e Abrir Sala ao Vivo</>
                   ) : (
                     <><Save className="w-5 h-5 mr-3" /> Confirmar e Lançar Missão (Validade: {daysToExpire} dias)</>
                   )}
