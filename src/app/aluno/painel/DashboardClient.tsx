@@ -405,7 +405,10 @@ export default function StudentDashboardClient({
                 );
               })()}
             </button>
-            <ThemeSwitcher hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 25} />
+            <ThemeSwitcher
+              hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 25}
+              hasBepiUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 35}
+            />
             <Button variant="ghost" onClick={handleSair} className="text-muted-foreground hover:text-red-400">
               <LogOut className="w-5 h-5" />
             </Button>
@@ -502,7 +505,7 @@ export default function StudentDashboardClient({
             <div className="text-right">
               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider block">Meta Atual</span>
               <span className="text-xs font-black text-primary">
-                {(stats?.streakDays || 0) < 25 ? "TEMA RAIO ⚡" : "TEMA BEPI 🦅"} ({(stats?.streakDays || 0) < 25 ? 25 : 50} DIAS)
+                {(stats?.streakDays || 0) < 25 ? "TEMA RAIO ⚡" : "TEMA BEPI 🦅"} ({(stats?.streakDays || 0) < 25 ? 25 : 35} DIAS)
               </span>
             </div>
           </div>
@@ -510,7 +513,7 @@ export default function StudentDashboardClient({
           <div className="space-y-2 relative">
             <div className="flex items-end justify-between text-xs font-bold text-muted-foreground mb-1">
               <span>{(stats?.streakDays || 0)} Dias</span>
-              <span>{(stats?.streakDays || 0) < 25 ? 25 : 50} Dias</span>
+              <span>{(stats?.streakDays || 0) < 25 ? 25 : 35} Dias</span>
             </div>
             <div className="w-full bg-muted rounded-full h-3.5 overflow-hidden border border-border/50">
               <div 
@@ -519,7 +522,7 @@ export default function StudentDashboardClient({
                     ? "bg-gradient-to-r from-yellow-600 to-yellow-400" 
                     : "bg-gradient-to-r from-emerald-600 to-emerald-400"
                 }`}
-                style={{ width: `${Math.min(((stats?.streakDays || 0) / ((stats?.streakDays || 0) < 25 ? 25 : 50)) * 100, 100)}%` }}
+                style={{ width: `${Math.min(((stats?.streakDays || 0) / ((stats?.streakDays || 0) < 25 ? 25 : 35)) * 100, 100)}%` }}
               />
             </div>
             {/* Markers */}
