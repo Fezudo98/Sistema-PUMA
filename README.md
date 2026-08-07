@@ -41,7 +41,7 @@ O sistema combina dinâmicas de sala de aula em tempo real (via WebSockets), **I
 
 ### 🪖 Quartel General do Aluno (`/aluno/painel`)
 - **Dashboard de Estatísticas Vitais:** Monitoramento claro dos pilares operacionais (Total de Simulados, Taxa Global de Acertos, Pontos Totais, Tempo Médio de Reação e Ofensiva de Dias).
-- **Trilha de Desbloqueios (Streaks):** Sistema dinâmico de recompensas baseado em sequência de dias (Ofensiva). Ao atingir marcos como **25 Dias**, o aluno desbloqueia novos Fardamentos Visuais (ex: Tema RAIO). A barra de progresso evolui automaticamente de cor e aponta a próxima meta (ex: TEMA BEPI - 50 Dias).
+- **Trilha de Desbloqueios (Streaks):** Sistema dinâmico de recompensas baseado em sequência de dias (Ofensiva). Ao atingir marcos como **25 Dias**, o aluno desbloqueia novos Fardamentos Visuais (ex: Tema RAIO). A barra de progresso evolui automaticamente de cor e aponta a próxima meta (ex: TEMA BEPI - 35 Dias).
 - **Caderno de Erros (Revisão Tática):** Repositório inteligente e automático que armazena todas as questões erradas pelo aluno, permitindo revisão focada de falhas operacionais anteriores.
 - **Biblioteca & Vade Mecum:** Acesso consolidado aos materiais teóricos, PDFs e regulamentos da PMCE.
 - **Inventário 32º PEL:** Galeria pessoal onde o militar visualiza seus temas, itens conquistados e sua progressão.
