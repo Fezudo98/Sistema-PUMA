@@ -58,6 +58,19 @@ export const RaioIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const BepiEagleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    {/* Cabeça */}
+    <path d="M12 2L14.2 5.5L12 8L9.8 5.5L12 2Z" />
+    {/* Asa esquerda */}
+    <path d="M11 6L0 8.5L1.2 12L11.5 9.5L11 6Z" />
+    {/* Asa direita */}
+    <path d="M13 6L24 8.5L22.8 12L12.5 9.5L13 6Z" />
+    {/* Corpo / cauda */}
+    <path d="M12 8.5L15 15L12 22L9 15L12 8.5Z" />
+  </svg>
+);
+
 export const BopeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
     {/* 3 Diamonds */}
