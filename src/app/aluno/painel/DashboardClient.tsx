@@ -17,6 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
+import { BepiEagleIcon } from "@/components/PatentIcons";
+import { BepiUnlockToast } from "@/components/BepiUnlockToast";
 
 const LEIS_DA_SELVA = [
   {
@@ -332,8 +334,11 @@ export default function StudentDashboardClient({
     }
   };
 
+  const hasBepiUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 35;
+
   return (
     <div className="min-h-screen bg-background text-foreground lg:flex">
+      <BepiUnlockToast unlocked={hasBepiUnlocked} />
       <AlunoSidebar
         mobileOpen={sidebarMobileOpen}
         onCloseMobile={() => setSidebarMobileOpen(false)}
@@ -395,19 +400,21 @@ export default function StudentDashboardClient({
               {(() => {
                 const patent = getPatentByScore(stats?.totalScore || 0);
                 return (
-                  <div className={`rounded-full ${patent.avatarRing || ''}`}>
-                    <HeaderAvatar 
-                      initials={user?.name?.substring(0, 2).toUpperCase() || "AL"} 
-                      avatarUrl={user?.avatarUrl || null} 
-                      disableModal={true}
-                    />
+                  <div className={`rounded-full ${hasBepiUnlocked ? 'ring-2 ring-[#c9a227] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(201,162,39,0.5)]' : ''}`} title={hasBepiUnlocked ? "Fardamento BEPI" : undefined}>
+                    <div className={`rounded-full ${patent.avatarRing || ''}`}>
+                      <HeaderAvatar
+                        initials={user?.name?.substring(0, 2).toUpperCase() || "AL"}
+                        avatarUrl={user?.avatarUrl || null}
+                        disableModal={true}
+                      />
+                    </div>
                   </div>
                 );
               })()}
             </button>
             <ThemeSwitcher
               hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 25}
-              hasBepiUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 35}
+              hasBepiUnlocked={hasBepiUnlocked}
             />
             <Button variant="ghost" onClick={handleSair} className="text-muted-foreground hover:text-red-400">
               <LogOut className="w-5 h-5" />
@@ -964,15 +971,18 @@ export default function StudentDashboardClient({
                             </span>
                             {(() => {
                               const p = getPatentByScore(aluno.totalScore || 0);
+                              const alunoHasBepi = (aluno.streakDays || 0) >= 35;
                               return (
-                                <div className={`shrink-0 rounded-full ${p.avatarRing || ''}`}>
-                                  {aluno.avatarUrl ? (
-                                    <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-border" />
-                                  ) : (
-                                    <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold border border-border">
-                                      {aluno.name.substring(0, 2).toUpperCase()}
-                                    </div>
-                                  )}
+                                <div className={`shrink-0 rounded-full ${alunoHasBepi ? 'ring-2 ring-[#c9a227] ring-offset-1 ring-offset-background' : ''}`} title={alunoHasBepi ? "Fardamento BEPI" : undefined}>
+                                  <div className={`rounded-full ${p.avatarRing || ''}`}>
+                                    {aluno.avatarUrl ? (
+                                      <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-border" />
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold border border-border">
+                                        {aluno.name.substring(0, 2).toUpperCase()}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })()}
@@ -999,6 +1009,12 @@ export default function StudentDashboardClient({
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-950/80 border border-orange-500/40 text-orange-400 font-black text-xs shadow-[0_0_8px_rgba(249,115,22,0.2)]" title="Sequência Diária">
                                   <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
                                   {aluno.streakDays}d
+                                </span>
+                              )}
+                              {(aluno.streakDays || 0) >= 35 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2e2419]/90 border border-[#c9a227]/50 text-[#c9a227] font-black text-xs shadow-[0_0_8px_rgba(201,162,39,0.25)]" title="Fardamento BEPI Desbloqueado">
+                                  <BepiEagleIcon className="w-3.5 h-3.5" />
+                                  BEPI
                                 </span>
                               )}
                               {typeof aluno.todayPoints === 'number' && (

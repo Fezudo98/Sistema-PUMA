@@ -69,6 +69,50 @@ function DustStormCanvas() {
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0 mix-blend-screen" />;
 }
 
+// Bipe de rádio tático (PTT) sintetizado via Web Audio API — sem depender de asset externo.
+function playTacticalRadioChirp() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+
+    // Clique de squelch (estalo curto ao abrir o canal)
+    const clickDuration = 0.05;
+    const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * clickDuration, ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.35, now);
+    noise.connect(noiseGain).connect(ctx.destination);
+    noise.start(now);
+
+    // Dois bipes curtos (confirmação de canal, estilo HT)
+    [
+      { start: 0.08, freq: 950 },
+      { start: 0.22, freq: 1300 },
+    ].forEach(({ start, freq }) => {
+      const osc = ctx.createOscillator();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(freq, now + start);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now + start);
+      gain.gain.exponentialRampToValueAtTime(0.15, now + start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + start + 0.1);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now + start);
+      osc.stop(now + start + 0.12);
+    });
+
+    setTimeout(() => ctx.close(), 700);
+  } catch {
+    // Autoplay bloqueado pelo navegador ou Web Audio indisponível: segue só com o efeito visual
+  }
+}
+
 export function BepiEffect() {
   const { theme, resolvedTheme } = useTheme();
   const [isFlashing, setIsFlashing] = useState(false);
@@ -79,6 +123,7 @@ export function BepiEffect() {
 
     if (currentTheme === "bepi" && prevTheme.current && prevTheme.current !== "bepi") {
       setIsFlashing(true);
+      playTacticalRadioChirp();
 
       const timer = setTimeout(() => {
         setIsFlashing(false);

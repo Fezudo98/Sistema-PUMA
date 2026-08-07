@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun, Zap, Bird } from "lucide-react";
+import { Moon, Sun, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
+import { BepiEagleIcon } from "@/components/PatentIcons";
 
 import {
   DropdownMenu,
@@ -41,7 +42,7 @@ export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false
         {currentTheme === "light" && <Sun className="h-4 w-4 text-amber-500 transition-all" />}
         {currentTheme === "dark" && <Moon className="h-4 w-4 text-blue-500 transition-all" />}
         {currentTheme === "raio" && <Zap className="h-4 w-4 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)] transition-all" />}
-        {currentTheme === "bepi" && <Bird className="h-4 w-4 text-amber-600 drop-shadow-[0_0_5px_rgba(201,162,39,0.5)] transition-all" />}
+        {currentTheme === "bepi" && <BepiEagleIcon className="h-4 w-4 text-amber-600 drop-shadow-[0_0_5px_rgba(201,162,39,0.5)] transition-all" />}
         <span className="sr-only">Toggle theme</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-card border-border rounded-xl">
@@ -61,7 +62,7 @@ export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false
         )}
         {hasBepiUnlocked && (
           <DropdownMenuItem onClick={() => setTheme("bepi")} className="cursor-pointer font-black text-muted-foreground hover:text-foreground">
-            <Bird className="mr-2 h-4 w-4 text-amber-600" />
+            <BepiEagleIcon className="mr-2 h-4 w-4 text-amber-600" />
             <span>Modo Sertão (BEPI) 🦅</span>
           </DropdownMenuItem>
         )}
