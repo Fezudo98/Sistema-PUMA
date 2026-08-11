@@ -83,16 +83,27 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
       if (data.teams) setTeams(data.teams);
       if (data.studentTeams) setStudentTeams(data.studentTeams);
 
-      // Sincroniza a questão ativa em andamento quando o instrutor reconecta ou o VPS volta do reinício
+      // Sincroniza a questão ativa em andamento quando o instrutor reconecta, o VPS volta do
+      // reinício, ou (o caso mais comum) quando outro aluno entra/reconecta na sala e o servidor
+      // rebroadcasta o room_update pra todo mundo, inclusive o instrutor. Nesse último caso, se a
+      // questão atual JÁ foi revelada (room.questionEndedData preenchido no servidor), não podemos
+      // reativar os controles de tempo — senão os botões "Pausar/Encerrar Tempo" voltam a aparecer
+      // no lugar de "Próxima Questão" mesmo com o gabarito já divulgado.
       if (data.status === "ACTIVE" && data.currentQuestion) {
         const idx = simulado.questions.findIndex((q: any) => q.id === data.currentQuestion.id);
         if (idx !== -1) {
           setCurrentQuestionIndex(idx);
         }
-        setIsQuestionActive(true);
-        setTimeLeft(data.timeLeft || 0);
-        setIsPaused(data.isPaused || false);
-        setQuestionEndedData(data.questionEndedData || null);
+        if (data.questionEndedData) {
+          setIsQuestionActive(false);
+          setIsTimeUp(false);
+          setQuestionEndedData(data.questionEndedData);
+        } else {
+          setIsQuestionActive(true);
+          setTimeLeft(data.timeLeft || 0);
+          setIsPaused(data.isPaused || false);
+          setQuestionEndedData(null);
+        }
       } else if (data.questionEndedData) {
         setQuestionEndedData(data.questionEndedData);
       }
