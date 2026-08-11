@@ -1,7 +1,9 @@
 "use server";
 
+import { SchemaType } from "@google/generative-ai";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/app/actions/auth";
+import { generateWithGeminiFallback } from "@/lib/gemini";
 
 export async function requestAppeal(questionId: string, reason: string) {
   try {
@@ -67,14 +69,6 @@ async function processAppealInBackground(questionId: string) {
     });
     if (!question) return;
 
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      throw new Error("Chave do Anthropic não configurada.");
-    }
-
-    const Anthropic = require("@anthropic-ai/sdk");
-    const anthropic = new Anthropic({ apiKey: anthropicKey });
-
     const prompt = `Você é um avaliador mestre de concursos policiais.
 Uma questão de múltipla escolha de um simulado foi alvo de recurso por um aluno. Sua missão é julgar o recurso com rigor, justiça e precisão técnica.
 
@@ -97,28 +91,48 @@ Analise a queixa do aluno. Você deve decidir entre 3 cenários:
 IMPORTANTE: Responda ÚNICA e EXCLUSIVAMENTE com um objeto JSON no seguinte formato, sem marcadores markdown (\`\`\`json):
 {
   "action": "ANNULLED" | "CORRECTED" | "REJECTED",
-  "newCorreta": number | null,
+  "newCorreta": number,
   "explanation": "Sua justificativa técnica, direta e didática explicando o motivo da sua decisão para o aluno ler."
 }
+Use -1 em "newCorreta" quando a ação não for "CORRECTED".
 `;
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-5",
-      max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }]
-    });
+    const responseSchema = {
+      type: SchemaType.OBJECT,
+      properties: {
+        action: {
+          type: SchemaType.STRING,
+          description: "ANNULLED, CORRECTED ou REJECTED"
+        },
+        newCorreta: {
+          type: SchemaType.INTEGER,
+          description: "Índice (0 a 4) da alternativa correta corrigida. Use -1 quando a ação não for CORRECTED."
+        },
+        explanation: {
+          type: SchemaType.STRING,
+          description: "Justificativa técnica da decisão."
+        }
+      },
+      required: ["action", "newCorreta", "explanation"]
+    };
 
-    const textBlock = response.content.find((b: any) => b.type === 'text');
-    let rawText = textBlock?.text || '';
+    // Gemini como IA principal, com fallback automático para o Claude Sonnet 5 se
+    // todas as chaves do Gemini falharem ou estiverem em cooldown.
+    const geminiResult = await generateWithGeminiFallback(prompt, {
+      responseMimeType: "application/json",
+      responseSchema
+    });
+    let rawText = geminiResult.response.text() || "";
     let jsonText = rawText.trim();
-    
-    // Tenta extrair apenas o objeto JSON (ignorando conversa fiada)
+
+    // Tenta extrair apenas o objeto JSON (ignorando conversa fiada, caso o fallback do Claude não respeite o schema)
     const match = jsonText.match(/\{[\s\S]*\}/);
     if (match) {
       jsonText = match[0];
     }
 
     const result = JSON.parse(jsonText);
+    const newCorreta = typeof result.newCorreta === "number" && result.newCorreta >= 0 ? result.newCorreta : null;
 
     // Atualiza o banco com a decisão final
     await prisma.question.update({
@@ -126,7 +140,7 @@ IMPORTANTE: Responda ÚNICA e EXCLUSIVAMENTE com um objeto JSON no seguinte form
       data: {
         appealStatus: result.action,
         appealResponse: result.explanation,
-        correta: result.action === "CORRECTED" && result.newCorreta !== null ? result.newCorreta : question.correta
+        correta: result.action === "CORRECTED" && newCorreta !== null ? newCorreta : question.correta
       }
     });
 
@@ -137,10 +151,10 @@ IMPORTANTE: Responda ÚNICA e EXCLUSIVAMENTE com um objeto JSON no seguinte form
         where: { questionId },
         data: { isCorrect: true, pontuacao: 100 }
       });
-    } else if (result.action === "CORRECTED" && result.newCorreta !== null) {
+    } else if (result.action === "CORRECTED" && newCorreta !== null) {
       // Quem marcou o novo gabarito ganha os pontos
       await prisma.answer.updateMany({
-        where: { questionId, alternativa: result.newCorreta },
+        where: { questionId, alternativa: newCorreta },
         data: { isCorrect: true, pontuacao: 100 }
       });
       // Importante: A regra "sem prejuízo" implica que não removeremos os pontos de quem marcou a alternativa anterior que era o gabarito velho.
