@@ -28,56 +28,56 @@ async function main() {
   const simulados = await prisma.simulado.findMany({
     where: { tipo: "DAILY" },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 40,
     include: { questions: true }
   });
 
-  const simulado = simulados.find((s) =>
+  const matches = simulados.filter((s) =>
     (s.apostilaName || "").toLowerCase().includes(apostilaQuery.toLowerCase())
   );
 
-  if (!simulado) {
+  if (matches.length === 0) {
     console.log("Nenhum simulado diário recente bateu com esse nome de apostila.");
     console.log("Simulados diários recentes:", simulados.map((s) => `${s.id} | ${s.apostilaName} | ${s.createdAt.toISOString()}`));
     return;
   }
 
-  console.log("\n=== Simulado ===");
-  console.log("ID:", simulado.id);
-  console.log("Apostila:", simulado.apostilaName);
-  console.log("Criado em:", simulado.createdAt.toISOString());
-  console.log("Total de questões:", simulado.questions.length);
+  console.log(`\nEncontrados ${matches.length} simulado(s) diário(s) com esse nome de apostila. Diagnosticando cada um:`);
 
-  const answers = await prisma.answer.findMany({
-    where: { studentId: student.id, question: { simuladoId: simulado.id } }
-  });
+  for (const simulado of matches) {
+    console.log("\n=== Simulado ===");
+    console.log("ID:", simulado.id);
+    console.log("Apostila:", simulado.apostilaName);
+    console.log("Criado em:", simulado.createdAt.toISOString());
+    console.log("Total de questões:", simulado.questions.length);
 
-  console.log("\n=== Respostas do aluno", student.name, "===");
-  console.log("Total de respostas:", answers.length);
+    const answers = await prisma.answer.findMany({
+      where: { studentId: student.id, question: { simuladoId: simulado.id } }
+    });
 
-  const questionIds = simulado.questions.map((q) => q.id);
-  const answeredIds = answers.map((a) => a.questionId);
-  const missing = questionIds.filter((id) => !answeredIds.includes(id));
-  const dupeIds = answeredIds.filter((id, i) => answeredIds.indexOf(id) !== i);
+    console.log("Respostas do aluno", student.name + ":", answers.length);
 
-  console.log("Questões NÃO respondidas:", missing.length, missing);
-  console.log("Respostas duplicadas (mesma questão respondida 2x):", [...new Set(dupeIds)]);
+    const questionIds = simulado.questions.map((q) => q.id);
+    const answeredIds = answers.map((a) => a.questionId);
+    const missing = questionIds.filter((id) => !answeredIds.includes(id));
+    const dupeIds = answeredIds.filter((id, i) => answeredIds.indexOf(id) !== i);
 
-  const otherRaffle = await prisma.answer.count({
-    where: {
-      question: { simuladoId: simulado.id },
-      isRaffle: true,
-      studentId: { not: student.id }
-    }
-  });
-  console.log("Respostas de sorteio (raffle) de OUTROS alunos nesse simulado:", otherRaffle);
+    console.log("Questões NÃO respondidas:", missing.length, missing);
+    console.log("Respostas duplicadas (mesma questão respondida 2x):", [...new Set(dupeIds)]);
 
-  const totalQuestionsAfterRaffleDeduction = Math.max(0, simulado.questions.length - otherRaffle);
-  console.log("\n=== Diagnóstico ===");
-  console.log("Total de questões (bruto):", simulado.questions.length);
-  console.log("Total de questões (descontando raffle de outros, usado na tela de revisão):", totalQuestionsAfterRaffleDeduction);
-  console.log("Respostas do aluno:", answers.length);
-  console.log("Está completo (usado na tela de revisão)?", answers.length >= totalQuestionsAfterRaffleDeduction);
+    const otherRaffle = await prisma.answer.count({
+      where: {
+        question: { simuladoId: simulado.id },
+        isRaffle: true,
+        studentId: { not: student.id }
+      }
+    });
+    console.log("Respostas de sorteio (raffle) de OUTROS alunos nesse simulado:", otherRaffle);
+
+    const totalQuestionsAfterRaffleDeduction = Math.max(0, simulado.questions.length - otherRaffle);
+    console.log("Total de questões (descontando raffle, usado na tela de revisão):", totalQuestionsAfterRaffleDeduction);
+    console.log("Está completo (usado na tela de revisão)?", answers.length >= totalQuestionsAfterRaffleDeduction);
+  }
 }
 
 main()
