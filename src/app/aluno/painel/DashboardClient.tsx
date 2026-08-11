@@ -15,6 +15,7 @@ import { AlunoSidebar, getStoredSidebarCollapsed, storeSidebarCollapsed } from "
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateUserAvatar, updateUserName } from "@/app/actions/user";
+import { getMorePastDailySimulados } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
 import { BepiEagleIcon } from "@/components/PatentIcons";
@@ -185,15 +186,17 @@ export default function StudentDashboardClient({
   activeRooms = [],
   dailySimulados = [],
   pastDailySimulados = [],
+  hasMorePastDailySimulados = false,
   specialSimulados = [],
   isGeneratingDaily = false
-}: { 
-  user: any; 
-  stats?: any; 
-  generalRanking?: any[]; 
-  activeRooms?: any[]; 
+}: {
+  user: any;
+  stats?: any;
+  generalRanking?: any[];
+  activeRooms?: any[];
   dailySimulados?: any[];
   pastDailySimulados?: any[];
+  hasMorePastDailySimulados?: boolean;
   specialSimulados?: any[];
   isGeneratingDaily?: boolean;
 }) {
@@ -209,6 +212,24 @@ export default function StudentDashboardClient({
   const [useTimer, setUseTimer] = useState<boolean>(true);
   const [timerSeconds, setTimerSeconds] = useState<string>("60");
   const [dailyTab, setDailyTab] = useState<"TODAY" | "HISTORY">("TODAY");
+  const [pastDailyList, setPastDailyList] = useState<any[]>(pastDailySimulados);
+  const [hasMorePastDaily, setHasMorePastDaily] = useState<boolean>(hasMorePastDailySimulados);
+  const [loadingMorePastDaily, setLoadingMorePastDaily] = useState(false);
+
+  const handleLoadMorePastDaily = async () => {
+    if (loadingMorePastDaily) return;
+    setLoadingMorePastDaily(true);
+    try {
+      const result = await getMorePastDailySimulados(pastDailyList.length);
+      if (result?.items) {
+        const newItems = result.items;
+        setPastDailyList((prev) => [...prev, ...newItems]);
+        setHasMorePastDaily(result.hasMore ?? false);
+      }
+    } finally {
+      setLoadingMorePastDaily(false);
+    }
+  };
   const [generatedToday, setGeneratedToday] = useState<boolean>(false);
   const router = useRouter();
   const [currentLeiIndex, setCurrentLeiIndex] = useState(0);
@@ -713,7 +734,7 @@ export default function StudentDashboardClient({
                           : "border-transparent text-muted-foreground hover:text-muted-foreground"
                       }`}
                     >
-                      Histórico ({pastDailySimulados.length})
+                      Histórico ({pastDailyList.length}{hasMorePastDaily ? "+" : ""})
                     </button>
                   </div>
 
@@ -789,13 +810,13 @@ export default function StudentDashboardClient({
                       )}
                     </div>
                   ) : (
-                    pastDailySimulados.length === 0 ? (
+                    pastDailyList.length === 0 ? (
                       <div className="text-center text-muted-foreground py-6 text-xs uppercase font-black tracking-wider">
                         Nenhum simulado histórico.
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                        {pastDailySimulados.map((sim: any) => {
+                        {pastDailyList.map((sim: any) => {
                           const isNew = sim.apostilaCreatedAt ? (new Date().getTime() - new Date(sim.apostilaCreatedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
                           
                           return (
@@ -848,6 +869,21 @@ export default function StudentDashboardClient({
                           </div>
                           );
                         })}
+                        {hasMorePastDaily && (
+                          <Button
+                            onClick={handleLoadMorePastDaily}
+                            disabled={loadingMorePastDaily}
+                            variant="ghost"
+                            size="sm"
+                            className="w-full h-9 mt-1 text-blue-400 bg-blue-900/10 hover:bg-blue-900/20 font-black text-[10px] uppercase tracking-wider cursor-pointer"
+                          >
+                            {loadingMorePastDaily ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              "Carregar Mais"
+                            )}
+                          </Button>
+                        )}
                       </div>
                     )
                   )}

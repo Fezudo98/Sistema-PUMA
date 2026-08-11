@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { getCachedGeneralRanking } from "@/lib/ranking";
 
-const PAST_DAILY_SIMULADOS_LIMIT = 60;
+const PAST_DAILY_SIMULADOS_LIMIT = 30;
 const SPECIAL_SIMULADOS_LIMIT = 50;
 
 export default async function AlunoPainel() {
@@ -88,7 +88,7 @@ export default async function AlunoPainel() {
         questions: { select: { id: true } }
       },
       orderBy: { createdAt: "desc" },
-      take: PAST_DAILY_SIMULADOS_LIMIT
+      take: PAST_DAILY_SIMULADOS_LIMIT + 1
     }),
     prisma.simulado.findMany({
       where: {
@@ -223,7 +223,12 @@ export default async function AlunoPainel() {
     };
   });
 
-  const pastDailySimuladosWithStatus = pastDailySimulados.map((sim) => {
+  const hasMorePastDaily = pastDailySimulados.length > PAST_DAILY_SIMULADOS_LIMIT;
+  const pastDailySimuladosPage = hasMorePastDaily
+    ? pastDailySimulados.slice(0, PAST_DAILY_SIMULADOS_LIMIT)
+    : pastDailySimulados;
+
+  const pastDailySimuladosWithStatus = pastDailySimuladosPage.map((sim) => {
     const questionIds = sim.questions.map((q: { id: string }) => q.id);
     const studentAnswersCount = questionIds.filter(id => answeredQuestionIds.has(id)).length;
 
@@ -271,6 +276,7 @@ export default async function AlunoPainel() {
       activeRooms={activeRooms}
       dailySimulados={dailySimuladosWithStatus}
       pastDailySimulados={pastDailySimuladosWithStatus}
+      hasMorePastDailySimulados={hasMorePastDaily}
       specialSimulados={specialSimuladosWithStatus}
       isGeneratingDaily={isGeneratingDaily}
     />

@@ -462,6 +462,69 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
   }
 }
 
+const PAST_DAILY_SIMULADOS_PAGE_SIZE = 30;
+
+export async function getMorePastDailySimulados(offset: number) {
+  const currentUser = await getUser();
+  if (!currentUser || currentUser.role !== "STUDENT") {
+    return { error: "Não autorizado." };
+  }
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const pastDailySimulados = await prisma.simulado.findMany({
+    where: {
+      tipo: "DAILY",
+      createdAt: { lt: todayStart }
+    },
+    include: {
+      questions: { select: { id: true } }
+    },
+    orderBy: { createdAt: "desc" },
+    skip: offset,
+    take: PAST_DAILY_SIMULADOS_PAGE_SIZE + 1
+  });
+
+  const hasMore = pastDailySimulados.length > PAST_DAILY_SIMULADOS_PAGE_SIZE;
+  const pageItems = pastDailySimulados.slice(0, PAST_DAILY_SIMULADOS_PAGE_SIZE);
+
+  const questionIds = pageItems.flatMap((sim) => sim.questions.map((q) => q.id));
+  const studentAnswers = questionIds.length > 0
+    ? await prisma.answer.findMany({
+        where: { studentId: currentUser.userId, questionId: { in: questionIds } },
+        select: { questionId: true }
+      })
+    : [];
+  const answeredQuestionIds = new Set(studentAnswers.map((a) => a.questionId));
+
+  const apostilaNames = Array.from(new Set(pageItems.map((sim) => sim.apostilaName).filter(Boolean))) as string[];
+  const linkedApostilas = apostilaNames.length > 0
+    ? await prisma.apostila.findMany({
+        where: { title: { in: apostilaNames } },
+        select: { title: true, createdAt: true }
+      })
+    : [];
+
+  const items = pageItems.map((sim) => {
+    const simQuestionIds = sim.questions.map((q) => q.id);
+    const studentAnswersCount = simQuestionIds.filter((id) => answeredQuestionIds.has(id)).length;
+    const isCompleted = simQuestionIds.length > 0 && studentAnswersCount >= simQuestionIds.length;
+    const linkedApostila = linkedApostilas.find((a) => a.title === sim.apostilaName);
+
+    return {
+      id: sim.id,
+      apostilaName: sim.apostilaName || "Simulado de Estudo",
+      apostilaCreatedAt: linkedApostila ? linkedApostila.createdAt.toISOString() : null,
+      questionsCount: simQuestionIds.length,
+      isCompleted,
+      createdAt: sim.createdAt.toISOString()
+    };
+  });
+
+  return { items, hasMore };
+}
+
 export async function saveSelfPacedAnswer(data: {
   questionId: string;
   studentId: string;
