@@ -815,6 +815,7 @@ export default function StudentDashboardClient({
                         Nenhum simulado histórico.
                       </div>
                     ) : (
+                      <div className="space-y-2">
                       <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
                         {pastDailyList.map((sim: any) => {
                           const isNew = sim.apostilaCreatedAt ? (new Date().getTime() - new Date(sim.apostilaCreatedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
@@ -869,21 +870,22 @@ export default function StudentDashboardClient({
                           </div>
                           );
                         })}
-                        {hasMorePastDaily && (
-                          <Button
-                            onClick={handleLoadMorePastDaily}
-                            disabled={loadingMorePastDaily}
-                            variant="ghost"
-                            size="sm"
-                            className="w-full h-9 mt-1 text-blue-400 bg-blue-900/10 hover:bg-blue-900/20 font-black text-[10px] uppercase tracking-wider cursor-pointer"
-                          >
-                            {loadingMorePastDaily ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              "Carregar Mais"
-                            )}
-                          </Button>
-                        )}
+                      </div>
+                      {hasMorePastDaily && (
+                        <Button
+                          onClick={handleLoadMorePastDaily}
+                          disabled={loadingMorePastDaily}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full h-9 text-blue-400 bg-blue-900/10 hover:bg-blue-900/20 font-black text-[10px] uppercase tracking-wider cursor-pointer"
+                        >
+                          {loadingMorePastDaily ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            "Carregar Mais"
+                          )}
+                        </Button>
+                      )}
                       </div>
                     )
                   )}
