@@ -540,16 +540,28 @@ export async function saveSelfPacedAnswer(data: {
     }
     const studentId = currentUser.userId;
 
-    // 1. Evitar respostas duplicadas
+    // 1. Evitar respostas duplicadas. Isso pode acontecer legitimamente quando uma
+    // resposta anterior falhou temporariamente no cliente (fila offline) e depois
+    // sincronizou em segundo plano antes de uma nova tentativa manual — nesse caso,
+    // devolve a resposta já salva como sucesso (idempotente), em vez de erro. Um erro
+    // aqui faria o cliente tratar como falha de rede e reenfileirar, travando o aluno
+    // em loop na última questão sem nunca conseguir finalizar o simulado.
     const existingAnswer = await prisma.answer.findFirst({
       where: {
         questionId,
         studentId
-      }
+      },
+      include: { question: true }
     });
 
     if (existingAnswer) {
-      return { error: "Questão já respondida." };
+      return {
+        success: true,
+        isCorrect: existingAnswer.isCorrect,
+        correta: existingAnswer.question.correta,
+        justificativa: existingAnswer.question.justificativa,
+        pontuacao: existingAnswer.pontuacao
+      };
     }
 
     // 2. Buscar a questão para validar
