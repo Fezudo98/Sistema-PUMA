@@ -18,6 +18,7 @@ export default async function AlunoChatPage() {
       avatarUrl: true,
       numero: true,
       suspendedUntil: true,
+      bonusStreakDays: true,
     }
   });
 
@@ -38,7 +39,7 @@ export default async function AlunoChatPage() {
       }
     }
   });
-  const perf = computeStudentPerformanceStats(answers, user.userId);
+  const perf = computeStudentPerformanceStats(answers, user.userId, undefined, undefined, dbUser.bonusStreakDays || 0);
   const stats = {
     totalQuestions: perf.totalAnswers,
     accuracy: perf.accuracy,

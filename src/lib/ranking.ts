@@ -36,6 +36,7 @@ const calculateRankingData = async () => {
       numero: true,
       avatarUrl: true,
       suspendedUntil: true,
+      bonusStreakDays: true,
       answers: {
         select: {
           createdAt: true,
@@ -63,10 +64,11 @@ const calculateRankingData = async () => {
   // 3. Compute stats
   const generalRanking = dbStudents.map(student => {
     const sPerf = computeStudentPerformanceStats(
-      student.answers, 
-      student.id, 
-      totalRaffleInSimulado, 
-      studentRaffleInSimulado
+      student.answers,
+      student.id,
+      totalRaffleInSimulado,
+      studentRaffleInSimulado,
+      (student as any).bonusStreakDays || 0
     );
     
     return {
@@ -79,6 +81,7 @@ const calculateRankingData = async () => {
       totalScore: sPerf.totalScore,
       avgTime: sPerf.avgTime,
       streakDays: sPerf.streakDays,
+      bonusStreakDays: (student as any).bonusStreakDays || 0,
       todayPoints: sPerf.todayPoints,
       suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null
     };

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { getUser } from "./auth";
 import bcrypt from "bcryptjs";
 
@@ -292,5 +292,42 @@ export async function updateStudentNumber(studentId: string, newNumero: number) 
   } catch (error: any) {
     console.error("Error updating student number:", error);
     return { success: false, error: "Erro interno ao atualizar o número do combatente." };
+  }
+}
+
+// Correção administrativa manual da sequência diária (ex.: falha do sistema derrubou
+// uma sequência real do aluno). O valor somado é fixo — não regenera respostas fictícias.
+export async function updateStudentBonusStreak(studentId: string, bonusDays: number) {
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { success: false, error: "Acesso negado. Apenas instrutores autorizados." };
+  }
+
+  if (isNaN(bonusDays) || bonusDays < 0 || bonusDays > 3650) {
+    return { success: false, error: "O valor de bônus deve ser entre 0 e 3650 dias." };
+  }
+
+  try {
+    const student = await prisma.user.findFirst({
+      where: { id: studentId, role: "STUDENT" }
+    });
+
+    if (!student) {
+      return { success: false, error: "Combatente não encontrado." };
+    }
+
+    await prisma.user.update({
+      where: { id: studentId },
+      data: { bonusStreakDays: Math.round(bonusDays) }
+    });
+
+    updateTag("ranking");
+    revalidatePath("/instructor");
+    revalidatePath("/aluno/painel");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating student bonus streak:", error);
+    return { success: false, error: "Erro interno ao atualizar a sequência do combatente." };
   }
 }

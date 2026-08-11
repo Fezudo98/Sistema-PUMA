@@ -29,7 +29,8 @@ export function computeStudentPerformanceStats(
   answers: any[],
   studentId: string,
   totalRaffleInSimulado: Map<string, number> = new Map(),
-  studentRaffleInSimulado: Map<string, number> = new Map()
+  studentRaffleInSimulado: Map<string, number> = new Map(),
+  bonusStreakDays: number = 0
 ): StudentPerformanceStats {
   const totalAnswers = answers.length;
 
@@ -107,6 +108,11 @@ export function computeStudentPerformanceStats(
       checkDate = new Date(checkDate.getTime() - 24 * 60 * 60 * 1000);
       if (streakDays > 3650) break; // limit to 10 years safety
     }
+  }
+
+  // Correção administrativa manual (ex.: falha do sistema derrubou a sequência real do aluno)
+  if (bonusStreakDays > 0) {
+    streakDays += bonusStreakDays;
   }
 
   // Question points (from answers)

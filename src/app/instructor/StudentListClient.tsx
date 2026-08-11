@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber } from "@/app/actions/user";
+import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber, updateStudentBonusStreak } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
 
@@ -23,6 +23,7 @@ type StudentPerformance = {
   totalScore: number;
   avgTime: number;
   streakDays?: number;
+  bonusStreakDays?: number;
   todayPoints?: number;
   suspendedUntil?: string | null;
 };
@@ -58,6 +59,11 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
   const [isUpdatingNumber, setIsUpdatingNumber] = useState(false);
   const [numberUpdateMessage, setNumberUpdateMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Streak bonus correction state
+  const [newBonusStreak, setNewBonusStreak] = useState<string>("");
+  const [isUpdatingBonusStreak, setIsUpdatingBonusStreak] = useState(false);
+  const [bonusStreakMessage, setBonusStreakMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedStudent(null);
@@ -66,6 +72,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setResetMessage(null);
       setNewStudentNumber("");
       setNumberUpdateMessage(null);
+      setNewBonusStreak("");
+      setBonusStreakMessage(null);
       setActiveModalTab("dossier");
       setAuditMessages([]);
       setStudentSimulados([]);
@@ -78,6 +86,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setCurrentSuspendedUntil(selectedStudent.suspendedUntil || null);
       setNewStudentNumber(selectedStudent.numero ? String(selectedStudent.numero) : "");
       setNumberUpdateMessage(null);
+      setNewBonusStreak(String(selectedStudent.bonusStreakDays || 0));
+      setBonusStreakMessage(null);
       
       // Fetch Chat Audit
       setLoadingAudit(true);
@@ -127,6 +137,28 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setSelectedStudent((prev) => prev ? { ...prev, numero: num } : null);
     } else {
       setNumberUpdateMessage({ type: "error", text: res.error || "Erro ao atualizar número." });
+    }
+  };
+
+  const handleUpdateBonusStreak = async () => {
+    if (!selectedStudent) return;
+    const bonus = parseInt(newBonusStreak, 10);
+    if (isNaN(bonus) || bonus < 0) {
+      setBonusStreakMessage({ type: "error", text: "O valor deve ser um número inteiro maior ou igual a 0." });
+      return;
+    }
+
+    setIsUpdatingBonusStreak(true);
+    setBonusStreakMessage(null);
+
+    const res = await updateStudentBonusStreak(selectedStudent.id, bonus);
+    setIsUpdatingBonusStreak(false);
+
+    if (res.success) {
+      setBonusStreakMessage({ type: "success", text: "Bônus de sequência atualizado com sucesso!" });
+      setSelectedStudent((prev) => prev ? { ...prev, bonusStreakDays: bonus } : null);
+    } else {
+      setBonusStreakMessage({ type: "error", text: res.error || "Erro ao atualizar o bônus de sequência." });
     }
   };
 
@@ -533,6 +565,57 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       >
                         {numberUpdateMessage.type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                         {numberUpdateMessage.text}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Correção Manual de Sequência (Streak) */}
+                <div className="bg-card/30 border border-border rounded-xl p-4 space-y-4">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2 flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    Correção Administrativa de Sequência
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    A sequência normal é calculada automaticamente pelos dias que o aluno completou missões. Use este campo apenas para corrigir uma sequência perdida por falha do sistema — o valor abaixo é somado à sequência calculada (soma {selectedStudent?.streakDays !== undefined ? Math.max(0, (selectedStudent.streakDays || 0) - (selectedStudent.bonusStreakDays || 0)) : "?"} dias naturais + bônus = total exibido).
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={3650}
+                          placeholder="Dias de bônus na sequência"
+                          value={newBonusStreak}
+                          onChange={(e) => {
+                            setNewBonusStreak(e.target.value);
+                            setBonusStreakMessage(null);
+                          }}
+                          className="bg-background border-border text-heading placeholder:text-muted-foreground focus-visible:ring-orange-500"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleUpdateBonusStreak}
+                        disabled={isUpdatingBonusStreak || newBonusStreak === "" || String(selectedStudent?.bonusStreakDays || 0) === newBonusStreak}
+                        className="bg-orange-600 hover:bg-orange-500 text-heading font-bold text-xs shrink-0 cursor-pointer h-10 px-4"
+                      >
+                        {isUpdatingBonusStreak ? <Loader2 className="w-4 h-4 animate-spin" /> : "Aplicar Bônus"}
+                      </Button>
+                    </div>
+
+                    {bonusStreakMessage && (
+                      <div
+                        className={`p-3 rounded-lg border text-xs font-bold flex items-center gap-2 ${
+                          bonusStreakMessage.type === "success"
+                            ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                            : "bg-red-950/40 border-red-500/30 text-red-400"
+                        }`}
+                      >
+                        {bonusStreakMessage.type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                        {bonusStreakMessage.text}
                       </div>
                     )}
                   </div>

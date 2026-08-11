@@ -60,7 +60,7 @@ async function runBadgesBackfill() {
           studentRaffleMap.set(sId, (studentRaffleMap.get(sId) || 0) + 1);
         });
 
-      const sPerf = computeStudentPerformanceStats(student.answers as any, student.id, studentRaffleMap);
+      const sPerf = computeStudentPerformanceStats(student.answers as any, student.id, studentRaffleMap, undefined, (student as any).bonusStreakDays || 0);
       const simuladosCount = sPerf.simuladosCount;
       const accuracy = sPerf.accuracy;
       const totalScore = sPerf.totalScore;

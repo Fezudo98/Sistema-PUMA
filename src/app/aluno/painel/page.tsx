@@ -179,7 +179,7 @@ export default async function AlunoPainel() {
       accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
     }));
 
-  const perfStats = computeStudentPerformanceStats(answers, user.userId, otherRaffleCounts);
+  const perfStats = computeStudentPerformanceStats(answers, user.userId, otherRaffleCounts, undefined, (dbUser as any)?.bonusStreakDays || 0);
 
   const stats = {
     simuladosCount: history.length,

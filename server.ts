@@ -146,6 +146,7 @@ async function getStudentsTotalScores(studentIds: string[]): Promise<Record<stri
       where: { id: { in: studentIds } },
       select: {
         id: true,
+        bonusStreakDays: true,
         answers: {
           select: {
             createdAt: true,
@@ -171,7 +172,7 @@ async function getStudentsTotalScores(studentIds: string[]): Promise<Record<stri
     });
 
     students.forEach(s => {
-      const sPerf = computeStudentPerformanceStats(s.answers as any, s.id);
+      const sPerf = computeStudentPerformanceStats(s.answers as any, s.id, undefined, undefined, (s as any).bonusStreakDays || 0);
       result[s.id] = sPerf.totalScore;
     });
   } catch (err) {
@@ -239,7 +240,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       simuladoGroups[a.question.simuladoId].push(a);
     });
 
-    const sPerf = computeStudentPerformanceStats(student.answers as any, student.id, otherRaffleCounts);
+    const sPerf = computeStudentPerformanceStats(student.answers as any, student.id, otherRaffleCounts, undefined, (student as any).bonusStreakDays || 0);
     const simuladosCount = sPerf.simuladosCount;
     const accuracy = sPerf.accuracy;
     const totalScore = sPerf.totalScore;

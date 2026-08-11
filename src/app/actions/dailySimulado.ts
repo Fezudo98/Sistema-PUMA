@@ -686,7 +686,7 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
       simuladoGroups[sId] = s.answers;
     });
 
-    const sPerf = computeStudentPerformanceStats(student.answers, student.id, otherRaffleCounts);
+    const sPerf = computeStudentPerformanceStats(student.answers, student.id, otherRaffleCounts, undefined, (student as any).bonusStreakDays || 0);
     const simuladosCount = sPerf.simuladosCount;
     const accuracy = sPerf.accuracy;
     const totalScore = sPerf.totalScore;
