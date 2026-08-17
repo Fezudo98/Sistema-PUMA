@@ -239,8 +239,9 @@
 }
 
 /* ===== CHOQUE THEME (Comando de Policiamento de Choque) =====
-   Paleta de tropa de choque urbana: preto asfalto, camuflagem cinza-chumbo e
-   vermelho de alerta/sangue, remetendo à caveira e ao camuflado urbano da tropa. */
+   Paleta de tropa de choque urbana: preto asfalto, cinza-chumbo camuflado,
+   vermelho de alerta vivo e amarelo de faixa de isolamento/perigo — a dupla
+   vermelho+amarelo sobre preto é a assinatura visual de barreira e cerco tático. */
 .choque {
   --background: #0c0c0d;
   --foreground: #ececec;
@@ -252,8 +253,8 @@
   --popover: #151516;
   --popover-foreground: #ececec;
 
-  --primary: #b91c1c;
-  --primary-foreground: #f5f5f5;
+  --primary: #dc2626;
+  --primary-foreground: #fff5f5;
 
   --secondary: #52525b;
   --secondary-foreground: #f4f4f5;
@@ -261,43 +262,44 @@
   --muted: #1d1d1f;
   --muted-foreground: #a1a1aa;
 
-  --accent: #8a8f98;
-  --accent-foreground: #0c0c0d;
+  --accent: #f59e0b;
+  --accent-foreground: #1c1400;
 
   --destructive: #7f1d1d;
 
   --border: #3f3f46;
   --input: #3f3f46;
 
-  --ring: #b91c1c;
+  --ring: #dc2626;
 
-  --chart-1: #b91c1c;
+  --chart-1: #dc2626;
   --chart-2: #52525b;
-  --chart-3: #8a8f98;
-  --chart-4: #dc2626;
+  --chart-3: #f59e0b;
+  --chart-4: #8a8f98;
   --chart-5: #27272a;
 
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ececec;
-  --sidebar-primary: #b91c1c;
-  --sidebar-primary-foreground: #f5f5f5;
+  --sidebar-primary: #dc2626;
+  --sidebar-primary-foreground: #fff5f5;
   --sidebar-accent: #1d1d1f;
-  --sidebar-accent-foreground: #b91c1c;
+  --sidebar-accent-foreground: #dc2626;
   --sidebar-border: #3f3f46;
-  --sidebar-ring: #b91c1c;
+  --sidebar-ring: #dc2626;
 }
 
-/* Fundo ambientado: alerta vermelho baixo + névoa de chumbo urbana + granulado fino,
-   remetendo ao camuflado urbano e à tensão tática do Choque. */
+/* Fundo ambientado: alerta vermelho + brilho âmbar de faixa de isolamento + névoa
+   de chumbo urbana + granulado fino, remetendo ao cerco tático do Choque. */
 .choque body {
   background-color: var(--background);
   background-image:
-    radial-gradient(ellipse 65% 40% at 12% -8%, rgba(185, 28, 28, 0.18), transparent 60%),
+    radial-gradient(ellipse 65% 40% at 12% -8%, rgba(220, 38, 38, 0.20), transparent 60%),
+    radial-gradient(ellipse 55% 35% at 100% -5%, rgba(245, 158, 11, 0.10), transparent 58%),
     radial-gradient(ellipse 65% 45% at 100% 105%, rgba(82, 82, 91, 0.20), transparent 62%),
     linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.35) 100%),
     repeating-radial-gradient(circle at 0 0, rgba(236, 236, 236, 0.025) 0, rgba(236, 236, 236, 0.025) 1px, transparent 1px, transparent 4px);
-  background-size: auto, auto, auto, 7px 7px;
-  background-attachment: fixed, fixed, fixed, fixed;
+  background-size: auto, auto, auto, auto, 7px 7px;
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
 }
 
 @layer base {
