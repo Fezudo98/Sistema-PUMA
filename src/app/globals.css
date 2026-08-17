@@ -175,51 +175,67 @@
   --sidebar-ring: #facc15;
 }
 
-/* ===== BEPI THEME (Batalhão Especializado de Policiamento do Interior - Sertão) ===== */
+/* ===== BEPI THEME (Batalhão Especializado de Policiamento do Interior - Sertão) =====
+   Paleta inspirada no sertão nordestino: barro/terra queimada de sol, poeira, caatinga
+   e o dourado da luz baixa do sol no fim de tarde. */
 .bepi {
-  --background: #1c1712;
+  --background: #241609;
   --foreground: #f2e9d8;
   --heading: #f5eee0;
-  --surface: #221b14;
-  --surface-elevated: #2e2419;
-  --card: #221b14;
+  --surface: #2c1c0f;
+  --surface-elevated: #3a2513;
+  --card: #2c1c0f;
   --card-foreground: #f2e9d8;
-  --popover: #221b14;
+  --popover: #2c1c0f;
   --popover-foreground: #f2e9d8;
 
   --primary: #c9a227;
-  --primary-foreground: #1c1712;
+  --primary-foreground: #241609;
 
   --secondary: #4b5320;
   --secondary-foreground: #f2e9d8;
 
-  --muted: #2e2419;
-  --muted-foreground: #b8a888;
+  --muted: #3a2513;
+  --muted-foreground: #c3ab84;
 
-  --accent: #a8683a;
+  --accent: #b3703c;
   --accent-foreground: #f2e9d8;
 
   --destructive: #7f1d1d;
 
-  --border: #4a3728;
-  --input: #4a3728;
+  --border: #5a3a20;
+  --input: #5a3a20;
 
   --ring: #c9a227;
 
   --chart-1: #c9a227;
   --chart-2: #4b5320;
-  --chart-3: #a8683a;
+  --chart-3: #b3703c;
   --chart-4: #8a8267;
   --chart-5: #7f1d1d;
 
-  --sidebar: #1c1712;
+  --sidebar: #1e1408;
   --sidebar-foreground: #f2e9d8;
   --sidebar-primary: #c9a227;
-  --sidebar-primary-foreground: #1c1712;
-  --sidebar-accent: #2e2419;
+  --sidebar-primary-foreground: #241609;
+  --sidebar-accent: #3a2513;
   --sidebar-accent-foreground: #c9a227;
-  --sidebar-border: #4a3728;
+  --sidebar-border: #5a3a20;
   --sidebar-ring: #c9a227;
+}
+
+/* Fundo ambientado: brilho baixo de sol poente + véu de poeira da caatinga + textura
+   fina de "solo rachado", tudo via background (sempre atrás do conteúdo, sem custar
+   camadas extras de empilhamento). */
+.bepi body {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(201, 162, 39, 0.16), transparent 62%),
+    radial-gradient(ellipse 70% 45% at 88% 108%, rgba(75, 83, 32, 0.16), transparent 60%),
+    linear-gradient(180deg, rgba(179, 112, 60, 0.10) 0%, rgba(36, 22, 9, 0) 32%),
+    repeating-radial-gradient(circle at 0 0, rgba(242, 233, 216, 0.03) 0, rgba(242, 233, 216, 0.03) 1px, transparent 1px, transparent 4px);
+  background-size: auto, auto, auto, 7px 7px;
+  background-attachment: fixed, fixed, fixed, fixed;
 }
 
 @layer base {

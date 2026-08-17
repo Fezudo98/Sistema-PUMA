@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LightningEffect } from "@/components/LightningEffect";
 import { BepiEffect } from "@/components/BepiEffect";
+import { SertaoBackdrop } from "@/components/SertaoBackdrop";
 
 export default function RootLayout({
   children,
@@ -37,6 +38,7 @@ export default function RootLayout({
           themes={["light", "dark", "raio", "bepi"]}
           disableTransitionOnChange
         >
+          <SertaoBackdrop />
           {children}
           <LightningEffect />
           <BepiEffect />
