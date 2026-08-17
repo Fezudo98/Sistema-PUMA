@@ -17,6 +17,8 @@ export const metadata: Metadata = {
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LightningEffect } from "@/components/LightningEffect";
 import { BepiEffect } from "@/components/BepiEffect";
+import { SertaoBackdrop } from "@/components/SertaoBackdrop";
+import { ChoqueEffect } from "@/components/ChoqueEffect";
 
 export default function RootLayout({
   children,
@@ -34,12 +36,14 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          themes={["light", "dark", "raio", "bepi"]}
+          themes={["light", "dark", "raio", "bepi", "choque"]}
           disableTransitionOnChange
         >
+          <SertaoBackdrop />
           {children}
           <LightningEffect />
           <BepiEffect />
+          <ChoqueEffect />
         </ThemeProvider>
       </body>
     </html>

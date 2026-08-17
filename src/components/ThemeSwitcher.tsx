@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Moon, Sun, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
-import { BepiEagleIcon } from "@/components/PatentIcons";
+import { BepiEagleIcon, ChoqueSkullIcon } from "@/components/PatentIcons";
 
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false }: { hasRaioUnlocked?: boolean; hasBepiUnlocked?: boolean }) {
+export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false, hasChoqueUnlocked = false }: { hasRaioUnlocked?: boolean; hasBepiUnlocked?: boolean; hasChoqueUnlocked?: boolean }) {
   const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -43,6 +43,7 @@ export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false
         {currentTheme === "dark" && <Moon className="h-4 w-4 text-blue-500 transition-all" />}
         {currentTheme === "raio" && <Zap className="h-4 w-4 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)] transition-all" />}
         {currentTheme === "bepi" && <BepiEagleIcon className="h-4 w-4 text-amber-600 drop-shadow-[0_0_5px_rgba(201,162,39,0.5)] transition-all" />}
+        {currentTheme === "choque" && <ChoqueSkullIcon className="h-4 w-4 text-red-600 drop-shadow-[0_0_5px_rgba(185,28,28,0.5)] transition-all" />}
         <span className="sr-only">Toggle theme</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-card border-border rounded-xl">
@@ -64,6 +65,12 @@ export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false
           <DropdownMenuItem onClick={() => setTheme("bepi")} className="cursor-pointer font-black text-muted-foreground hover:text-foreground">
             <BepiEagleIcon className="mr-2 h-4 w-4 text-amber-600" />
             <span>Modo Sertão (BEPI) 🦅</span>
+          </DropdownMenuItem>
+        )}
+        {hasChoqueUnlocked && (
+          <DropdownMenuItem onClick={() => setTheme("choque")} className="cursor-pointer font-black text-muted-foreground hover:text-foreground">
+            <ChoqueSkullIcon className="mr-2 h-4 w-4 text-red-600" />
+            <span>Modo Choque (CHOQUE) 💀</span>
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
