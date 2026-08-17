@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber, updateStudentBonusStreak } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
+import { BepiEagleIcon } from "@/components/PatentIcons";
 
 type StudentPerformance = {
   id: string;
@@ -304,6 +305,12 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-950/80 border border-orange-500/40 text-orange-400 font-bold text-[10px]" title="Sequência Diária">
                                     <Flame className="w-3 h-3 fill-orange-500 text-orange-500" />
                                     {student.streakDays}d ({student.streakDays * 100} pts)
+                                  </span>
+                                )}
+                                {(student.streakDays || 0) >= 35 && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#2e2419]/90 border border-[#c9a227]/50 text-[#c9a227] font-black text-[10px] shadow-[0_0_8px_rgba(201,162,39,0.25)]" title="Fardamento BEPI Desbloqueado">
+                                    <BepiEagleIcon className="w-3 h-3" />
+                                    BEPI
                                   </span>
                                 )}
                                 {typeof student.todayPoints === 'number' && (
