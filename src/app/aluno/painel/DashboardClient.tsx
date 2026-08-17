@@ -18,8 +18,9 @@ import { updateUserAvatar, updateUserName } from "@/app/actions/user";
 import { getMorePastDailySimulados } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
-import { BepiEagleIcon } from "@/components/PatentIcons";
+import { BepiEagleIcon, ChoqueSkullIcon } from "@/components/PatentIcons";
 import { BepiUnlockToast } from "@/components/BepiUnlockToast";
+import { ChoqueUnlockToast } from "@/components/ChoqueUnlockToast";
 
 const LEIS_DA_SELVA = [
   {
@@ -356,10 +357,22 @@ export default function StudentDashboardClient({
   };
 
   const hasBepiUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 35;
+  const hasChoqueUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 50;
+
+  const streakDaysAtual = stats?.streakDays || 0;
+  const proximaMeta =
+    streakDaysAtual < 25
+      ? { label: "TEMA RAIO ⚡", dias: 25, corBarra: "from-yellow-600 to-yellow-400" }
+      : streakDaysAtual < 35
+      ? { label: "TEMA BEPI 🦅", dias: 35, corBarra: "from-emerald-600 to-emerald-400" }
+      : streakDaysAtual < 50
+      ? { label: "TEMA CHOQUE 💀", dias: 50, corBarra: "from-red-700 to-red-500" }
+      : { label: "TRILHA COMPLETA 🏆", dias: null as number | null, corBarra: "from-red-700 to-red-500" };
 
   return (
     <div className="min-h-screen bg-background text-foreground lg:flex">
       <BepiUnlockToast unlocked={hasBepiUnlocked} />
+      <ChoqueUnlockToast unlocked={hasChoqueUnlocked} />
       <AlunoSidebar
         mobileOpen={sidebarMobileOpen}
         onCloseMobile={() => setSidebarMobileOpen(false)}
@@ -420,8 +433,14 @@ export default function StudentDashboardClient({
             <button onClick={() => setIsArmariaOpen(true)} className="hover:scale-105 transition-transform" title="Abrir Armaria de Ícones">
               {(() => {
                 const patent = getPatentByScore(stats?.totalScore || 0);
+                const fardamentoRing = hasChoqueUnlocked
+                  ? 'ring-2 ring-[#b91c1c] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(185,28,28,0.5)]'
+                  : hasBepiUnlocked
+                  ? 'ring-2 ring-[#c9a227] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(201,162,39,0.5)]'
+                  : '';
+                const fardamentoTitle = hasChoqueUnlocked ? "Fardamento CHOQUE" : hasBepiUnlocked ? "Fardamento BEPI" : undefined;
                 return (
-                  <div className={`rounded-full ${hasBepiUnlocked ? 'ring-2 ring-[#c9a227] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(201,162,39,0.5)]' : ''}`} title={hasBepiUnlocked ? "Fardamento BEPI" : undefined}>
+                  <div className={`rounded-full ${fardamentoRing}`} title={fardamentoTitle}>
                     <div className={`rounded-full ${patent.avatarRing || ''}`}>
                       <HeaderAvatar
                         initials={user?.name?.substring(0, 2).toUpperCase() || "AL"}
@@ -436,6 +455,7 @@ export default function StudentDashboardClient({
             <ThemeSwitcher
               hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 25}
               hasBepiUnlocked={hasBepiUnlocked}
+              hasChoqueUnlocked={hasChoqueUnlocked}
             />
             <Button variant="ghost" onClick={handleSair} className="text-muted-foreground hover:text-red-400">
               <LogOut className="w-5 h-5" />
@@ -533,24 +553,20 @@ export default function StudentDashboardClient({
             <div className="text-right">
               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider block">Meta Atual</span>
               <span className="text-xs font-black text-primary">
-                {(stats?.streakDays || 0) < 25 ? "TEMA RAIO ⚡" : "TEMA BEPI 🦅"} ({(stats?.streakDays || 0) < 25 ? 25 : 35} DIAS)
+                {proximaMeta.label} {proximaMeta.dias !== null ? `(${proximaMeta.dias} DIAS)` : ""}
               </span>
             </div>
           </div>
-          
+
           <div className="space-y-2 relative">
             <div className="flex items-end justify-between text-xs font-bold text-muted-foreground mb-1">
               <span>{(stats?.streakDays || 0)} Dias</span>
-              <span>{(stats?.streakDays || 0) < 25 ? 25 : 35} Dias</span>
+              <span>{proximaMeta.dias !== null ? `${proximaMeta.dias} Dias` : "Completa"}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-3.5 overflow-hidden border border-border/50">
-              <div 
-                className={`h-full transition-all duration-1000 ${
-                  (stats?.streakDays || 0) < 25 
-                    ? "bg-gradient-to-r from-yellow-600 to-yellow-400" 
-                    : "bg-gradient-to-r from-emerald-600 to-emerald-400"
-                }`}
-                style={{ width: `${Math.min(((stats?.streakDays || 0) / ((stats?.streakDays || 0) < 25 ? 25 : 35)) * 100, 100)}%` }}
+              <div
+                className={`h-full transition-all duration-1000 bg-gradient-to-r ${proximaMeta.corBarra}`}
+                style={{ width: `${proximaMeta.dias !== null ? Math.min(((stats?.streakDays || 0) / proximaMeta.dias) * 100, 100) : 100}%` }}
               />
             </div>
             {/* Markers */}
@@ -1010,8 +1026,15 @@ export default function StudentDashboardClient({
                             {(() => {
                               const p = getPatentByScore(aluno.totalScore || 0);
                               const alunoHasBepi = (aluno.streakDays || 0) >= 35;
+                              const alunoHasChoque = (aluno.streakDays || 0) >= 50;
+                              const alunoRing = alunoHasChoque
+                                ? 'ring-2 ring-[#b91c1c] ring-offset-1 ring-offset-background'
+                                : alunoHasBepi
+                                ? 'ring-2 ring-[#c9a227] ring-offset-1 ring-offset-background'
+                                : '';
+                              const alunoRingTitle = alunoHasChoque ? "Fardamento CHOQUE" : alunoHasBepi ? "Fardamento BEPI" : undefined;
                               return (
-                                <div className={`shrink-0 rounded-full ${alunoHasBepi ? 'ring-2 ring-[#c9a227] ring-offset-1 ring-offset-background' : ''}`} title={alunoHasBepi ? "Fardamento BEPI" : undefined}>
+                                <div className={`shrink-0 rounded-full ${alunoRing}`} title={alunoRingTitle}>
                                   <div className={`rounded-full ${p.avatarRing || ''}`}>
                                     {aluno.avatarUrl ? (
                                       <img src={aluno.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-border" />
@@ -1053,6 +1076,12 @@ export default function StudentDashboardClient({
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2e2419]/90 border border-[#c9a227]/50 text-[#c9a227] font-black text-xs shadow-[0_0_8px_rgba(201,162,39,0.25)]" title="Fardamento BEPI Desbloqueado">
                                   <BepiEagleIcon className="w-3.5 h-3.5" />
                                   BEPI
+                                </span>
+                              )}
+                              {(aluno.streakDays || 0) >= 50 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/80 border border-[#b91c1c]/60 text-[#e05252] font-black text-xs shadow-[0_0_8px_rgba(185,28,28,0.3)]" title="Fardamento CHOQUE Desbloqueado">
+                                  <ChoqueSkullIcon className="w-3.5 h-3.5" />
+                                  CHOQUE
                                 </span>
                               )}
                               {typeof aluno.todayPoints === 'number' && (

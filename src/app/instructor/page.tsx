@@ -129,7 +129,7 @@ export default async function InstructorDashboard() {
                 Quem Somos Nós
               </Button>
             </Link>
-            <ThemeSwitcher hasRaioUnlocked={true} hasBepiUnlocked={true} />
+            <ThemeSwitcher hasRaioUnlocked={true} hasBepiUnlocked={true} hasChoqueUnlocked={true} />
             <div className="flex items-center gap-3">
               <HeaderAvatar 
                 initials={user.name.substring(0, 2).toUpperCase()} 

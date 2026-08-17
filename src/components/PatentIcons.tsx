@@ -71,6 +71,24 @@ export const BepiEagleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const ChoqueSkullIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" {...props}>
+    {/* Ossos cruzados */}
+    <path d="M2 3L22 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" opacity="0.85" />
+    <path d="M22 3L2 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" opacity="0.85" />
+    {/* Caveira (com furos vazados nos olhos e nariz via fillRule evenodd) */}
+    <path
+      fill="currentColor"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 2C8.13 2 5 5.13 5 9c0 2.76 1.5 5.15 3.7 6.38V18.5c0 .55.45 1 1 1h.8V21h3v-1.5h.8c.55 0 1-.45 1-1v-3.12C17.5 14.15 19 11.76 19 9c0-3.87-3.13-7-7-7Z
+         M11,9.6 a1.6,1.6 0 1,0 -3.2,0 a1.6,1.6 0 1,0 3.2,0 Z
+         M16.2,9.6 a1.6,1.6 0 1,0 -3.2,0 a1.6,1.6 0 1,0 3.2,0 Z
+         M12,11.2 L13,13 L11,13 Z"
+    />
+  </svg>
+);
+
 export const BopeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
     {/* 3 Diamonds */}
