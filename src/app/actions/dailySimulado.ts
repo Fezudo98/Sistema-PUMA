@@ -574,6 +574,16 @@ export async function saveSelfPacedAnswer(data: {
       return { error: "Questão não encontrada." };
     }
 
+    // Este fluxo é exclusivo de simulados DAILY/SPECIAL (estudo autoguiado). Sem
+    // essa checagem, um aluno poderia responder (e pontuar em) questões de um
+    // simulado LIVE ou PRESENTATION que nem chegou a acontecer pra ele.
+    if (question.simulado.tipo !== "DAILY" && question.simulado.tipo !== "SPECIAL") {
+      return { error: "Este simulado não pode ser respondido neste modo." };
+    }
+    if (question.simulado.tipo === "SPECIAL" && question.simulado.expiresAt && new Date(question.simulado.expiresAt) < new Date()) {
+      return { error: "Esta missão especial já expirou." };
+    }
+
     const isCorrect = Number(question.correta) === Number(alternativa);
     
     let pontuacao = 0;
@@ -799,7 +809,14 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
 }
 
 
-export async function generateDailySimuladoForSingleApostila(apostila: any) {
+export async function generateDailySimuladoForSingleApostila(apostilaId: string) {
+  // Busca a apostila no banco (nunca confia num objeto vindo do chamador) — evita
+  // que um filePath/instructorId arbitrário seja usado para ler arquivos do disco.
+  const apostila = await prisma.apostila.findUnique({ where: { id: apostilaId } });
+  if (!apostila) {
+    return { error: "Apostila não encontrada." };
+  }
+
   // Evitar chamadas simultâneas duplicadas (lock de memória por processo)
   if (activeGenerations.has(apostila.title)) {
     throw new Error(`A geração para "${apostila.title}" já está em andamento.`);
@@ -949,7 +966,7 @@ export async function forceGenerateDailySimuladoForApostila(apostilaId: string) 
       }
 
       // 2. Gerar novo simulado
-      const res = await generateDailySimuladoForSingleApostila(apostila);
+      const res = await generateDailySimuladoForSingleApostila(apostila.id);
       
       revalidatePath("/instructor");
       revalidatePath("/aluno/painel");

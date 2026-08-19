@@ -72,8 +72,14 @@ export default function RelatorioPrintPage() {
   // Convert simple markdown to HTML (basic implementation since we can't use complex markdown renderers on print easily without bringing large libs)
   // Or we just render it simply.
   const formatMarkdown = (md: string) => {
-    let html = md;
-    
+    // Escapa HTML antes de aplicar as regras de markdown — o texto vem da IA a
+    // partir de um prompt que inclui nomes de alunos, então sem isso um QRA com
+    // HTML no nome injetaria markup nesta página.
+    let html = md
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
     // Headers
     html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold mt-6 mb-2 text-slate-800">$1</h3>');
     html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-black uppercase tracking-widest mt-8 mb-4 border-b-2 border-slate-200 pb-2 text-slate-900">$1</h2>');

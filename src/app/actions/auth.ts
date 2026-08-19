@@ -12,6 +12,34 @@ function sanitizeString(str: string) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ").toUpperCase();
 }
 
+// Limitador simples de tentativas de senha por usu\u00e1rio (login e troca de senha
+// padr\u00e3o), em mem\u00f3ria do processo. N\u00e3o precisa ser perfeito (reinicia com o PM2),
+// s\u00f3 precisa tornar for\u00e7a bruta impratic\u00e1vel.
+const MAX_ATTEMPTS = 8;
+const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutos
+const failedAttempts = new Map<string, { count: number; lockUntil: number }>();
+
+function isLockedOut(username: string): number {
+  const entry = failedAttempts.get(username);
+  if (!entry) return 0;
+  if (entry.lockUntil > Date.now()) return entry.lockUntil - Date.now();
+  return 0;
+}
+
+function registerFailedAttempt(username: string) {
+  const entry = failedAttempts.get(username) || { count: 0, lockUntil: 0 };
+  entry.count += 1;
+  if (entry.count >= MAX_ATTEMPTS) {
+    entry.lockUntil = Date.now() + LOCKOUT_MS;
+    entry.count = 0;
+  }
+  failedAttempts.set(username, entry);
+}
+
+function clearFailedAttempts(username: string) {
+  failedAttempts.delete(username);
+}
+
 export async function registerUser(formData: FormData) {
   const name = sanitizeString(formData.get("name") as string);
   const username = sanitizeString(formData.get("username") as string);
@@ -89,6 +117,11 @@ export async function loginUser(formData: FormData) {
     return { error: "Todos os campos são obrigatórios." };
   }
 
+  const lockedMs = isLockedOut(username);
+  if (lockedMs > 0) {
+    return { error: `Muitas tentativas incorretas. Tente novamente em ${Math.ceil(lockedMs / 60000)} minuto(s).` };
+  }
+
   if (role === "STUDENT") {
     const maintenance = await prisma.systemSetting.findUnique({
       where: { key: "MAINTENANCE_MODE" }
@@ -103,18 +136,22 @@ export async function loginUser(formData: FormData) {
   });
 
   if (!user || user.role !== role) {
+    registerFailedAttempt(username);
     return { error: "Credenciais inválidas." };
   }
 
   const isMatch = await bcrypt.compare(password, user.senha);
   if (!isMatch) {
+    registerFailedAttempt(username);
     return { error: "Credenciais inválidas." };
   }
+
+  clearFailedAttempts(username);
 
   // Generate JWT token
   const token = await new SignJWT({ userId: user.id, role: user.role, name: user.name })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("30d")
+    .setExpirationTime("14d")
     .sign(JWT_SECRET);
 
   // Set cookie
@@ -124,7 +161,7 @@ export async function loginUser(formData: FormData) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30 // 30 days
+    maxAge: 60 * 60 * 24 * 14 // 14 days
   });
 
   return { success: true, role: user.role };
@@ -144,18 +181,31 @@ export async function changeDefaultPasswordAction(formData: FormData) {
     return { error: "Todos os campos são obrigatórios." };
   }
 
+  if (newPassword.length < 6) {
+    return { error: "A nova senha deve ter no mínimo 6 caracteres." };
+  }
+
+  const lockedMs = isLockedOut(username);
+  if (lockedMs > 0) {
+    return { error: `Muitas tentativas incorretas. Tente novamente em ${Math.ceil(lockedMs / 60000)} minuto(s).` };
+  }
+
   const user = await prisma.user.findUnique({
     where: { username }
   });
 
   if (!user || user.role !== "STUDENT") {
+    registerFailedAttempt(username);
     return { error: "Combatente não encontrado." };
   }
 
   const isMatch = await bcrypt.compare(currentPassword, user.senha);
   if (!isMatch) {
+    registerFailedAttempt(username);
     return { error: "Senha atual incorreta." };
   }
+
+  clearFailedAttempts(username);
 
   // Hash new password
   const salt = await bcrypt.genSalt(10);

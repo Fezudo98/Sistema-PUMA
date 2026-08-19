@@ -9,6 +9,15 @@ export async function updateUserAvatar(avatarUrl: string) {
   const user = await getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
+  // Só aceita caminhos locais dentro de public/avatars/ (badges, predefinidos ou
+  // custom) ou string vazia (remover avatar) — nunca uma URL externa, que apontaria
+  // o avatar pra um host de terceiros e vazaria IP/Referer de outros alunos toda
+  // vez que o ranking carregar a imagem.
+  const isValidLocalAvatar = /^\/avatars\/(predefined\/|custom\/)?[a-zA-Z0-9_-]+\.(png|jpg|jpeg|webp)$/.test(avatarUrl);
+  if (typeof avatarUrl !== "string" || (avatarUrl !== "" && !isValidLocalAvatar)) {
+    return { success: false, error: "Avatar inválido." };
+  }
+
   try {
     await prisma.user.update({
       where: { id: user.userId },
@@ -31,8 +40,8 @@ export async function resetStudentPassword(studentId: string, newPassword: strin
     return { success: false, error: "Acesso negado. Apenas instrutores autorizados." };
   }
 
-  if (!newPassword || newPassword.trim().length < 4) {
-    return { success: false, error: "A senha deve conter no mínimo 4 caracteres." };
+  if (!newPassword || newPassword.trim().length < 6) {
+    return { success: false, error: "A senha deve conter no mínimo 6 caracteres." };
   }
 
   try {

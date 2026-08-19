@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     try {
       const { generateDailySimuladoForSingleApostila, queueGenerationTask } = await import("@/app/actions/dailySimulado");
       queueGenerationTask(async () => {
-        return generateDailySimuladoForSingleApostila(apostila);
+        return generateDailySimuladoForSingleApostila(apostila.id);
       }).then((res) => {
         console.log(`[APOSTILA UPLOAD] Geração proativa para "${apostila.title}" concluída:`, res);
       }).catch((err) => {
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       const { generateVadeMecumAction } = await import("@/app/actions/vadeMecum");
       const { queueGenerationTask } = await import("@/app/actions/dailySimulado");
       queueGenerationTask(async () => {
-        return generateVadeMecumAction(apostila.id, true);
+        return generateVadeMecumAction(apostila.id);
       })
         .then((res) => {
           console.log(`[APOSTILA UPLOAD] Geração proativa sequencial de Vade Mecum para "${apostila.title}" concluída:`, res.success);

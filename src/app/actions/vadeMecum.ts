@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
-import { getCachedApostilaText } from "./chat";
+import { getCachedApostilaText } from "@/lib/apostilaCache";
 import { queueGenerationTask } from "./dailySimulado";
 
 const modelVersions = [
@@ -83,16 +83,12 @@ async function generateWithFallback(content: any[]) {
   throw new Error("O Claude Sonnet 5 (Prioridade 1) e todas as chaves do Gemini (até piso 3.1 flash) falharam na geração do Vade Mecum.");
 }
 
-// Generate the Vade Mecum summary using Gemini
-export async function generateVadeMecumAction(apostilaId: string, bypassAuth = false) {
+// Generate the Vade Mecum summary using Gemini. Não exportada — só pode ser chamada
+// por código server-side do próprio módulo (checkAndGenerateMissingVadeMecums), nunca
+// diretamente pelo cliente. A action pública abaixo (generateVadeMecumAction) sempre
+// valida INSTRUCTOR antes de chamar esta função.
+async function generateVadeMecumCore(apostilaId: string, isBackgroundTrigger: boolean) {
   try {
-    if (!bypassAuth) {
-      const user = await getUser();
-      if (!user || user.role !== "INSTRUCTOR") {
-        throw new Error("Não autorizado. Apenas instrutores podem gerar resumos.");
-      }
-    }
-
     const apostila = await prisma.apostila.findUnique({
       where: { id: apostilaId }
     });
@@ -168,7 +164,7 @@ Foque exclusivamente nas informações presentes no documento abaixo e entregue 
         data: { vadeMecum: cleanedVadeMecum }
       });
 
-      if (!bypassAuth) {
+      if (!isBackgroundTrigger) {
         revalidatePath("/aluno/vademecum");
         revalidatePath("/instructor");
       }
@@ -186,6 +182,15 @@ Foque exclusivamente nas informações presentes no documento abaixo e entregue 
     console.error(`[VADE MECUM ERROR] Erro ao gerar Vade Mecum da apostila ${apostilaId}:`, error);
     return { success: false, error: error.message };
   }
+}
+
+// Action pública: só instrutores autenticados podem disparar a geração diretamente.
+export async function generateVadeMecumAction(apostilaId: string) {
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { success: false, error: "Não autorizado. Apenas instrutores podem gerar resumos." };
+  }
+  return generateVadeMecumCore(apostilaId, false);
 }
 
 // Retrieve the generated Vade Mecum summary
@@ -230,7 +235,7 @@ export async function checkAndGenerateMissingVadeMecums() {
     for (const apostila of missingVades) {
       // Enfileira cada geração sequencialmente no background para evitar concorrência e sobrecarga de API (Claude Sonnet 5)
       queueGenerationTask(async () => {
-        return generateVadeMecumAction(apostila.id, true);
+        return generateVadeMecumCore(apostila.id, true);
       })
         .then((res) => {
           console.log(`[VADE MECUM CHECK] Geração automática sequencial para "${apostila.title}" concluída:`, res.success);

@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 
 export async function getInventory() {
+  const user = await getUser();
+  if (!user) return { success: false, error: "Usuário não autenticado." };
+
   try {
     const count = await prisma.inventoryItem.count();
     

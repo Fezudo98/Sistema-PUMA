@@ -24,7 +24,7 @@ export default async function SimuladoReviewPage({ params }: { params: { id: str
     }
   });
 
-  if (!simulado) redirect("/instructor");
+  if (!simulado || simulado.instructorId !== user.userId) redirect("/instructor");
 
   // Calculate student scores for Podium
   const studentScores: Record<string, { name: string; score: number; answers: number; avgTime: number; totalTime: number; corrects: number; incorrects: number; avatarUrl?: string | null }> = {};
