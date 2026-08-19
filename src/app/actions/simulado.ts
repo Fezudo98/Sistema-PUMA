@@ -97,7 +97,7 @@ export async function createSimulado(data: {
       data: {
         codigoSala,
         instructorId: user.userId,
-        status: data.tipo === "SPECIAL" ? "ACTIVE" : "WAITING", // SPECIAL já nasce ACTIVE
+        status: (data.tipo === "SPECIAL" || data.tipo === "PRESENTATION") ? "ACTIVE" : "WAITING", // SPECIAL e PRESENTATION já nascem ACTIVE
         tipo: data.tipo || "LIVE",
         expiresAt: data.expiresAt || null,
         apostilaName: data.apostilaName,

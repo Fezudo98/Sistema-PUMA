@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import Image from "next/image";
-import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy, Shield } from "lucide-react";
+import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy, Shield, Presentation } from "lucide-react";
 import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { prisma } from '@/lib/prisma';
@@ -88,9 +88,19 @@ export default async function InstructorDashboard() {
 
   // Fetch Especiais for this instructor
   const especiais = await prisma.simulado.findMany({
-    where: { 
+    where: {
       instructorId: user.userId,
       tipo: "SPECIAL"
+    },
+    include: { _count: { select: { questions: true } } },
+    orderBy: { createdAt: "desc" }
+  });
+
+  // Fetch Apresentações (Modo Apresentação) for this instructor
+  const apresentacoes = await prisma.simulado.findMany({
+    where: {
+      instructorId: user.userId,
+      tipo: "PRESENTATION"
     },
     include: { _count: { select: { questions: true } } },
     orderBy: { createdAt: "desc" }
@@ -152,6 +162,7 @@ export default async function InstructorDashboard() {
               <TabsTrigger value="relatorios" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-purple-600 data-[state=active]:text-heading font-bold text-muted-foreground">Relatórios</TabsTrigger>
               <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Ao Vivo</TabsTrigger>
               <TabsTrigger value="especiais" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-purple-600 data-[state=active]:text-heading font-bold text-muted-foreground">Especiais</TabsTrigger>
+              <TabsTrigger value="apresentacoes" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-amber-600 data-[state=active]:text-heading font-bold text-muted-foreground">Apresentações</TabsTrigger>
               <TabsTrigger value="alunos" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Tropa</TabsTrigger>
               <TabsTrigger value="materiais" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Materiais</TabsTrigger>
               <TabsTrigger value="inventario" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Inventário</TabsTrigger>
@@ -159,6 +170,12 @@ export default async function InstructorDashboard() {
             </TabsList>
             
             <div className="flex gap-2 w-full lg:w-auto">
+              <Link href="/instructor/simulado/presentation/new" className="flex-1 lg:flex-none">
+                <Button className="w-full bg-amber-600 hover:bg-amber-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                  <Presentation className="w-5 h-5 mr-1 sm:mr-2" />
+                  Apresentação
+                </Button>
+              </Link>
               <Link href="/instructor/simulado/special/new" className="flex-1 lg:flex-none">
                 <Button className="w-full bg-purple-600 hover:bg-purple-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.4)]">
                   <Target className="w-5 h-5 mr-1 sm:mr-2" />
@@ -299,6 +316,60 @@ export default async function InstructorDashboard() {
                         <Link href={`/instructor/painel/${simulado.id}/review`} className="flex-1">
                           <Button className="w-full font-bold bg-purple-600 hover:bg-purple-500 text-heading shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                             Resultados da Missão
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="apresentacoes" className="mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {apresentacoes.length === 0 && (
+                <div className="col-span-full py-20 bg-card/50 border border-border rounded-xl text-center shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                  <Presentation className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-heading mb-2 uppercase tracking-widest">Nenhuma Apresentação</h3>
+                  <p className="text-muted-foreground mb-6">Conduza a turma sem precisar de alunos conectados: você mesmo marca as respostas na tela.</p>
+                  <Link href="/instructor/simulado/presentation/new">
+                    <Button className="bg-amber-600 hover:bg-amber-500 font-bold shadow-[0_0_20px_rgba(245,158,11,0.3)] h-12 px-8">
+                      Criar Apresentação
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
+              {apresentacoes.map(simulado => {
+                const isFinished = simulado.status === "FINISHED";
+
+                return (
+                  <Card key={simulado.id} className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:border-amber-500/50 hover:bg-card/60 transition-all group">
+                    <CardHeader className="pb-3 border-b border-border mb-3 relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 group-hover:bg-amber-400 transition-colors"></div>
+                      <div className="flex justify-between items-start pl-2">
+                        <div className="min-w-0">
+                          <CardDescription className="text-xs font-black tracking-widest uppercase text-amber-500 mb-1">MODO APRESENTAÇÃO</CardDescription>
+                          <CardTitle className="text-base font-bold text-heading line-clamp-2" title={simulado.apostilaName || ""}>
+                            {formatApostilaTitle(simulado.apostilaName || "Apresentação")}
+                          </CardTitle>
+                        </div>
+                        <span className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider border ${
+                          isFinished ? "bg-card text-muted-foreground border-border" : "bg-emerald-900/30 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] animate-pulse"
+                        }`}>
+                          {isFinished ? "Encerrada" : "Em Andamento"}
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                        <span className="flex items-center"><Target className="w-4 h-4 mr-2 text-amber-500"/> {simulado._count.questions} Questões</span>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Link href={isFinished ? `/instructor/apresentacao/${simulado.id}/review` : `/instructor/apresentacao/${simulado.id}`} className="flex-1">
+                          <Button className={`w-full font-bold shadow-[0_0_15px_rgba(0,0,0,0.5)] ${isFinished ? "bg-amber-600 hover:bg-amber-500 text-heading" : "bg-emerald-600 hover:bg-emerald-500 text-heading animate-pulse"}`}>
+                            {isFinished ? "Ver Resultado" : <><Play className="w-4 h-4 mr-2" /> Continuar Apresentação</>}
                           </Button>
                         </Link>
                       </div>

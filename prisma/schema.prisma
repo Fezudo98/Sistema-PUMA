@@ -66,6 +66,7 @@ model Question {
   appealedBy     String?
   appealResponse String?
   answers        Answer[]
+  presentationAnswer Int? // Marcação do instrutor no Modo Apresentação (índice da alternativa que a turma escolheu)
 
   @@index([simuladoId])
 }
