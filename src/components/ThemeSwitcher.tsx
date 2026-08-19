@@ -69,7 +69,7 @@ export function ThemeSwitcher({ hasRaioUnlocked = false, hasBepiUnlocked = false
         )}
         {hasChoqueUnlocked && (
           <DropdownMenuItem onClick={() => setTheme("choque")} className="cursor-pointer font-black text-muted-foreground hover:text-foreground">
-            <ChoqueSkullIcon className="mr-2 h-4 w-4 text-red-600" />
+            <img src="/badges/choque-emblem.png" alt="" className="mr-2 h-5 w-5 rounded object-cover shrink-0" />
             <span>Modo Choque (CHOQUE) 💀</span>
           </DropdownMenuItem>
         )}

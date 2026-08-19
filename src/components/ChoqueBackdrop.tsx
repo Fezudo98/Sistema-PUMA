@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { ChoqueSkullIcon } from "@/components/PatentIcons";
 
 // Faixa decorativa fixa no rodapé da tela: skyline urbano sitiado, facho de holofote
-// de vigia, concertina no horizonte e a caveira do Choque como marca d'água — só
-// visível no tema CHOQUE e em opacidade baixa pra não atrapalhar leitura.
+// de vigia, concertina no horizonte, uma faixa de camuflado digital (a mesma paleta
+// preto/cinza/branco das viaturas do Choque) na base e o emblema oficial do Choque
+// como marca d'água — só visível no tema CHOQUE e em opacidade baixa pra não
+// atrapalhar leitura.
 export function ChoqueBackdrop() {
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -31,7 +32,17 @@ export function ChoqueBackdrop() {
             <stop offset="0%" stopColor="#ececec" stopOpacity="0.55" />
             <stop offset="100%" stopColor="#ececec" stopOpacity="0" />
           </linearGradient>
+          <pattern id="choqueBackdropCamo" width="28" height="9" patternUnits="userSpaceOnUse">
+            <rect width="28" height="9" fill="#0c0c0d" />
+            <polygon points="0,0 9,0 6,9 0,7" fill="#d4d4d8" />
+            <polygon points="9,0 17,0 20,9 12,9" fill="#52525b" />
+            <polygon points="17,0 22,0 28,3 28,9 22,9" fill="#d4d4d8" />
+            <polygon points="0,7 6,9 4,9 0,9" fill="#52525b" />
+          </pattern>
         </defs>
+
+        {/* Faixa de camuflado digital na base, como o rodapé camuflado das viaturas */}
+        <rect x="0" y="192" width="1200" height="8" fill="url(#choqueBackdropCamo)" />
 
         {/* Facho de holofote de vigia */}
         <polygon points="1130,0 930,200 1200,200 1200,30" fill="url(#choqueBeam)" />
@@ -81,8 +92,12 @@ export function ChoqueBackdrop() {
         />
       </svg>
 
-      {/* Caveira do Choque como marca d'água */}
-      <ChoqueSkullIcon className="absolute left-1/2 top-1 -translate-x-1/2 w-16 h-16 sm:w-24 sm:h-24 text-[#dc2626] opacity-[0.07]" />
+      {/* Emblema oficial do Choque como marca d'água */}
+      <img
+        src="/badges/choque-emblem.png"
+        alt=""
+        className="absolute left-1/2 top-1 -translate-x-1/2 w-16 h-14 sm:w-24 sm:h-20 object-contain opacity-[0.09]"
+      />
     </div>
   );
 }

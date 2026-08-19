@@ -20,6 +20,7 @@ import { BepiEffect } from "@/components/BepiEffect";
 import { SertaoBackdrop } from "@/components/SertaoBackdrop";
 import { ChoqueEffect } from "@/components/ChoqueEffect";
 import { ChoqueBackdrop } from "@/components/ChoqueBackdrop";
+import { ChoqueCamoBar } from "@/components/ChoqueCamoBar";
 
 export default function RootLayout({
   children,
@@ -42,6 +43,7 @@ export default function RootLayout({
         >
           <SertaoBackdrop />
           <ChoqueBackdrop />
+          <ChoqueCamoBar />
           {children}
           <LightningEffect />
           <BepiEffect />

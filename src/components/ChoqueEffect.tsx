@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "next-themes";
-import { ChoqueSkullIcon } from "@/components/PatentIcons";
 
 function StaticNoiseCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -127,9 +126,9 @@ export function ChoqueEffect() {
       <div className="absolute inset-0 bg-red-600 animate-[flash_0.6s_ease-out_forwards]" style={{ mixBlendMode: "overlay" }} />
       <div className="absolute inset-0 bg-white animate-[flash_0.3s_ease-out_forwards]" style={{ mixBlendMode: "overlay" }} />
 
-      {/* Caveira do Choque em impacto */}
-      <div className="relative z-10 w-[260px] h-[260px] text-red-600 drop-shadow-[0_0_90px_rgba(185,28,28,0.9)] animate-[strike_0.8s_ease-in-out_forwards]">
-        <ChoqueSkullIcon className="w-full h-full" />
+      {/* Emblema do Choque em impacto */}
+      <div className="relative z-10 w-[260px] h-[240px] drop-shadow-[0_0_90px_rgba(185,28,28,0.9)] animate-[strike_0.8s_ease-in-out_forwards]">
+        <img src="/badges/choque-emblem.png" alt="Emblema CP Choque" className="w-full h-full object-contain" />
       </div>
     </div>
   );

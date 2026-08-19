@@ -289,7 +289,9 @@
 }
 
 /* Fundo ambientado: alerta vermelho + brilho âmbar de faixa de isolamento + névoa
-   de chumbo urbana + granulado fino, remetendo ao cerco tático do Choque. */
+   de chumbo urbana + camuflado digital (mesma paleta preto/cinza/branco das viaturas,
+   em opacidade quase imperceptível) + granulado fino, remetendo ao cerco tático do
+   Choque. */
 .choque body {
   background-color: var(--background);
   background-image:
@@ -297,9 +299,10 @@
     radial-gradient(ellipse 55% 35% at 100% -5%, rgba(245, 158, 11, 0.10), transparent 58%),
     radial-gradient(ellipse 65% 45% at 100% 105%, rgba(82, 82, 91, 0.20), transparent 62%),
     linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.35) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='9'%3E%3Cpolygon points='0,0 9,0 6,9 0,7' fill='rgba(212,212,216,0.035)'/%3E%3Cpolygon points='9,0 17,0 20,9 12,9' fill='rgba(82,82,91,0.035)'/%3E%3Cpolygon points='17,0 22,0 28,3 28,9 22,9' fill='rgba(212,212,216,0.035)'/%3E%3Cpolygon points='0,7 6,9 4,9 0,9' fill='rgba(82,82,91,0.035)'/%3E%3C/svg%3E"),
     repeating-radial-gradient(circle at 0 0, rgba(236, 236, 236, 0.025) 0, rgba(236, 236, 236, 0.025) 1px, transparent 1px, transparent 4px);
-  background-size: auto, auto, auto, auto, 7px 7px;
-  background-attachment: fixed, fixed, fixed, fixed, fixed;
+  background-size: auto, auto, auto, auto, 28px 9px, 7px 7px;
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
 }
 
 @layer base {
