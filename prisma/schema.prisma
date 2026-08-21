@@ -86,7 +86,7 @@ model Answer {
 
   @@index([studentId])
   @@index([questionId])
-  @@index([questionId, studentId])
+  @@unique([questionId, studentId])
   @@index([isRaffle])
   @@index([studentId, isCorrect])
 }

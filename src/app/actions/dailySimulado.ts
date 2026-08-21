@@ -604,18 +604,42 @@ export async function saveSelfPacedAnswer(data: {
       safeTempoGasto = question.tempoLimite;
     }
 
-    // 3. Salvar no banco
-    await prisma.answer.create({
-      data: {
-        questionId,
-        studentId,
-        alternativa,
-        tempoGasto: safeTempoGasto,
-        isCorrect,
-        pontuacao,
-        isRaffle: false
+    // 3. Salvar no banco. A constraint única (questionId, studentId) é a garantia
+    // final contra respostas duplicadas chegando quase ao mesmo tempo (ex.: retry
+    // de rede duplicando a chamada antes que o check de "existingAnswer" acima
+    // enxergasse a primeira gravação). Nesse caso, devolve a resposta já salva como
+    // sucesso (idempotente) em vez de erro — igual ao tratamento acima — para não
+    // travar o aluno em loop de reenvio.
+    try {
+      await prisma.answer.create({
+        data: {
+          questionId,
+          studentId,
+          alternativa,
+          tempoGasto: safeTempoGasto,
+          isCorrect,
+          pontuacao,
+          isRaffle: false
+        }
+      });
+    } catch (err: any) {
+      if (err?.code === 'P2002') {
+        const alreadySaved = await prisma.answer.findFirst({
+          where: { questionId, studentId },
+          include: { question: true }
+        });
+        if (alreadySaved) {
+          return {
+            success: true,
+            isCorrect: alreadySaved.isCorrect,
+            correta: alreadySaved.question.correta,
+            justificativa: alreadySaved.question.justificativa,
+            pontuacao: alreadySaved.pontuacao
+          };
+        }
       }
-    });
+      throw err;
+    }
 
     return {
       success: true,

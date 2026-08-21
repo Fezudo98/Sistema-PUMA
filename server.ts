@@ -1153,6 +1153,7 @@ app.prepare().then(() => {
 
       let pontuacao = 0;
       let raceJustWon = false;
+      let teamJustEliminated: string | null = null;
 
       if (isRaceMode) {
         // O primeiro membro de cada equipe a responder "define" a equipe naquela
@@ -1161,6 +1162,7 @@ app.prepare().then(() => {
           room.teamFirstAnswered.add(myTeamId);
           if (!isCorrect) {
             room.disqualifiedTeams.add(myTeamId);
+            teamJustEliminated = myTeamId;
           }
         }
         const teamDisqualified = myTeamId ? room.disqualifiedTeams.has(myTeamId) : false;
@@ -1182,21 +1184,61 @@ app.prepare().then(() => {
         pontuacao = 100 + bonus;
       }
 
+      let safeTempoGasto = Number(tempoGasto) || 0;
+      if (safeTempoGasto < 0) safeTempoGasto = 0;
+      // Clamp to a reasonable max (twice the time limit just in case of lag/pause bugs)
+      if (safeTempoGasto > room.currentQuestion.tempoLimite * 2) {
+        safeTempoGasto = room.currentQuestion.tempoLimite;
+      }
+
+      // A constraint única (questionId, studentId) no banco é a garantia final contra
+      // respostas duplicadas do mesmo aluno chegando quase ao mesmo tempo (ex.: duplo
+      // toque em conexão instável, driblando o check de "existingAnswer" acima). Por
+      // isso os efeitos em memória (pontuação, streak, corrida) só são aplicados
+      // depois que a gravação for confirmada — uma tentativa duplicada nunca pontua.
+      try {
+        await prisma.answer.create({
+          data: {
+            questionId,
+            studentId,
+            alternativa,
+            tempoGasto: safeTempoGasto,
+            isCorrect,
+            pontuacao,
+            isRaffle: !!room.raffleWinnerId
+          }
+        });
+      } catch (err: any) {
+        if (err?.code === 'P2002') {
+          console.log(`[Socket] Resposta duplicada (corrida de eventos) ignorada para o aluno ${studentId} na questão ${questionId}.`);
+          return;
+        }
+        throw err;
+      }
+
+      if (teamJustEliminated) {
+        const eliminatedTeam = room.teams?.find(t => t.id === teamJustEliminated);
+        io.to(roomCode).emit('team_eliminated', {
+          teamId: teamJustEliminated,
+          teamName: eliminatedTeam?.name || null
+        });
+      }
+
       // Atualiza o Ranking Acumulado e a Sequência (Streak)
       if (room.studentScores[studentId]) {
         room.studentScores[studentId].score += pontuacao;
-        
+
         const currentStreak = room.studentScores[studentId].streak;
         const studentName = room.studentScores[studentId].name.split(' ')[0]; // Pega só o primeiro nome
         let newStreak = 0;
-        
+
         if (!room.pendingNotifications) {
           room.pendingNotifications = [];
         }
 
         if (isCorrect) {
           newStreak = currentStreak > 0 ? currentStreak + 1 : 1;
-          
+
           if (currentStreak <= -5) {
             room.pendingNotifications.push(`🧊 ${studentName} quebrou o gelo e se recuperou de uma sequência de ${Math.abs(currentStreak)} erros!`);
           } else if (newStreak === 7) {
@@ -1208,35 +1250,16 @@ app.prepare().then(() => {
           }
         } else {
           newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
-          
+
           if (currentStreak >= 7) {
             room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
           } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
             room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
           }
         }
-        
+
         room.studentScores[studentId].streak = newStreak;
       }
-
-      let safeTempoGasto = Number(tempoGasto) || 0;
-      if (safeTempoGasto < 0) safeTempoGasto = 0;
-      // Clamp to a reasonable max (twice the time limit just in case of lag/pause bugs)
-      if (safeTempoGasto > room.currentQuestion.tempoLimite * 2) {
-        safeTempoGasto = room.currentQuestion.tempoLimite;
-      }
-
-      await prisma.answer.create({
-        data: {
-          questionId,
-          studentId,
-          alternativa,
-          tempoGasto: safeTempoGasto,
-          isCorrect,
-          pontuacao,
-          isRaffle: !!room.raffleWinnerId
-        }
-      });
 
       if (!room.answeredStudentIds) room.answeredStudentIds = [];
       if (!room.answeredStudentIds.includes(studentId)) {
