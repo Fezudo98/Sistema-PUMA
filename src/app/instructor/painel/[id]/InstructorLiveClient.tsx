@@ -186,7 +186,18 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
 
     s.on("team_eliminated", (data) => {
       const id = Math.random().toString(36).substr(2, 9);
-      const text = `💀 ${data.teamName || "Uma equipe"} errou primeiro e foi eliminada dessa questão!`;
+      const who = data.studentName ? `${data.studentName} (${data.teamName || "equipe"})` : (data.teamName || "Uma equipe");
+      const text = `💀 ${who} errou primeiro e foi eliminada dessa questão!`;
+      setNotifications(prev => [...prev.slice(-4), { id, text }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 6000);
+    });
+
+    s.on("team_advancing", (data) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      const who = data.studentName ? `${data.studentName} (${data.teamName || "equipe"})` : (data.teamName || "Uma equipe");
+      const text = `✅ ${who} acertou e segue viva na corrida!`;
       setNotifications(prev => [...prev.slice(-4), { id, text }]);
       setTimeout(() => {
         setNotifications(prev => prev.filter(n => n.id !== id));

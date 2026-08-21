@@ -43,6 +43,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const [raceMode, setRaceMode] = useState<boolean>(false);
   const [raceLocked, setRaceLocked] = useState<{ studentId: string; name: string; teamId: string | null; teamName: string | null } | null>(null);
   const [myTeamEliminated, setMyTeamEliminated] = useState<boolean>(false);
+  // true assim que a PRÓPRIA equipe já teve seu primeiro respondente (certo ou
+  // errado) — bloqueia o botão de resposta pros demais colegas dessa equipe.
+  const [myTeamLocked, setMyTeamLocked] = useState<boolean>(false);
 
   // Refs to avoid stale state in Socket.io event listeners
   const selectedAltRef = useRef<number>(-1);
@@ -51,6 +54,8 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   const startTimeRef = useRef<number>(0);
   const raffleWinnerRef = useRef<any>(null);
   const studentTeamsRef = useRef<Record<string, string>>({});
+  const raceLockedRef = useRef<any>(null);
+  const myTeamLockedRef = useRef<boolean>(false);
 
   useEffect(() => {
     selectedAltRef.current = selectedAlt;
@@ -75,6 +80,14 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
   useEffect(() => {
     studentTeamsRef.current = studentTeams;
   }, [studentTeams]);
+
+  useEffect(() => {
+    raceLockedRef.current = raceLocked;
+  }, [raceLocked]);
+
+  useEffect(() => {
+    myTeamLockedRef.current = myTeamLocked;
+  }, [myTeamLocked]);
 
   // Limpa o toast de badge após 6 segundos
   useEffect(() => {
@@ -210,6 +223,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setAnsweredStudentIds([]);
       setRaceLocked(null);
       setMyTeamEliminated(false);
+      setMyTeamLocked(false);
 
       if (!questionData.raffleWinnerId) {
         setRaffleWinner(null);
@@ -230,9 +244,25 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       const myTeamId = studentTeamsRef.current[user.userId || user.id];
       if (data.teamId === myTeamId) {
         setMyTeamEliminated(true);
+        setMyTeamLocked(true);
       }
       const id = Math.random().toString(36).substr(2, 9);
-      const text = `💀 ${data.teamName || "Uma equipe"} errou primeiro e foi eliminada dessa questão!`;
+      const who = data.studentName ? `${data.studentName} (${data.teamName || "equipe"})` : (data.teamName || "Uma equipe");
+      const text = `💀 ${who} errou primeiro e foi eliminada dessa questão!`;
+      setNotifications(prev => [...prev.slice(-4), { id, text }]);
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 6000);
+    });
+
+    s.on("team_advancing", (data) => {
+      const myTeamId = studentTeamsRef.current[user.userId || user.id];
+      if (data.teamId === myTeamId) {
+        setMyTeamLocked(true);
+      }
+      const id = Math.random().toString(36).substr(2, 9);
+      const who = data.studentName ? `${data.studentName} (${data.teamName || "equipe"})` : (data.teamName || "Uma equipe");
+      const text = `✅ ${who} acertou e segue viva na corrida!`;
       setNotifications(prev => [...prev.slice(-4), { id, text }]);
       setTimeout(() => {
         setNotifications(prev => prev.filter(n => n.id !== id));
@@ -295,7 +325,8 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
       // Auto-confirm option if selected but not confirmed yet
       const isObserver = raffleWinnerRef.current && raffleWinnerRef.current.id !== user.userId;
-      if (selectedAltRef.current !== -1 && !hasConfirmedRef.current && currentQuestionRef.current && !isObserver) {
+      const isRaceLockedOut = !!raceLockedRef.current || myTeamLockedRef.current;
+      if (selectedAltRef.current !== -1 && !hasConfirmedRef.current && currentQuestionRef.current && !isObserver && !isRaceLockedOut) {
         setHasConfirmed(true);
         const timeGasto = Math.max(0, Math.floor((Date.now() - startTimeRef.current) / 1000));
         const payload = {
@@ -332,6 +363,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setAnsweredStudentIds([]);
       setRaceLocked(null);
       setMyTeamEliminated(false);
+      setMyTeamLocked(false);
       try {
         localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
       } catch (e) {}
@@ -355,12 +387,14 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
 
   const handleSelectAlternative = (index: number) => {
     if (hasConfirmed || questionEndedData) return; // Already confirmed or ended
-    
+    if (raceMode && (raceLocked || myTeamLocked)) return; // Corrida já decidida pra mim/minha equipe
+
     setSelectedAlt(index);
   };
 
   const handleConfirmAnswer = () => {
     if (selectedAlt === -1 || hasConfirmed || questionEndedData || isTimeUp) return;
+    if (raceMode && (raceLocked || myTeamLocked)) return; // Corrida já decidida pra mim/minha equipe
 
     setHasConfirmed(true);
     const timeGasto = Math.floor((Date.now() - startTime) / 1000);
@@ -636,8 +670,16 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   <div>
                     <p className="text-amber-400 font-black text-sm uppercase tracking-widest">Corrida Encerrada</p>
                     <p className="text-muted-foreground text-xs mt-0.5">
-                      <strong className="text-heading">{raceLocked.name}</strong>{raceLocked.teamName ? ` (${raceLocked.teamName})` : ""} já marcou o ponto. Sua resposta ainda conta pro seu histórico, mas não pontua mais nesta questão.
+                      <strong className="text-heading">{raceLocked.name}</strong>{raceLocked.teamName ? ` (${raceLocked.teamName})` : ""} já marcou o ponto. As respostas não são mais aceitas nesta questão.
                     </p>
+                  </div>
+                </div>
+              ) : myTeamLocked ? (
+                <div className="mb-4 p-4 bg-blue-900/20 border border-blue-500/50 rounded-lg flex items-center gap-3 shadow-[0_0_15px_rgba(59,130,246,0.15)] animate-in fade-in zoom-in-95">
+                  <Zap className="w-7 h-7 text-blue-400 shrink-0" />
+                  <div>
+                    <p className="text-blue-400 font-black text-sm uppercase tracking-widest">Sua Equipe Já Respondeu</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">Um colega já respondeu e acertou por vocês. Sua equipe segue viva na corrida, mas você não pode mais responder essa questão.</p>
                   </div>
                 </div>
               ) : (
@@ -744,12 +786,14 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                   btnClass = "bg-blue-600 border-blue-500 text-heading shadow-[0_0_20px_rgba(37,99,235,0.4)]";
                 }
 
+                const isRaceLockedOut = raceMode && (!!raceLocked || myTeamLocked);
+
                 return (
                   <button
                     key={index}
                     onClick={() => handleSelectAlternative(index)}
-                    disabled={hasConfirmed || isTimeUp || isEnded || isObserver}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex flex-col gap-2 ${btnClass} ${isObserver && !isEnded ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                    disabled={hasConfirmed || isTimeUp || isEnded || isObserver || isRaceLockedOut}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex flex-col gap-2 ${btnClass} ${(isObserver || isRaceLockedOut) && !isEnded ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
                   >
                     <div className="flex gap-4 items-start w-full">
                       <span className={`flex shrink-0 items-center justify-center w-8 h-8 rounded-full text-sm font-bold border ${
@@ -779,7 +823,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
               })}
             </div>
 
-            {selectedAlt !== -1 && !hasConfirmed && !questionEndedData && !isTimeUp && (
+            {selectedAlt !== -1 && !hasConfirmed && !questionEndedData && !isTimeUp && !(raceMode && (raceLocked || myTeamLocked)) && (
               <div className="flex flex-col gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2">
                 <Button 
                   onClick={handleConfirmAnswer} 
