@@ -382,7 +382,9 @@ interface RoomState {
   raceMode?: boolean;
   raceWinner: { studentId: string; name: string; teamId: string | null } | null;
   disqualifiedTeams: Set<string>;
-  teamFirstAnswered: Set<string>;
+  // Quem foi o primeiro de cada equipe a responder nessa questão (chave = teamId),
+  // certo ou errado — é quem "decide" a sorte da equipe no Modo Corrida.
+  teamFirstAnswered: Map<string, { studentId: string; name: string }>;
 }
 const rooms = new Map<string, RoomState>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
@@ -618,7 +620,7 @@ app.prepare().then(() => {
           raceMode: !!dbSimulado?.isRaceMode,
           raceWinner: null,
           disqualifiedTeams: new Set(),
-          teamFirstAnswered: new Set()
+          teamFirstAnswered: new Map()
         });
 
         if (dbSimulado) {
@@ -820,7 +822,7 @@ app.prepare().then(() => {
       room.answeredStudentIds = [];
       room.raceWinner = null;
       room.disqualifiedTeams = new Set();
-      room.teamFirstAnswered = new Set();
+      room.teamFirstAnswered = new Map();
 
       await prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } });
 
@@ -887,7 +889,7 @@ app.prepare().then(() => {
         currentRoom.answeredStudentIds = [];
         currentRoom.raceWinner = null;
         currentRoom.disqualifiedTeams = new Set();
-        currentRoom.teamFirstAnswered = new Set();
+        currentRoom.teamFirstAnswered = new Map();
 
         await prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } });
 
@@ -1119,7 +1121,7 @@ app.prepare().then(() => {
         room.answeredStudentIds = [];
         room.raceWinner = null;
         room.disqualifiedTeams = new Set();
-        room.teamFirstAnswered = new Set();
+        room.teamFirstAnswered = new Map();
 
         io.to(roomCode).emit('question_cancelled');
       }
@@ -1135,6 +1137,18 @@ app.prepare().then(() => {
 
       if (room.raffleWinnerId && room.raffleWinnerId !== studentId) return;
 
+      const isRaceMode = !!room.isTeamCompetition && !!room.raceMode;
+      const myTeamId = isRaceMode ? (room.studentTeams?.[studentId] || null) : null;
+
+      // Trava do Modo Corrida: ninguém mais responde depois que a corrida já foi
+      // vencida (por qualquer equipe) nem depois que a PRÓPRIA equipe já teve seu
+      // primeiro respondente — certo ou errado, só ele decide a sorte da equipe
+      // naquela questão. Checagem "fast-path" pra nem consultar o banco à toa.
+      const isRaceLockedOut = () =>
+        isRaceMode && (!!room.raceWinner || (!!myTeamId && room.teamFirstAnswered.has(myTeamId)));
+
+      if (isRaceLockedOut()) return;
+
       // Prevent duplicate answers
       const existingAnswer = await prisma.answer.findFirst({
         where: {
@@ -1147,28 +1161,31 @@ app.prepare().then(() => {
         return;
       }
 
+      // Checagem final (pós-await): garante que dois colegas da mesma equipe, ou
+      // dois alunos disputando o mesmo acerto, não "decidam" a equipe/corrida duas
+      // vezes caso cheguem quase juntos (a checagem acima já pode estar
+      // desatualizada por causa do await de cima).
+      if (isRaceLockedOut()) return;
+
       const isCorrect = Number(room.currentQuestion.correta) === Number(alternativa);
-      const isRaceMode = !!room.isTeamCompetition && !!room.raceMode;
-      const myTeamId = isRaceMode ? (room.studentTeams?.[studentId] || null) : null;
 
       let pontuacao = 0;
       let raceJustWon = false;
-      let teamJustEliminated: string | null = null;
+      let teamJustDecided: { teamId: string; isCorrect: boolean } | null = null;
 
       if (isRaceMode) {
         // O primeiro membro de cada equipe a responder "define" a equipe naquela
         // questão: se ele errar, a equipe fica fora da corrida (as outras seguem).
-        if (myTeamId && !room.teamFirstAnswered.has(myTeamId)) {
-          room.teamFirstAnswered.add(myTeamId);
+        if (myTeamId) {
+          room.teamFirstAnswered.set(myTeamId, { studentId, name: room.studentScores[studentId]?.name || '' });
+          teamJustDecided = { teamId: myTeamId, isCorrect };
           if (!isCorrect) {
             room.disqualifiedTeams.add(myTeamId);
-            teamJustEliminated = myTeamId;
           }
         }
-        const teamDisqualified = myTeamId ? room.disqualifiedTeams.has(myTeamId) : false;
 
         // Só o primeiro acerto GERAL (entre todas as equipes ainda na corrida) pontua.
-        if (isCorrect && !room.raceWinner && !teamDisqualified) {
+        if (isCorrect && !room.raceWinner) {
           pontuacao = RACE_WIN_BONUS;
           room.raceWinner = {
             studentId,
@@ -1216,12 +1233,22 @@ app.prepare().then(() => {
         throw err;
       }
 
-      if (teamJustEliminated) {
-        const eliminatedTeam = room.teams?.find(t => t.id === teamJustEliminated);
-        io.to(roomCode).emit('team_eliminated', {
-          teamId: teamJustEliminated,
-          teamName: eliminatedTeam?.name || null
-        });
+      if (teamJustDecided) {
+        const decidedTeam = room.teams?.find(t => t.id === teamJustDecided!.teamId);
+        const responderName = room.studentScores[studentId]?.name || '';
+        if (teamJustDecided.isCorrect) {
+          io.to(roomCode).emit('team_advancing', {
+            teamId: teamJustDecided.teamId,
+            teamName: decidedTeam?.name || null,
+            studentName: responderName
+          });
+        } else {
+          io.to(roomCode).emit('team_eliminated', {
+            teamId: teamJustDecided.teamId,
+            teamName: decidedTeam?.name || null,
+            studentName: responderName
+          });
+        }
       }
 
       // Atualiza o Ranking Acumulado e a Sequência (Streak)
