@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
-import { FileUp, Loader2, Settings, ArrowLeft, BookOpen, Save } from "lucide-react";
+import { FileUp, Loader2, Settings, ArrowLeft, BookOpen, Save, Sparkles, Target } from "lucide-react";
 import Link from "next/link";
 import { formatApostilaTitle } from "@/lib/utils";
 
@@ -19,12 +19,20 @@ interface Apostila {
 export default function NovoSimulado() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
+
+  // Modo de Criação: gerar questões com IA a partir do material didático,
+  // ou extrair questões já prontas de um material (PDF de questões).
+  const [mode, setMode] = useState<"ai" | "extract">("ai");
+
   // Apostilas State
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [selectedApostilaId, setSelectedApostilaId] = useState<string>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [saveApostila, setSaveApostila] = useState(true);
+
+  // Extract Mode State (extrair questões de material já pronto)
+  const [questionsFile, setQuestionsFile] = useState<File | null>(null);
+  const [refApostilaId, setRefApostilaId] = useState<string>("nenhuma");
 
   // Settings State
   const [qtd, setQtd] = useState("5");
@@ -67,70 +75,100 @@ export default function NovoSimulado() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedApostilaId === "upload" && !file) return alert("Selecione um arquivo PDF.");
+
+    if (mode === "ai") {
+      if (selectedApostilaId === "upload" && !file) return alert("Selecione um arquivo PDF.");
+    } else {
+      if (!questionsFile) return alert("Selecione o arquivo PDF com as questões já prontas.");
+    }
 
     setLoading(true);
     try {
-      const formData = new FormData();
+      let data: { questions: any[]; apostilaName?: string };
       let nameOfApostila = "";
-      
-      if (selectedApostilaId === "upload") {
-        formData.append("pdf", file as File);
-        nameOfApostila = file ? file.name : "Upload";
-        
-        // Se for um novo arquivo e marcou para salvar
-        if (saveApostila) {
-          try {
-            const uploadData = new FormData();
-            uploadData.append("pdf", file as File);
-            await fetch("/api/apostilas", { method: "POST", body: uploadData });
-          } catch (err) {
-            console.error("Erro ao salvar apostila:", err);
+
+      if (mode === "ai") {
+        const formData = new FormData();
+
+        if (selectedApostilaId === "upload") {
+          formData.append("pdf", file as File);
+          nameOfApostila = file ? file.name : "Upload";
+
+          // Se for um novo arquivo e marcou para salvar
+          if (saveApostila) {
+            try {
+              const uploadData = new FormData();
+              uploadData.append("pdf", file as File);
+              await fetch("/api/apostilas", { method: "POST", body: uploadData });
+            } catch (err) {
+              console.error("Erro ao salvar apostila:", err);
+            }
           }
+        } else {
+          formData.append("apostilaId", selectedApostilaId);
+          const apoObj = apostilas.find(a => a.id === selectedApostilaId);
+          nameOfApostila = apoObj ? apoObj.title : "Apostila";
+        }
+
+        formData.append("qtd", qtd);
+        formData.append("dificuldade", dificuldade);
+        formData.append("tempo", tempo);
+        formData.append("topics", topics);
+
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          body: formData
+        });
+
+        try {
+          data = await response.json();
+        } catch (e) {
+          throw new Error(`Erro do servidor (${response.status}): o processamento demorou muito ou retornou resposta inválida.`);
+        }
+
+        if (!response.ok) {
+          throw new Error((data as any)?.error || "Erro ao gerar questões.");
         }
       } else {
-        formData.append("apostilaId", selectedApostilaId);
-        const apoObj = apostilas.find(a => a.id === selectedApostilaId);
-        nameOfApostila = apoObj ? apoObj.title : "Apostila";
-      }
+        // Modo Extração: aproveita as questões já prontas do material enviado
+        const formData = new FormData();
+        formData.append("pdf", questionsFile as File);
+        formData.append("apostilaId", refApostilaId);
 
-      formData.append("qtd", qtd);
-      formData.append("dificuldade", dificuldade);
-      formData.append("tempo", tempo);
-      formData.append("topics", topics);
+        const response = await fetch("/api/instructor/special-simulado", {
+          method: "POST",
+          body: formData
+        });
 
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        body: formData
-      });
+        try {
+          data = await response.json();
+        } catch (e) {
+          throw new Error(`Erro do servidor (${response.status}): o processamento demorou muito ou retornou resposta inválida.`);
+        }
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (e) {
-        throw new Error(`Erro do servidor (${response.status}): o processamento demorou muito ou retornou resposta inválida.`);
-      }
-      
-      if (!response.ok) {
-        throw new Error(data?.error || "Erro ao gerar questões.");
+        if (!response.ok) {
+          throw new Error((data as any)?.error || "Erro ao extrair questões.");
+        }
+
+        nameOfApostila = data.apostilaName || (questionsFile ? questionsFile.name : "Material de Questões");
       }
 
       localStorage.setItem("generated_questions", JSON.stringify(data.questions));
-      localStorage.setItem("simulado_config", JSON.stringify({ 
-        tempo: parseInt(tempo), 
-        isRaffleMode, 
-        dificuldade, 
-        apostilaName: nameOfApostila, 
-        topics,
+      localStorage.setItem("simulado_config", JSON.stringify({
+        tempo: parseInt(tempo),
+        isRaffleMode,
+        dificuldade,
+        apostilaName: nameOfApostila,
+        topics: mode === "ai" ? topics : undefined,
         isTeamCompetition,
         isRaceMode: isTeamCompetition ? isRaceMode : false,
         teamNames: isTeamCompetition ? teamNames.slice(0, teamCount) : undefined
       }));
-      
+
       router.push("/instructor/simulado/review");
     } catch (err: any) {
       setLoading(false);
-      alert("Erro ao gerar questões: " + (err.message || "Falha desconhecida."));
+      alert("Erro ao processar questões: " + (err.message || "Falha desconhecida."));
     }
   };
   return (
@@ -148,92 +186,188 @@ export default function NovoSimulado() {
           <CardHeader className="border-b border-border bg-card/80 p-6">
             <CardTitle className="text-2xl font-black text-heading uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">
               <FileUp className="w-6 h-6 text-blue-500 animate-pulse" />
-              Novo Simulado (IA)
+              Novo Simulado ao Vivo
             </CardTitle>
             <CardDescription className="text-muted-foreground font-medium">
-              Escolha uma apostila salva ou faça upload de um novo PDF para gerar as questões.
+              {mode === "ai"
+                ? "Escolha uma apostila salva ou faça upload de um novo PDF para gerar as questões com IA."
+                : "Envie um material já pronto (PDF de questões) para extrair as questões existentes."}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
-              
-              {/* Material Source Selection */}
+
+              {/* Modo de Criação */}
               <div className="space-y-3">
-                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-blue-500" />
-                  Fonte do Material Base
+                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                  Modo de Criação
                 </label>
-                
-                <Select value={selectedApostilaId} onValueChange={(v) => setSelectedApostilaId(v || "")}>
-                  <SelectTrigger className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500">
-                    <SelectValue placeholder="Selecione a origem do PDF" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border-border text-foreground">
-                    <SelectItem value="upload" className="font-bold text-blue-500 focus:bg-blue-950/40 focus:text-blue-400">
-                      + Fazer Upload de Novo Arquivo PDF
-                    </SelectItem>
-                    {apostilas.map(apo => (
-                      <SelectItem key={apo.id} value={apo.id} className="focus:bg-muted focus:text-heading">
-                        {formatApostilaTitle(apo.title)} (Salvo em {new Date(apo.createdAt).toLocaleDateString()})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setMode("ai")}
+                    className={`text-left p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                      mode === "ai"
+                        ? "border-blue-500 bg-blue-950/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                        : "border-border bg-background/40 hover:border-blue-500/40"
+                    }`}
+                  >
+                    <Sparkles className={`w-5 h-5 mb-2 ${mode === "ai" ? "text-blue-400" : "text-muted-foreground"}`} />
+                    <p className={`text-sm font-bold ${mode === "ai" ? "text-heading" : "text-muted-foreground"}`}>Gerar com IA</p>
+                    <p className="text-xs text-muted-foreground mt-1">A IA cria questões novas a partir do conteúdo didático de uma apostila.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode("extract")}
+                    className={`text-left p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                      mode === "extract"
+                        ? "border-blue-500 bg-blue-950/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                        : "border-border bg-background/40 hover:border-blue-500/40"
+                    }`}
+                  >
+                    <Target className={`w-5 h-5 mb-2 ${mode === "extract" ? "text-blue-400" : "text-muted-foreground"}`} />
+                    <p className={`text-sm font-bold ${mode === "extract" ? "text-heading" : "text-muted-foreground"}`}>Extrair de Material Pronto</p>
+                    <p className="text-xs text-muted-foreground mt-1">Envie um PDF que já contém as questões prontas e a IA apenas as extrai.</p>
+                  </button>
+                </div>
               </div>
 
-              {/* PDF Upload Area - Only visible if "upload" is selected */}
-              {selectedApostilaId === "upload" && (
-                <div className="space-y-3 bg-background/40 p-6 rounded-xl border border-border">
-                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
-                    Arquivo PDF
-                  </label>
-                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-card/40 hover:border-blue-500/50 transition-all bg-background/60 cursor-pointer">
-                    <Input 
-                      type="file" 
-                      accept="application/pdf"
-                      onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      className="hidden"
-                      id="pdf-upload"
-                    />
-                    <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
-                      <FileUp className="w-10 h-10 text-blue-500 mb-3 animate-bounce" />
-                      <span className="text-base font-bold text-muted-foreground">
-                        {file ? file.name : "Clique para selecionar ou arraste o PDF aqui"}
-                      </span>
+              {mode === "ai" && (
+                <>
+                  {/* Material Source Selection */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-blue-500" />
+                      Fonte do Material Base
                     </label>
+
+                    <Select value={selectedApostilaId} onValueChange={(v) => setSelectedApostilaId(v || "")}>
+                      <SelectTrigger className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500">
+                        <SelectValue placeholder="Selecione a origem do PDF" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border text-foreground">
+                        <SelectItem value="upload" className="font-bold text-blue-500 focus:bg-blue-950/40 focus:text-blue-400">
+                          + Fazer Upload de Novo Arquivo PDF
+                        </SelectItem>
+                        {apostilas.map(apo => (
+                          <SelectItem key={apo.id} value={apo.id} className="focus:bg-muted focus:text-heading">
+                            {formatApostilaTitle(apo.title)} (Salvo em {new Date(apo.createdAt).toLocaleDateString()})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  
-                  <div className="flex items-center gap-2 pt-2">
-                    <input 
-                      type="checkbox" 
-                      id="save-apostila" 
-                      checked={saveApostila} 
-                      onChange={e => setSaveApostila(e.target.checked)} 
-                      className="w-4 h-4 text-blue-600 bg-background border-border rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor="save-apostila" className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 cursor-pointer">
-                      <Save className="w-4 h-4 text-muted-foreground" />
-                      Salvar este PDF na biblioteca de Apostilas para uso futuro
+
+                  {/* PDF Upload Area - Only visible if "upload" is selected */}
+                  {selectedApostilaId === "upload" && (
+                    <div className="space-y-3 bg-background/40 p-6 rounded-xl border border-border">
+                      <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                        Arquivo PDF
+                      </label>
+                      <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-card/40 hover:border-blue-500/50 transition-all bg-background/60 cursor-pointer">
+                        <Input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={(e) => setFile(e.target.files?.[0] || null)}
+                          className="hidden"
+                          id="pdf-upload"
+                        />
+                        <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center">
+                          <FileUp className="w-10 h-10 text-blue-500 mb-3 animate-bounce" />
+                          <span className="text-base font-bold text-muted-foreground">
+                            {file ? file.name : "Clique para selecionar ou arraste o PDF aqui"}
+                          </span>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <input
+                          type="checkbox"
+                          id="save-apostila"
+                          checked={saveApostila}
+                          onChange={e => setSaveApostila(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-background border-border rounded focus:ring-blue-500"
+                        />
+                        <label htmlFor="save-apostila" className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 cursor-pointer">
+                          <Save className="w-4 h-4 text-muted-foreground" />
+                          Salvar este PDF na biblioteca de Apostilas para uso futuro
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {mode === "extract" && (
+                <>
+                  {/* Upload do material com questões prontas */}
+                  <div className="space-y-3 bg-background/40 p-6 rounded-xl border border-border">
+                    <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                      Arquivo de Questões (PDF)
                     </label>
+                    <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-card/40 hover:border-blue-500/50 transition-all bg-background/60 cursor-pointer">
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => setQuestionsFile(e.target.files?.[0] || null)}
+                        className="hidden"
+                        id="questions-pdf-upload"
+                      />
+                      <label htmlFor="questions-pdf-upload" className="cursor-pointer flex flex-col items-center">
+                        <FileUp className="w-10 h-10 text-blue-500 mb-3 animate-bounce" />
+                        <span className="text-base font-bold text-muted-foreground">
+                          {questionsFile ? questionsFile.name : "Selecione o PDF com as questões já prontas"}
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Apostila de referência opcional para gabarito/justificativa */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-blue-500" />
+                      Apostila Base (para a IA buscar o gabarito)
+                    </label>
+
+                    <Select value={refApostilaId} onValueChange={(v) => setRefApostilaId(v || "nenhuma")}>
+                      <SelectTrigger className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500">
+                        <SelectValue placeholder="Selecione a origem teórica (opcional)" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-border text-foreground">
+                        <SelectItem value="nenhuma" className="font-bold text-muted-foreground focus:bg-muted focus:text-heading">
+                          Sem apostila (o PDF já tem gabarito/justificativas)
+                        </SelectItem>
+                        {apostilas.map(apo => (
+                          <SelectItem key={apo.id} value={apo.id} className="focus:bg-muted focus:text-heading">
+                            {formatApostilaTitle(apo.title)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
+                      Se o material de questões não tiver gabarito ou justificativa, a IA usará esta apostila como referência para resolvê-las.
+                    </p>
+                  </div>
+                </>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Quantidade */}
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Qtd. de Questões</label>
-                  <Input 
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={qtd}
-                    onChange={(e) => setQtd(e.target.value)}
-                    className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500 font-mono font-bold"
-                    placeholder="Ex: 5"
-                  />
-                </div>
+                {/* Quantidade - Apenas no modo IA, pois no modo extração todas as questões do material são aproveitadas */}
+                {mode === "ai" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Qtd. de Questões</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={qtd}
+                      onChange={(e) => setQtd(e.target.value)}
+                      className="h-12 text-base bg-background border-border text-heading focus-visible:ring-blue-500 font-mono font-bold"
+                      placeholder="Ex: 5"
+                    />
+                  </div>
+                )}
 
                 {/* Tempo */}
                 <div className="space-y-2">
@@ -250,22 +384,24 @@ export default function NovoSimulado() {
                 </div>
               </div>
 
-              {/* Tópicos Específicos */}
-              <div className="space-y-3 bg-background/40 p-6 rounded-xl border border-border">
-                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                  Tópicos Específicos (Opcional)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ex: Tópico 1 ao 4, Tópico 2, ou Tópico 1, 3 e 5"
-                  value={topics}
-                  onChange={(e) => setTopics(e.target.value)}
-                  className="bg-background border-border text-heading focus-visible:ring-blue-500 h-12 text-base shadow-sm placeholder:text-muted-foreground"
-                />
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
-                  Especifique tópicos ou seções do material para filtrar a geração das questões (ex: <em className="text-blue-500">"Tópico 1 ao 4"</em>, <em className="text-blue-500">"Capítulo 3"</em>). Deixe em branco para considerar todo o PDF.
-                </p>
-              </div>
+              {/* Tópicos Específicos - Apenas no modo IA */}
+              {mode === "ai" && (
+                <div className="space-y-3 bg-background/40 p-6 rounded-xl border border-border">
+                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    Tópicos Específicos (Opcional)
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: Tópico 1 ao 4, Tópico 2, ou Tópico 1, 3 e 5"
+                    value={topics}
+                    onChange={(e) => setTopics(e.target.value)}
+                    className="bg-background border-border text-heading focus-visible:ring-blue-500 h-12 text-base shadow-sm placeholder:text-muted-foreground"
+                  />
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
+                    Especifique tópicos ou seções do material para filtrar a geração das questões (ex: <em className="text-blue-500">"Tópico 1 ao 4"</em>, <em className="text-blue-500">"Capítulo 3"</em>). Deixe em branco para considerar todo o PDF.
+                  </p>
+                </div>
+              )}
 
               <div className="bg-background/40 p-5 rounded-xl border border-border">
                 <label className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2.5 cursor-pointer hover:text-heading transition-colors">
@@ -356,20 +492,25 @@ export default function NovoSimulado() {
               </div>
 
               <div className="pt-4 border-t border-border/80">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full h-14 text-base font-bold bg-blue-600 hover:bg-blue-500 shadow-lg uppercase tracking-widest disabled:opacity-50 cursor-pointer"
-                  disabled={loading || (selectedApostilaId === "upload" && !file)}
+                  disabled={loading || (mode === "ai" ? (selectedApostilaId === "upload" && !file) : !questionsFile)}
                 >
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin text-heading" />
-                      Analisando Material e Gerando Questões...
+                      {mode === "ai" ? "Analisando Material e Gerando Questões..." : "Extraindo Questões do Material..."}
                     </>
-                  ) : (
+                  ) : mode === "ai" ? (
                     <>
                       <Settings className="w-5 h-5 mr-2 text-heading" />
                       Processar e Gerar Questões
+                    </>
+                  ) : (
+                    <>
+                      <Target className="w-5 h-5 mr-2 text-heading" />
+                      Extrair Questões do Material
                     </>
                   )}
                 </Button>
