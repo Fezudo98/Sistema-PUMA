@@ -31,7 +31,7 @@ model Simulado {
   id                String     @id @default(uuid())
   codigoSala        String?    @unique
   status            String     @default("WAITING") // WAITING | ACTIVE | FINISHED
-  tipo              String     @default("LIVE") // LIVE | DAILY
+  tipo              String     @default("LIVE") // LIVE | DAILY | SPECIAL | BLOCO_PROVA
   instructorId      String
   apostilaName      String?
   topics            String?
@@ -67,6 +67,7 @@ model Question {
   appealResponse String?
   answers        Answer[]
   presentationAnswer Int? // Marcação do instrutor no Modo Apresentação (índice da alternativa que a turma escolheu)
+  sourceQuestionId String? // Se esta questão é uma cópia dentro de um Bloco de Provas, aponta para a Question original do simulado diário
 
   @@index([simuladoId])
 }
@@ -97,6 +98,7 @@ model Apostila {
   filePath     String
   instructorId String
   isActive     Boolean  @default(true)
+  isProvaSubject Boolean @default(false) // Marcada pelo instrutor: matéria com prova em breve, gera Bloco de Provas
   vadeMecum    String?
   createdAt    DateTime @default(now())
 }

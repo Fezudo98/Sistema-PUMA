@@ -32,7 +32,7 @@ export default async function StudentSelfPacedPage({
   // Este fluxo self-paced só existe para simulados DAILY e SPECIAL — LIVE e
   // PRESENTATION têm seus próprios fluxos (sala em tempo real / condução do
   // instrutor) e não devem ser respondíveis por aqui.
-  if (simulado.tipo !== "DAILY" && simulado.tipo !== "SPECIAL") {
+  if (simulado.tipo !== "DAILY" && simulado.tipo !== "SPECIAL" && simulado.tipo !== "BLOCO_PROVA") {
     redirect("/aluno/painel");
   }
 

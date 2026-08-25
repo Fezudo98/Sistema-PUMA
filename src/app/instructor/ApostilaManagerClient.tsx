@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, FileUp, Loader2, Power, PowerOff, Trash2, Calendar, FileText, CheckCircle2, Sparkles } from "lucide-react";
-import { toggleApostilaStatus, deleteApostila } from "@/app/actions/apostila";
+import { BookOpen, FileUp, Loader2, Power, PowerOff, Trash2, Calendar, FileText, CheckCircle2, Sparkles, GraduationCap } from "lucide-react";
+import { toggleApostilaStatus, toggleApostilaProvaStatus, deleteApostila } from "@/app/actions/apostila";
 import { forceGenerateDailySimuladoForApostila, forceGenerateAllDailySimuladosAction } from "@/app/actions/dailySimulado";
 import { generateVadeMecumAction } from "@/app/actions/vadeMecum";
 import { formatApostilaTitle } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface Apostila {
   title: string;
   filePath: string;
   isActive: boolean;
+  isProvaSubject: boolean;
   vadeMecum?: string | null;
   createdAt: Date;
 }
@@ -32,6 +33,7 @@ export default function ApostilaManagerClient({
   const [generatingAll, setGeneratingAll] = useState(false);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [generatingVadeMecumId, setGeneratingVadeMecumId] = useState<string | null>(null);
+  const [togglingProvaId, setTogglingProvaId] = useState<string | null>(null);
 
   const handleGenerateVadeMecum = async (id: string, title: string) => {
     if (!confirm(`Deseja gerar/regerar o Vade Mecum (resumo didático completo) para a apostila "${title}"?`)) {
@@ -150,6 +152,20 @@ export default function ApostilaManagerClient({
       alert(res.error);
     } else if (res.success && res.isActive !== undefined) {
       setApostilas(apostilas.map(a => a.id === id ? { ...a, isActive: res.isActive! } : a));
+    }
+  };
+
+  const handleToggleProvaStatus = async (id: string, currentStatus: boolean, title: string) => {
+    if (!currentStatus && !confirm(`Marcar "${title}" como matéria de prova? Um Bloco de Provas será montado com todas as questões dos simulados diários já gerados dessa matéria.`)) {
+      return;
+    }
+    setTogglingProvaId(id);
+    const res = await toggleApostilaProvaStatus(id, currentStatus);
+    setTogglingProvaId(null);
+    if (res.error) {
+      alert(res.error);
+    } else if (res.success && res.isProvaSubject !== undefined) {
+      setApostilas(apostilas.map(a => a.id === id ? { ...a, isProvaSubject: res.isProvaSubject! } : a));
     }
   };
 
@@ -368,6 +384,29 @@ export default function ApostilaManagerClient({
                           )}
                         </Button>
                       )}
+
+                      {/* Toggle Matéria de Prova */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={togglingProvaId === apo.id}
+                        onClick={() => handleToggleProvaStatus(apo.id, apo.isProvaSubject, apo.title)}
+                        className={`h-10 px-3 font-bold text-xs uppercase tracking-wider border rounded-lg transition-all cursor-pointer ${
+                          apo.isProvaSubject
+                            ? "bg-amber-950/20 border-amber-500/30 text-amber-400 hover:bg-amber-950/40 hover:text-amber-300"
+                            : "bg-background border-border text-muted-foreground hover:bg-card hover:text-heading"
+                        }`}
+                        title={apo.isProvaSubject ? "Matéria de prova: os alunos veem um Bloco de Provas no painel" : "Marcar como matéria de prova"}
+                      >
+                        {togglingProvaId === apo.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                        ) : (
+                          <>
+                            <GraduationCap className="w-3.5 h-3.5 mr-1.5" />
+                            {apo.isProvaSubject ? "Matéria de Prova" : "Marcar p/ Prova"}
+                          </>
+                        )}
+                      </Button>
 
                       {/* Toggle Button */}
                       <Button

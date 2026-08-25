@@ -47,7 +47,8 @@ export default async function AlunoPainel() {
     apostilasAtivas,
     pastDailySimulados,
     activeRooms,
-    specialSimulados
+    specialSimulados,
+    provaApostilas
   ] = await Promise.all([
     prisma.answer.findMany({
       where: { studentId: user.userId },
@@ -112,8 +113,22 @@ export default async function AlunoPainel() {
       },
       orderBy: { createdAt: "desc" },
       take: SPECIAL_SIMULADOS_LIMIT
-    })
+    }),
+    prisma.apostila.findMany({ where: { isProvaSubject: true } })
   ]);
+
+  const blocosDeProva = provaApostilas.length > 0
+    ? await prisma.simulado.findMany({
+        where: {
+          tipo: "BLOCO_PROVA",
+          apostilaName: { in: provaApostilas.map((a) => a.title) }
+        },
+        include: {
+          questions: { select: { id: true } }
+        },
+        orderBy: { createdAt: "desc" }
+      })
+    : [];
 
   const totalAnswers = answers.length;
 
@@ -262,6 +277,20 @@ export default async function AlunoPainel() {
     };
   });
 
+  const blocosDeProvaWithStatus = blocosDeProva.map((bloco) => {
+    const questionIds = bloco.questions.map((q: { id: string }) => q.id);
+    const studentAnswersCount = questionIds.filter((id) => answeredQuestionIds.has(id)).length;
+    const isCompleted = questionIds.length > 0 && studentAnswersCount >= questionIds.length;
+
+    return {
+      id: bloco.id,
+      apostilaName: bloco.apostilaName || "Bloco de Provas",
+      questionsCount: questionIds.length,
+      answeredCount: studentAnswersCount,
+      isCompleted
+    };
+  });
+
   // Trigger missing Vade Mecum generation in the background
   const { checkAndGenerateMissingVadeMecums } = await import("@/app/actions/vadeMecum");
   checkAndGenerateMissingVadeMecums().catch((err) => {
@@ -278,6 +307,7 @@ export default async function AlunoPainel() {
       pastDailySimulados={pastDailySimuladosWithStatus}
       hasMorePastDailySimulados={hasMorePastDaily}
       specialSimulados={specialSimuladosWithStatus}
+      blocosDeProva={blocosDeProvaWithStatus}
       isGeneratingDaily={isGeneratingDaily}
     />
   );
