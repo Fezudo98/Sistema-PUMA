@@ -5,6 +5,7 @@ import { getUser } from "./auth";
 import { revalidatePath } from "next/cache";
 import { promises as fs } from "fs";
 import path from "path";
+import { syncBlocoDeProvaForApostila } from "./blocoProva";
 
 export async function toggleApostilaStatus(id: string, currentStatus: boolean) {
   const user = await getUser();
@@ -26,6 +27,32 @@ export async function toggleApostilaStatus(id: string, currentStatus: boolean) {
   }
 }
 
+export async function toggleApostilaProvaStatus(id: string, currentStatus: boolean) {
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { error: "Não autorizado." };
+  }
+
+  try {
+    const updated = await prisma.apostila.update({
+      where: { id },
+      data: { isProvaSubject: !currentStatus }
+    });
+
+    // Ao ligar o modo prova, monta o bloco imediatamente para não depender do próximo cron.
+    if (updated.isProvaSubject) {
+      await syncBlocoDeProvaForApostila(updated);
+    }
+
+    revalidatePath("/instructor");
+    revalidatePath("/aluno/painel");
+    return { success: true, isProvaSubject: updated.isProvaSubject };
+  } catch (error: any) {
+    console.error("Erro ao alterar status de matéria de prova:", error);
+    return { error: "Erro ao atualizar o status." };
+  }
+}
+
 export async function deleteApostila(id: string) {
   const user = await getUser();
   if (!user || user.role !== "INSTRUCTOR") {
@@ -41,10 +68,10 @@ export async function deleteApostila(id: string) {
       return { error: "Apostila não encontrada." };
     }
 
-    // 1. Buscar todos os simulados diários gerados a partir desta apostila
+    // 1. Buscar todos os simulados diários e o bloco de provas gerados a partir desta apostila
     const dailySimulados = await prisma.simulado.findMany({
       where: {
-        tipo: "DAILY",
+        tipo: { in: ["DAILY", "BLOCO_PROVA"] },
         apostilaName: apostila.title
       },
       select: { id: true }

@@ -451,6 +451,13 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
           }
         }
 
+        try {
+          const { syncBlocosDeProva } = await import("./blocoProva");
+          await syncBlocosDeProva();
+        } catch (err) {
+          console.error("[DAILY CHECK] Falha ao sincronizar Blocos de Provas:", err);
+        }
+
         return { success: true, generatedCount };
       } catch (error: any) {
         console.error("[DAILY CRITICAL] Erro no processo de simulados diários:", error);
@@ -577,7 +584,7 @@ export async function saveSelfPacedAnswer(data: {
     // Este fluxo é exclusivo de simulados DAILY/SPECIAL (estudo autoguiado). Sem
     // essa checagem, um aluno poderia responder (e pontuar em) questões de um
     // simulado LIVE ou PRESENTATION que nem chegou a acontecer pra ele.
-    if (question.simulado.tipo !== "DAILY" && question.simulado.tipo !== "SPECIAL") {
+    if (question.simulado.tipo !== "DAILY" && question.simulado.tipo !== "SPECIAL" && question.simulado.tipo !== "BLOCO_PROVA") {
       return { error: "Este simulado não pode ser respondido neste modo." };
     }
     if (question.simulado.tipo === "SPECIAL" && question.simulado.expiresAt && new Date(question.simulado.expiresAt) < new Date()) {
