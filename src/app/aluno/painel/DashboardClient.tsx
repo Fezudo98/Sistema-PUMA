@@ -677,8 +677,8 @@ export default function StudentDashboardClient({
                             : "bg-background border-amber-500/30 hover:border-amber-500/50"
                         }`}>
                           <div className="flex justify-between items-start gap-4">
-                            <div>
-                              <h4 className={`text-sm font-bold truncate pr-4 ${bloco.isCompleted ? 'text-emerald-400/80' : 'text-amber-400'}`}>
+                            <div className="min-w-0 flex-1">
+                              <h4 className={`text-sm font-bold line-clamp-2 leading-snug ${bloco.isCompleted ? 'text-emerald-400/80' : 'text-amber-400'}`} title={bloco.apostilaName}>
                                 {formatApostilaTitle(bloco.apostilaName)}
                               </h4>
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
@@ -739,8 +739,8 @@ export default function StudentDashboardClient({
                               : "bg-background border-purple-500/30 hover:border-purple-500/50"
                         }`}>
                           <div className="flex justify-between items-start gap-4">
-                            <div>
-                              <h4 className={`text-sm font-bold truncate pr-4 ${sim.isCompleted ? 'text-emerald-400/80' : sim.isExpired ? 'text-muted-foreground' : 'text-purple-400'}`}>
+                            <div className="min-w-0 flex-1">
+                              <h4 className={`text-sm font-bold line-clamp-2 leading-snug ${sim.isCompleted ? 'text-emerald-400/80' : sim.isExpired ? 'text-muted-foreground' : 'text-purple-400'}`} title={sim.apostilaName}>
                                 {formatApostilaTitle(sim.apostilaName)}
                               </h4>
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
