@@ -114,12 +114,14 @@ export default function StudentSelfPacedClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicFilter]);
 
-  // 1. Define a questão ativa: mantém a atual se ela ainda existir e estiver
-  // pendente no filtro corrente; senão, avança pra próxima pendente do filtro.
+  // 1. Define a questão ativa: só recalcula quando explicitamente sinalizado
+  // (activeQuestionId nulo — no mount ou depois que handleNext "solta" a atual)
+  // ou quando o filtro de tópico muda e a questão atual não pertence mais a ele.
+  // Importante: NUNCA troca de questão só porque ela foi respondida — isso pulava
+  // a tela de correção assim que o aluno confirmava a resposta.
   useEffect(() => {
-    if (activeQuestionId) {
-      const stillPending = workingQuestions.some((q) => q.id === activeQuestionId) && !answeredIds.has(activeQuestionId);
-      if (stillPending) return;
+    if (activeQuestionId && workingQuestions.some((q) => q.id === activeQuestionId)) {
+      return;
     }
     setActiveQuestionId(nextPendingInFilter ? nextPendingInFilter.id : null);
     setSelectedAlt(null);
@@ -128,7 +130,7 @@ export default function StudentSelfPacedClient({
     setCorrectAltIndex(null);
     setJustificativa("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topicFilter, nextPendingInFilter]);
+  }, [topicFilter, activeQuestionId, workingQuestions]);
 
   const currentQuestion = activeQuestionId ? simulado.questions.find((q) => q.id === activeQuestionId) || null : null;
   const alternativasList: string[] = currentQuestion ? JSON.parse(currentQuestion.alternativas) : [];
