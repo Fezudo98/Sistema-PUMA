@@ -68,6 +68,7 @@ model Question {
   answers        Answer[]
   presentationAnswer Int? // Marcação do instrutor no Modo Apresentação (índice da alternativa que a turma escolheu)
   sourceQuestionId String? // Se esta questão é uma cópia dentro de um Bloco de Provas, aponta para a Question original do simulado diário
+  topico String? // Tópico atribuído pela IA na geração, escolhido da lista fixa Apostila.provaTopics (só quando a apostila é matéria de prova)
 
   @@index([simuladoId])
 }
@@ -99,6 +100,7 @@ model Apostila {
   instructorId String
   isActive     Boolean  @default(true)
   isProvaSubject Boolean @default(false) // Marcada pelo instrutor: matéria com prova em breve, gera Bloco de Provas
+  provaTopics String? // JSON array de strings — lista fixa de tópicos da apostila, extraída pela IA e revisada pelo instrutor
   vadeMecum    String?
   createdAt    DateTime @default(now())
 }

@@ -34,7 +34,8 @@ export async function syncBlocoDeProvaForApostila(apostila: Apostila) {
       alternativas: true,
       correta: true,
       justificativa: true,
-      tempoLimite: true
+      tempoLimite: true,
+      topico: true
     }
   });
 
@@ -59,7 +60,8 @@ export async function syncBlocoDeProvaForApostila(apostila: Apostila) {
         correta: q.correta,
         justificativa: q.justificativa,
         tempoLimite: q.tempoLimite,
-        sourceQuestionId: q.id
+        sourceQuestionId: q.id,
+        topico: q.topico
       }))
     });
   }

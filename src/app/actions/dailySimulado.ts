@@ -106,6 +106,32 @@ const responseSchema = {
   }
 };
 
+// Variante do schema acima usada só para apostilas marcadas como matéria de prova
+// (Apostila.isProvaSubject com Apostila.provaTopics preenchida): acrescenta o campo
+// "topico", travado (format "enum") na lista fixa de tópicos da apostila, pra manter
+// a classificação consistente entre gerações — é o que alimenta o filtro por tópico
+// no Bloco de Provas.
+function buildDailyQuestionsSchema(topics: string[] | null) {
+  if (!topics || topics.length === 0) return responseSchema;
+
+  return {
+    ...responseSchema,
+    items: {
+      ...responseSchema.items,
+      properties: {
+        ...responseSchema.items.properties,
+        topico: {
+          type: SchemaType.STRING,
+          format: "enum",
+          enum: topics,
+          description: "O tópico da apostila ao qual esta questão pertence. Deve ser EXATAMENTE um dos valores da lista, sem alterações."
+        } as any
+      },
+      required: [...responseSchema.items.required, "topico"]
+    }
+  };
+}
+
 const genConfig = {
   model: "gemini-1.5-flash",
   generationConfig: {
@@ -146,7 +172,7 @@ function isRateLimitError(msg?: string): boolean {
   return msg.includes("429") || msg.includes("Quota") || msg.includes("503") || msg.includes("high demand") || msg.includes("RESOURCE_EXHAUSTED");
 }
 
-async function generateWithFallback(content: any[]) {
+async function generateWithFallback(content: any[], customSchema?: any) {
   const apiKeys = [
     { label: "principal", key: process.env.GEMINI_API_KEY || "" },
     { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
@@ -173,7 +199,9 @@ async function generateWithFallback(content: any[]) {
   for (const modelVersion of modelVersions) {
     const dynamicGenConfig = {
       model: modelVersion,
-      generationConfig: genConfig.generationConfig
+      generationConfig: customSchema
+        ? { responseMimeType: "application/json", responseSchema: customSchema }
+        : genConfig.generationConfig
     };
 
     const now = Date.now();
@@ -386,6 +414,20 @@ export async function checkAndGenerateDailySimulados() {
               }
             };
 
+            // Matéria de prova com lista de tópicos definida: a IA deve classificar
+            // cada questão dentro dessa lista fixa, alimentando o filtro por tópico
+            // do Bloco de Provas.
+            let provaTopicsList: string[] = [];
+            if (apostila.isProvaSubject && apostila.provaTopics) {
+              try {
+                const parsed = JSON.parse(apostila.provaTopics);
+                if (Array.isArray(parsed)) provaTopicsList = parsed;
+              } catch (e) {
+                console.warn(`[DAILY CHECK] provaTopics inválido para "${apostila.title}":`, e);
+              }
+            }
+            const hasTopics = provaTopicsList.length > 0;
+
             // 5. Montar prompt com as regras avançadas e contextualização de alunos
             let prompt = `Você é um instrutor especialista elaborando um simulado.
 Analise o documento PDF em anexo rigorosamente.
@@ -407,10 +449,14 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
               prompt += `\n8. CONTEXTUALIZAÇÃO COM ALUNOS (CASOS PRÁTICOS): Raramente (no máximo em 1 ou 2 questões deste simulado de 25 questões) e apenas quando for oportuno, elabore um caso prático fictício no enunciado utilizando alguns dos seguintes QRAs de alunos reais do pelotão: ${shuffledNames.join(", ")} (exemplo: "William viu Marcelino fazendo tal coisa com Roberto..."). Nas demais questões, NÃO utilize nomes de alunos. Seja discreto e evite qualquer exagero na frequência desta regra.`;
             }
 
+            if (hasTopics) {
+              prompt += `\n9. CLASSIFICAÇÃO POR TÓPICO: Preencha o campo "topico" de cada questão com EXATAMENTE um dos tópicos a seguir (copie o texto literalmente, sem alterar acentuação, maiúsculas ou pontuação): ${provaTopicsList.map((t) => `"${t}"`).join(", ")}.`;
+            }
+
             prompt += `\n\nO nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
 Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 
-            const result = await generateWithFallback([prompt, pdfPart]);
+            const result = await generateWithFallback([prompt, pdfPart], hasTopics ? buildDailyQuestionsSchema(provaTopicsList) : undefined);
             const responseText = result.response.text();
             const questions = JSON.parse(responseText);
 
@@ -434,7 +480,8 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
                       correta: shuffled.correta,
                       justificativa: cleanJustificativa,
                       tempoLimite: 60, // Padrão de 60 segundos por questão nos simulados diários
-                      status: "PENDING"
+                      status: "PENDING",
+                      topico: hasTopics ? (q.topico || null) : null
                     };
                   })
                 }
@@ -892,8 +939,21 @@ export async function generateDailySimuladoForSingleApostila(apostilaId: string)
       }
     };
 
+    // Matéria de prova com lista de tópicos definida: a IA deve classificar cada
+    // questão dentro dessa lista fixa, alimentando o filtro por tópico do Bloco de Provas.
+    let provaTopicsList: string[] = [];
+    if (apostila.isProvaSubject && apostila.provaTopics) {
+      try {
+        const parsed = JSON.parse(apostila.provaTopics);
+        if (Array.isArray(parsed)) provaTopicsList = parsed;
+      } catch (e) {
+        console.warn(`[SINGLE GENERATION] provaTopics inválido para "${apostila.title}":`, e);
+      }
+    }
+    const hasTopics = provaTopicsList.length > 0;
+
     // 2. Montar prompt com as regras avançadas
-    const prompt = `Você é um instrutor especialista elaborando um simulado.
+    let prompt = `Você é um instrutor especialista elaborando um simulado.
 Analise o documento PDF em anexo rigorosamente.
 
 Crie exatamente 25 questões de múltipla escolha utilizando EXCLUSIVAMENTE o conteúdo DIDÁTICO e TÉCNICO contido no PDF (os assuntos centrais que serão cobrados em prova).
@@ -911,7 +971,11 @@ REGRAS CRÍTICAS DE ELABORAÇÃO:
 O nível de dificuldade deve ser: avançado (questões extremamente desafiadoras, no nível de concursos públicos exigentes, com enunciados bem elaborados e alternativas plausíveis e difíceis, exigindo raciocínio e atenção a detalhes sutis).
 Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuída aleatoriamente (não deixe sempre na A).`;
 
-    const result = await generateWithFallback([prompt, pdfPart]);
+    if (hasTopics) {
+      prompt += `\n9. CLASSIFICAÇÃO POR TÓPICO: Preencha o campo "topico" de cada questão com EXATAMENTE um dos tópicos a seguir (copie o texto literalmente, sem alterar acentuação, maiúsculas ou pontuação): ${provaTopicsList.map((t) => `"${t}"`).join(", ")}.`;
+    }
+
+    const result = await generateWithFallback([prompt, pdfPart], hasTopics ? buildDailyQuestionsSchema(provaTopicsList) : undefined);
     const responseText = result.response.text();
     const questions = JSON.parse(responseText);
 
@@ -935,7 +999,8 @@ Cada questão deve ter 5 alternativas. A alternativa correta deve ser distribuí
               correta: shuffled.correta,
               justificativa: cleanJustificativa,
               tempoLimite: 60,
-              status: "PENDING"
+              status: "PENDING",
+              topico: hasTopics ? (q.topico || null) : null
             };
           })
         }

@@ -43,20 +43,25 @@ export default async function StudentSelfPacedPage({
     }
   }
 
-  // 2. Verificar se o aluno já completou este simulado
+  // 2. Verificar quais questões o aluno já respondeu. Usamos os IDs reais (não só
+  // uma contagem) porque, no Bloco de Provas, novas questões são inseridas com UUID
+  // aleatório a cada dia — a ordem "id asc" não é cronológica, então um índice
+  // numérico simples não identifica corretamente quais já foram respondidas.
   const questionIds = simulado.questions.map((q) => q.id);
-  let studentAnswersCount = 0;
-  
+  let answeredQuestionIds: string[] = [];
+
   if (questionIds.length > 0) {
-    studentAnswersCount = await prisma.answer.count({
+    const answered = await prisma.answer.findMany({
       where: {
         studentId: user.userId,
         questionId: { in: questionIds }
-      }
+      },
+      select: { questionId: true }
     });
+    answeredQuestionIds = answered.map((a) => a.questionId);
 
     // Se já respondeu todas as questões deste simulado, manda direto para a revisão
-    if (studentAnswersCount >= questionIds.length) {
+    if (answeredQuestionIds.length >= questionIds.length) {
       redirect(`/aluno/simulado/${id}/review`);
     }
   }
@@ -82,7 +87,8 @@ export default async function StudentSelfPacedPage({
       id: q.id,
       enunciado: q.enunciado,
       alternativas: q.alternativas,
-      tempoLimite: q.tempoLimite
+      tempoLimite: q.tempoLimite,
+      topico: q.topico
     }))
   };
 
@@ -90,7 +96,7 @@ export default async function StudentSelfPacedPage({
     <StudentSelfPacedClient
       simulado={safeSimulado}
       studentId={user.userId}
-      initialProgress={studentAnswersCount}
+      answeredQuestionIds={answeredQuestionIds}
       apostilaFilePath={apostilaFilePath}
     />
   );

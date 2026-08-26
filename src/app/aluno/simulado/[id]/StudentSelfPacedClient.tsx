@@ -1,20 +1,25 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, AlertTriangle, HelpCircle, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, HelpCircle, Loader2, ListFilter, PartyPopper } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveSelfPacedAnswer, completeSelfPacedSimulado } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
+
+const NO_TOPIC_FILTER_VALUE = "__todos__";
+const NO_TOPIC_LABEL_VALUE = "__sem_topico__";
 
 interface Question {
   id: string;
   enunciado: string;
   alternativas: string; // JSON String
   tempoLimite: number;
+  topico: string | null;
 }
 
 interface Simulado {
@@ -26,12 +31,12 @@ interface Simulado {
 export default function StudentSelfPacedClient({
   simulado,
   studentId,
-  initialProgress = 0,
+  answeredQuestionIds = [],
   apostilaFilePath = null
 }: {
   simulado: Simulado;
   studentId: string;
-  initialProgress?: number;
+  answeredQuestionIds?: string[];
   apostilaFilePath?: string | null;
 }) {
   const router = useRouter();
@@ -39,9 +44,32 @@ export default function StudentSelfPacedClient({
   const hasTimer = searchParams.get("timer") !== "false";
   const timerLimit = parseInt(searchParams.get("seconds") || "60", 10);
 
-  const [currentIdx, setCurrentIdx] = useState(initialProgress);
+  const storageKeyBase = `self_paced_${simulado.id}_${studentId}`;
+
+  // Se alguma questão tem tópico atribuído, é um Bloco de Provas (ou um simulado
+  // diário de uma matéria de prova) — só nesse caso a barra de filtro aparece.
+  const hasAnyTopics = useMemo(() => simulado.questions.some((q) => !!q.topico), [simulado.questions]);
+
+  const topicSummary = useMemo(() => {
+    const map = new Map<string, { total: number; answered: number }>();
+    const answeredSet = new Set(answeredQuestionIds);
+    simulado.questions.forEach((q) => {
+      const key = q.topico || NO_TOPIC_LABEL_VALUE;
+      if (!map.has(key)) map.set(key, { total: 0, answered: 0 });
+      const entry = map.get(key)!;
+      entry.total += 1;
+      if (answeredSet.has(q.id)) entry.answered += 1;
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [simulado.questions]);
+
+  const [answeredIds, setAnsweredIds] = useState<Set<string>>(() => new Set(answeredQuestionIds));
+  const [topicFilter, setTopicFilter] = useState<string>(NO_TOPIC_FILTER_VALUE);
+  const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
+
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null);
-  
+
   // Estados do gameplay
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -55,19 +83,65 @@ export default function StudentSelfPacedClient({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
-  const currentQuestion = simulado.questions[currentIdx];
-  const alternativasList: string[] = currentQuestion 
-    ? JSON.parse(currentQuestion.alternativas) 
-    : [];
+  const workingQuestions = useMemo(() => {
+    if (topicFilter === NO_TOPIC_FILTER_VALUE) return simulado.questions;
+    if (topicFilter === NO_TOPIC_LABEL_VALUE) return simulado.questions.filter((q) => !q.topico);
+    return simulado.questions.filter((q) => q.topico === topicFilter);
+  }, [simulado.questions, topicFilter]);
 
-  // 1. Blindagem de Progresso: Tenta restaurar do localStorage no caso de reinício do VPS ou atualização da página
+  const nextPendingInFilter = useMemo(
+    () => workingQuestions.find((q) => !answeredIds.has(q.id)) || null,
+    [workingQuestions, answeredIds]
+  );
+
+  const allDone = answeredIds.size >= simulado.questions.length;
+
+  // 0. Restaura o filtro de tópico salvo (se houver) assim que monta.
   useEffect(() => {
     try {
-      const savedKey = `self_paced_state_${simulado.id}_${studentId}`;
+      const raw = localStorage.getItem(`${storageKeyBase}_filter`);
+      if (raw) setTopicFilter(raw);
+    } catch (e) {
+      console.warn("Erro ao restaurar filtro de tópico:", e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`${storageKeyBase}_filter`, topicFilter);
+    } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topicFilter]);
+
+  // 1. Define a questão ativa: mantém a atual se ela ainda existir e estiver
+  // pendente no filtro corrente; senão, avança pra próxima pendente do filtro.
+  useEffect(() => {
+    if (activeQuestionId) {
+      const stillPending = workingQuestions.some((q) => q.id === activeQuestionId) && !answeredIds.has(activeQuestionId);
+      if (stillPending) return;
+    }
+    setActiveQuestionId(nextPendingInFilter ? nextPendingInFilter.id : null);
+    setSelectedAlt(null);
+    setIsAnswered(false);
+    setIsCorrect(null);
+    setCorrectAltIndex(null);
+    setJustificativa("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topicFilter, nextPendingInFilter]);
+
+  const currentQuestion = activeQuestionId ? simulado.questions.find((q) => q.id === activeQuestionId) || null : null;
+  const alternativasList: string[] = currentQuestion ? JSON.parse(currentQuestion.alternativas) : [];
+
+  // 2. Blindagem de Progresso: Tenta restaurar do localStorage no caso de reinício do VPS ou atualização da página
+  useEffect(() => {
+    if (!currentQuestion) return;
+    try {
+      const savedKey = `${storageKeyBase}_q_${currentQuestion.id}`;
       const raw = localStorage.getItem(savedKey);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved.currentIdx === initialProgress && (Date.now() - (saved.timestamp || 0)) < 24 * 60 * 60 * 1000) {
+        if ((Date.now() - (saved.timestamp || 0)) < 24 * 60 * 60 * 1000) {
           if (saved.selectedAlt !== null) setSelectedAlt(saved.selectedAlt);
           if (saved.isAnswered) {
             setIsAnswered(true);
@@ -81,14 +155,15 @@ export default function StudentSelfPacedClient({
     } catch (e) {
       console.warn("Erro ao ler progresso salvo do localStorage:", e);
     }
-  }, [simulado.id, studentId, initialProgress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id]);
 
-  // 2. Blindagem de Progresso: Salva o estado atual no localStorage a cada mudança
+  // 3. Blindagem de Progresso: Salva o estado atual no localStorage a cada mudança
   useEffect(() => {
+    if (!currentQuestion) return;
     try {
-      const savedKey = `self_paced_state_${simulado.id}_${studentId}`;
+      const savedKey = `${storageKeyBase}_q_${currentQuestion.id}`;
       localStorage.setItem(savedKey, JSON.stringify({
-        currentIdx,
         selectedAlt,
         isAnswered,
         isCorrect,
@@ -100,11 +175,12 @@ export default function StudentSelfPacedClient({
     } catch (e) {
       console.warn("Erro ao salvar progresso no localStorage:", e);
     }
-  }, [currentIdx, selectedAlt, isAnswered, isCorrect, correctAltIndex, justificativa, timeLeft, simulado.id, studentId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id, selectedAlt, isAnswered, isCorrect, correctAltIndex, justificativa, timeLeft]);
 
-  // 3. Fila de Respostas Pendentes / Offline (para quando o VPS reiniciar ou entrar em manutenção)
+  // 4. Fila de Respostas Pendentes / Offline (para quando o VPS reiniciar ou entrar em manutenção)
   useEffect(() => {
-    const queueKey = `self_paced_queue_${simulado.id}_${studentId}`;
+    const queueKey = `${storageKeyBase}_queue`;
     const syncPendingAnswers = async () => {
       try {
         const rawQueue = localStorage.getItem(queueKey);
@@ -139,6 +215,7 @@ export default function StudentSelfPacedClient({
     const interval = setInterval(syncPendingAnswers, 5000);
     syncPendingAnswers();
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulado.id, studentId]);
 
   // Configura o Timer para a questão atual
@@ -167,20 +244,23 @@ export default function StudentSelfPacedClient({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentIdx, isAnswered]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id, isAnswered]);
 
   const handleTimeout = () => {
+    if (!currentQuestion) return;
     // Submete resposta nula (-1) caso expire o tempo
     submitAnswer(-1, currentQuestion.tempoLimite);
   };
 
   const handleConfirm = () => {
-    if (selectedAlt === null || isAnswered || submitting) return;
+    if (selectedAlt === null || isAnswered || submitting || !currentQuestion) return;
     const timeSpent = Math.round((Date.now() - startTimeRef.current) / 1000);
     submitAnswer(selectedAlt, timeSpent);
   };
 
   const submitAnswer = async (altIndex: number, timeSpent: number) => {
+    if (!currentQuestion) return;
     setSubmitting(true);
     if (timerRef.current) clearInterval(timerRef.current);
 
@@ -204,14 +284,15 @@ export default function StudentSelfPacedClient({
       setJustificativa(res.justificativa || "Sem justificativa cadastrada.");
       setIsAnswered(true);
       setSubmitting(false);
+      setAnsweredIds((prev) => new Set(prev).add(currentQuestion.id));
     } catch (err: any) {
       console.warn("Servidor temporariamente indisponível (VPS reiniciando ou em manutenção). Salvando resposta na fila local...", err);
       // Salva na fila offline para sincronizar quando o VPS voltar
       try {
-        const queueKey = `self_paced_queue_${simulado.id}_${studentId}`;
+        const queueKey = `${storageKeyBase}_queue`;
         const rawQueue = localStorage.getItem(queueKey);
         const queue: any[] = rawQueue ? JSON.parse(rawQueue) : [];
-        if (!queue.some(q => q.questionId === currentQuestion.id)) {
+        if (!queue.some((q) => q.questionId === currentQuestion.id)) {
           queue.push(answerPayload);
           localStorage.setItem(queueKey, JSON.stringify(queue));
         }
@@ -225,13 +306,12 @@ export default function StudentSelfPacedClient({
       setJustificativa("⏳ Resposta salva com segurança no seu dispositivo! Ela será sincronizada automaticamente em background assim que o servidor/VPS retornar.");
       setIsAnswered(true);
       setSubmitting(false);
+      setAnsweredIds((prev) => new Set(prev).add(currentQuestion.id));
     }
   };
 
   const handleNext = async () => {
-    const isLast = currentIdx === simulado.questions.length - 1;
-
-    if (isLast) {
+    if (allDone) {
       setFinishing(true);
       try {
         await completeSelfPacedSimulado(studentId, simulado.id);
@@ -239,18 +319,58 @@ export default function StudentSelfPacedClient({
         console.warn("Aviso ao finalizar simulado durante reinício:", e);
       }
       try {
-        localStorage.removeItem(`self_paced_state_${simulado.id}_${studentId}`);
+        localStorage.removeItem(`${storageKeyBase}_filter`);
       } catch (e) {}
       router.push(`/aluno/simulado/${simulado.id}/review`);
-    } else {
-      setSelectedAlt(null);
-      setIsAnswered(false);
-      setIsCorrect(null);
-      setCorrectAltIndex(null);
-      setJustificativa("");
-      setCurrentIdx((prev) => prev + 1);
+      return;
     }
+
+    // O efeito que observa nextPendingInFilter/answeredIds já recalcula a próxima
+    // questão ativa automaticamente — só precisamos "soltar" a atual daqui.
+    setActiveQuestionId(null);
   };
+
+  const totalAnswered = answeredIds.size;
+  const totalQuestions = simulado.questions.length;
+  const progressPercent = totalQuestions > 0 ? (totalAnswered / totalQuestions) * 100 : 0;
+
+  const topicOptions = useMemo(() => Array.from(topicSummary.keys()), [topicSummary]);
+
+  // Filtro esgotado (todas as questões do tópico já respondidas), mas ainda há
+  // pendências em outros tópicos do bloco.
+  if (hasAnyTopics && !currentQuestion && !allDone) {
+    const filterLabel =
+      topicFilter === NO_TOPIC_FILTER_VALUE ? "Todos os tópicos" :
+      topicFilter === NO_TOPIC_LABEL_VALUE ? "Sem tópico atribuído" :
+      topicFilter;
+
+    return (
+      <div className="min-h-screen bg-background text-foreground p-4 md:p-8 flex items-center justify-center">
+        <div className="w-full max-w-lg space-y-6 text-center">
+          <PartyPopper className="w-12 h-12 text-emerald-500 mx-auto" />
+          <div>
+            <h2 className="text-lg font-black text-heading uppercase tracking-widest">Tópico Concluído!</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Você já respondeu todas as questões de <strong className="text-heading">{filterLabel}</strong> neste bloco. Escolha outro tópico pra continuar treinando.
+            </p>
+          </div>
+          <TopicFilterSelect
+            value={topicFilter}
+            onChange={setTopicFilter}
+            topicSummary={topicSummary}
+            topicOptions={topicOptions}
+          />
+          <Button
+            variant="outline"
+            onClick={() => router.push("/aluno/painel")}
+            className="w-full h-11 border-border text-muted-foreground hover:text-heading"
+          >
+            Voltar ao Painel
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentQuestion) {
     return (
@@ -261,12 +381,10 @@ export default function StudentSelfPacedClient({
     );
   }
 
-  const progressPercent = ((currentIdx + (isAnswered ? 1 : 0)) / simulado.questions.length) * 100;
-
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8 flex items-center justify-center">
       <div className="w-full max-w-4xl space-y-6">
-        
+
         {/* Header da Missão */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div className="flex items-center gap-3">
@@ -299,13 +417,29 @@ export default function StudentSelfPacedClient({
                 {hasTimer ? `${timeLeft}s` : "ILIMITADO"}
               </span>
             </div>
-            
+
             {/* Question Progress */}
             <div className="bg-card border border-border px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground">
-              ALVO {currentIdx + 1} DE {simulado.questions.length}
+              {totalAnswered + 1} DE {totalQuestions}
             </div>
           </div>
         </div>
+
+        {/* Filtro por Tópico (só aparece em Blocos de Provas com tópicos atribuídos) */}
+        {hasAnyTopics && (
+          <div className="flex items-center gap-3 bg-card/40 border border-border rounded-xl px-4 py-3">
+            <ListFilter className="w-4 h-4 text-amber-500 shrink-0" />
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest shrink-0">Filtrar por Tópico</span>
+            <div className="flex-1 min-w-0">
+              <TopicFilterSelect
+                value={topicFilter}
+                onChange={setTopicFilter}
+                topicSummary={topicSummary}
+                topicOptions={topicOptions}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Barra de Progresso */}
         <div className="space-y-1">
@@ -323,12 +457,19 @@ export default function StudentSelfPacedClient({
             <Card className="bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
               <CardContent className="p-6 md:p-8 space-y-6">
-                
+
                 {/* Enunciado */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1 text-xs font-black text-blue-400 uppercase tracking-widest">
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    Enunciado da Questão
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 text-xs font-black text-blue-400 uppercase tracking-widest">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      Enunciado da Questão
+                    </div>
+                    {currentQuestion.topico && (
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-950/30 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {currentQuestion.topico}
+                      </span>
+                    )}
                   </div>
                   <p className="text-base md:text-lg font-bold leading-relaxed text-heading">
                     {currentQuestion.enunciado}
@@ -340,7 +481,7 @@ export default function StudentSelfPacedClient({
                   {alternativasList.map((alt, idx) => {
                     const isSelected = selectedAlt === idx;
                     let altClass = "bg-background/40 border-border text-muted-foreground hover:bg-card/40 hover:text-heading";
-                    
+
                     if (isAnswered) {
                       if (idx === correctAltIndex) {
                         // Highlight correct answer in green
@@ -404,7 +545,7 @@ export default function StudentSelfPacedClient({
             {isAnswered ? (
               <Card className={`bg-card/40 border-border shadow-2xl relative overflow-hidden backdrop-blur-sm flex flex-col h-full`}>
                 <div className={`absolute top-0 left-0 w-full h-1 ${isCorrect ? "bg-emerald-500" : "bg-red-500"}`}></div>
-                
+
                 <CardHeader>
                   <CardTitle className="text-lg text-heading flex items-center gap-2">
                     {isCorrect ? (
@@ -420,7 +561,7 @@ export default function StudentSelfPacedClient({
                     )}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    {isCorrect 
+                    {isCorrect
                       ? "Excelente combate! Veja a justificativa técnica abaixo."
                       : "Foco tático! Analise a correção para não errar em prova."}
                   </CardDescription>
@@ -440,8 +581,8 @@ export default function StudentSelfPacedClient({
                     onClick={handleNext}
                     disabled={finishing}
                     className={`w-full h-12 font-bold uppercase tracking-wider text-xs shadow-lg cursor-pointer ${
-                      isCorrect 
-                        ? "bg-emerald-600 hover:bg-emerald-500 text-heading" 
+                      isCorrect
+                        ? "bg-emerald-600 hover:bg-emerald-500 text-heading"
                         : "bg-blue-600 hover:bg-blue-500 text-heading"
                     }`}
                   >
@@ -452,7 +593,7 @@ export default function StudentSelfPacedClient({
                       </>
                     ) : (
                       <>
-                        {currentIdx === simulado.questions.length - 1 ? "Concluir Simulado" : "Próxima Questão"}
+                        {allDone ? "Concluir Simulado" : "Próxima Questão"}
                         <ArrowRight className="w-4 h-4 ml-1.5" />
                       </>
                     )}
@@ -478,5 +619,42 @@ export default function StudentSelfPacedClient({
 
       </div>
     </div>
+  );
+}
+
+function TopicFilterSelect({
+  value,
+  onChange,
+  topicSummary,
+  topicOptions
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  topicSummary: Map<string, { total: number; answered: number }>;
+  topicOptions: string[];
+}) {
+  const allTotal = Array.from(topicSummary.values()).reduce((acc, v) => acc + v.total, 0);
+  const allAnswered = Array.from(topicSummary.values()).reduce((acc, v) => acc + v.answered, 0);
+
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v || NO_TOPIC_FILTER_VALUE)}>
+      <SelectTrigger className="h-10 bg-background border-border text-heading font-bold text-xs w-full">
+        <SelectValue placeholder="Selecione um tópico" />
+      </SelectTrigger>
+      <SelectContent className="bg-background border-border text-foreground">
+        <SelectItem value={NO_TOPIC_FILTER_VALUE} className="font-bold focus:bg-muted focus:text-heading">
+          Todos os tópicos ({allAnswered}/{allTotal})
+        </SelectItem>
+        {topicOptions.map((topic) => {
+          const summary = topicSummary.get(topic);
+          const label = topic === NO_TOPIC_LABEL_VALUE ? "Sem tópico atribuído" : topic;
+          return (
+            <SelectItem key={topic} value={topic} className="focus:bg-muted focus:text-heading">
+              {label} {summary ? `(${summary.answered}/${summary.total})` : ""}
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
   );
 }
