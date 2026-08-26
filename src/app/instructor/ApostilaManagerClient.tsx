@@ -65,7 +65,7 @@ export default function ApostilaManagerClient({
   };
 
   const handleGenerateSingleDaily = async (id: string, title: string) => {
-    if (!confirm(`Deseja gerar/regerar um simulado diário de 25 questões para a apostila "${title}"?`)) {
+    if (!confirm(`Deseja gerar um novo simulado diário de 25 questões para a apostila "${title}"? Se já existir um diário gerado hoje, ele continua disponível normalmente — o novo é adicionado ao lado dele.`)) {
       return;
     }
     setGeneratingId(id);
@@ -79,7 +79,7 @@ export default function ApostilaManagerClient({
   };
 
   const handleGenerateAllDaily = async () => {
-    if (!confirm("Deseja regerar todos os simulados diários das apostilas ativas? Isso excluirá os simulados diários gerados hoje e gerará novos.")) {
+    if (!confirm("Deseja gerar um novo simulado diário pra cada apostila ativa? Os diários já gerados hoje continuam disponíveis normalmente — os novos são adicionados ao lado deles.")) {
       return;
     }
     setGeneratingAll(true);

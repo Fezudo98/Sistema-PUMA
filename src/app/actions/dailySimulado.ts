@@ -326,7 +326,7 @@ export async function queueGenerationTask<T>(task: () => Promise<T>): Promise<T>
   return nextPromise;
 }
 
-export async function checkAndGenerateDailySimulados() {
+export async function checkAndGenerateDailySimulados(force: boolean = false) {
   if (getIsDailyCheckingRunning()) {
     console.log("[DAILY CHECK] Geração global diária já está ativa. Ignorando chamada concorrente.");
     return { success: true, message: "Geração em andamento." };
@@ -374,20 +374,25 @@ export async function checkAndGenerateDailySimulados() {
           }
 
           // 3. Verificar se já existe um simulado diário para esta apostila criado hoje
-          const existingDaily = await prisma.simulado.findFirst({
-            where: {
-              tipo: "DAILY",
-              apostilaName: apostila.title,
-              createdAt: {
-                gte: todayStart,
-                lte: todayEnd
+          // (pulado quando force=true, ex.: instrutor forçando regeneração manual —
+          // nesse caso o diário de hoje já existente é preservado, não apagado, e um
+          // novo é criado ao lado dele)
+          if (!force) {
+            const existingDaily = await prisma.simulado.findFirst({
+              where: {
+                tipo: "DAILY",
+                apostilaName: apostila.title,
+                createdAt: {
+                  gte: todayStart,
+                  lte: todayEnd
+                }
               }
-            }
-          });
+            });
 
-          if (existingDaily) {
-            console.log(`[DAILY CHECK] Simulado diário para "${apostila.title}" já existe hoje.`);
-            continue;
+            if (existingDaily) {
+              console.log(`[DAILY CHECK] Simulado diário para "${apostila.title}" já existe hoje.`);
+              continue;
+            }
           }
 
           // Ativa o lock para esta apostila
@@ -887,7 +892,7 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
 }
 
 
-export async function generateDailySimuladoForSingleApostila(apostilaId: string) {
+export async function generateDailySimuladoForSingleApostila(apostilaId: string, force: boolean = false) {
   // Busca a apostila no banco (nunca confia num objeto vindo do chamador) — evita
   // que um filePath/instructorId arbitrário seja usado para ler arquivos do disco.
   const apostila = await prisma.apostila.findUnique({ where: { id: apostilaId } });
@@ -909,20 +914,24 @@ export async function generateDailySimuladoForSingleApostila(apostilaId: string)
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    const alreadyGeneratedToday = await prisma.simulado.findFirst({
-      where: {
-        tipo: "DAILY",
-        apostilaName: apostila.title,
-        createdAt: {
-          gte: startOfDay,
-          lte: endOfDay
+    // force=true (regeneração manual do instrutor) pula essa checagem de propósito:
+    // o diário de hoje que já existir NÃO é apagado, só passa a conviver com o novo.
+    if (!force) {
+      const alreadyGeneratedToday = await prisma.simulado.findFirst({
+        where: {
+          tipo: "DAILY",
+          apostilaName: apostila.title,
+          createdAt: {
+            gte: startOfDay,
+            lte: endOfDay
+          }
         }
-      }
-    });
+      });
 
-    if (alreadyGeneratedToday) {
-      console.log(`[SINGLE GENERATION] Simulado diário para "${apostila.title}" já foi gerado hoje. Ignorando...`);
-      return { success: true, message: "Já existe um simulado diário para hoje." };
+      if (alreadyGeneratedToday) {
+        console.log(`[SINGLE GENERATION] Simulado diário para "${apostila.title}" já foi gerado hoje. Ignorando...`);
+        return { success: true, message: "Já existe um simulado diário para hoje." };
+      }
     }
 
     console.log(`[SINGLE GENERATION] Gerando simulado diário para "${apostila.title}"...`);
@@ -1031,39 +1040,11 @@ export async function forceGenerateDailySimuladoForApostila(apostilaId: string) 
         return { error: "Apostila não encontrada." };
       }
 
-      // 1. Apagar simulado diário de hoje desta apostila se existir
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
+      // Gera um novo simulado diário SEM apagar o de hoje que já existir — ele
+      // permanece intacto (com as respostas dos alunos preservadas) e passa a
+      // aparecer no Histórico assim que o dia virar, como qualquer outro diário.
+      const res = await generateDailySimuladoForSingleApostila(apostila.id, true);
 
-      const existingDaily = await prisma.simulado.findFirst({
-        where: {
-          tipo: "DAILY",
-          apostilaName: apostila.title,
-          createdAt: {
-            gte: todayStart,
-            lte: todayEnd
-          }
-        },
-        select: { id: true }
-      });
-
-      if (existingDaily) {
-        await prisma.answer.deleteMany({
-          where: { question: { simuladoId: existingDaily.id } }
-        });
-        await prisma.question.deleteMany({
-          where: { simuladoId: existingDaily.id }
-        });
-        await prisma.simulado.delete({
-          where: { id: existingDaily.id }
-        });
-      }
-
-      // 2. Gerar novo simulado
-      const res = await generateDailySimuladoForSingleApostila(apostila.id);
-      
       revalidatePath("/instructor");
       revalidatePath("/aluno/painel");
       return res;
@@ -1092,42 +1073,11 @@ export async function forceGenerateAllDailySimuladosAction() {
         return { error: "Nenhuma apostila ativa cadastrada." };
       }
 
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
+      // Gera um novo simulado diário pra cada apostila ativa SEM apagar os de hoje
+      // que já existirem — eles permanecem intactos (com as respostas dos alunos
+      // preservadas) e passam a aparecer no Histórico assim que o dia virar.
+      const res = await checkAndGenerateDailySimulados(true);
 
-      // 2. Apagar todos os simulados diários gerados hoje
-      const activeTitles = activeApostilas.map(a => a.title);
-      const existingDailies = await prisma.simulado.findMany({
-        where: {
-          tipo: "DAILY",
-          apostilaName: { in: activeTitles },
-          createdAt: {
-            gte: todayStart,
-            lte: todayEnd
-          }
-        },
-        select: { id: true }
-      });
-
-      const dailyIds = existingDailies.map(s => s.id);
-
-      if (dailyIds.length > 0) {
-        await prisma.answer.deleteMany({
-          where: { question: { simuladoId: { in: dailyIds } } }
-        });
-        await prisma.question.deleteMany({
-          where: { simuladoId: { in: dailyIds } }
-        });
-        await prisma.simulado.deleteMany({
-          where: { id: { in: dailyIds } }
-        });
-      }
-
-      // 3. Gerar tudo novamente
-      const res = await checkAndGenerateDailySimulados();
-      
       revalidatePath("/instructor");
       revalidatePath("/aluno/painel");
       return res;
