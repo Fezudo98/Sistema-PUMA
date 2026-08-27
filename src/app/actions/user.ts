@@ -4,6 +4,45 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath, updateTag } from "next/cache";
 import { getUser } from "./auth";
 import bcrypt from "bcryptjs";
+import { MAX_DISPLAYED_BADGES } from "@/lib/badges";
+
+// Aluno escolhe, dentre os brevês já desbloqueados, quais aparecem ao lado da
+// divisa no ranking (até MAX_DISPLAYED_BADGES).
+export async function updateDisplayedBadgesAction(badgeIds: string[]) {
+  const user = await getUser();
+  if (!user || user.role !== "STUDENT") {
+    return { success: false, error: "Não autenticado." };
+  }
+
+  if (!Array.isArray(badgeIds)) {
+    return { success: false, error: "Lista de brevês inválida." };
+  }
+
+  try {
+    const student = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { unlockedBadges: true }
+    });
+
+    const unlockedBadges = student?.unlockedBadges ? student.unlockedBadges.split(',').filter(Boolean) : [];
+
+    // Só aceita ids que o aluno realmente já desbloqueou, sem repetição, até o limite.
+    const sanitized = Array.from(new Set(badgeIds.filter((id) => typeof id === "string" && unlockedBadges.includes(id)))).slice(0, MAX_DISPLAYED_BADGES);
+
+    await prisma.user.update({
+      where: { id: user.userId },
+      data: { displayedBadges: sanitized.join(',') }
+    });
+
+    updateTag("ranking");
+    revalidatePath("/aluno/painel");
+
+    return { success: true, displayedBadges: sanitized };
+  } catch (error) {
+    console.error("Error updating displayed badges:", error);
+    return { success: false, error: "Erro ao salvar os brevês selecionados." };
+  }
+}
 
 export async function updateUserAvatar(avatarUrl: string) {
   const user = await getUser();
