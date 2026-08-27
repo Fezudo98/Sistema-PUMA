@@ -518,15 +518,19 @@ export default function ApostilaManagerClient({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleOpenTopicsDialog(apo, false)}
-                        className="h-10 px-3 font-bold text-xs uppercase tracking-wider border border-border bg-background text-muted-foreground hover:bg-card hover:text-heading rounded-lg transition-all cursor-pointer"
+                        className={`h-10 px-3 font-bold text-xs uppercase tracking-wider border rounded-lg transition-all cursor-pointer ${
+                          apo.provaTopics
+                            ? "bg-blue-950/20 border-blue-500/30 text-blue-400 hover:bg-blue-950/40 hover:text-blue-300"
+                            : "bg-background border-border text-muted-foreground hover:bg-card hover:text-heading"
+                        }`}
                         title={
-                          apo.isProvaSubject
-                            ? "Editar a lista de tópicos usada pra classificar as questões desta matéria"
+                          apo.provaTopics
+                            ? "Editar a lista de tópicos já revisada desta apostila"
                             : "Extrair/revisar a lista de tópicos desta apostila"
                         }
                       >
                         <ListTree className="w-3.5 h-3.5 mr-1.5" />
-                        Tópicos
+                        {apo.provaTopics ? "Tópicos ✓" : "Tópicos"}
                       </Button>
 
                       {/* Toggle Button */}
