@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal, Crown, Sunrise, MoonStar, CalendarCheck, Landmark, Users, Rocket } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -55,6 +55,13 @@ const LEIS_DA_SELVA = [
     destaque: "Inteligência Tática"
   }
 ];
+
+// Ids de brevês com arte de avatar já cadastrada em public/avatars/*.png — usado pra
+// não oferecer como avatar um brevê novo que ainda não tem imagem.
+const BADGE_AVATAR_IDS = new Set([
+  'recruta', 'guerreiro', 'veterano', 'sniper', 'raio', 'caveira', 'padrao',
+  'bizonho', 'afoito', 'dorminhoco', 'pepreto'
+]);
 
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
@@ -137,6 +144,78 @@ const getBadges = (stats: any) => {
       color: 'text-blue-500',
       bg: 'bg-blue-900/20',
       border: 'border-blue-500/50'
+    },
+    {
+      id: 'lenda',
+      name: 'Lenda PUMA',
+      icon: Crown,
+      earned: false,
+      exclusive: false,
+      isElite: true,
+      desc: 'Alcançar 750.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 95%.',
+      color: 'text-fuchsia-400',
+      bg: 'bg-fuchsia-950/20',
+      border: 'border-fuchsia-500/50'
+    },
+    {
+      id: 'madrugador',
+      name: 'Madrugador',
+      icon: Sunrise,
+      earned: false,
+      desc: 'Responder pelo menos 20 questões entre 5h e 7h da manhã.',
+      color: 'text-orange-300',
+      bg: 'bg-orange-950/20',
+      border: 'border-orange-400/50'
+    },
+    {
+      id: 'coruja',
+      name: 'Coruja da Guarita',
+      icon: MoonStar,
+      earned: false,
+      desc: 'Responder pelo menos 20 questões entre 23h e 3h da madrugada.',
+      color: 'text-indigo-300',
+      bg: 'bg-indigo-950/20',
+      border: 'border-indigo-400/50'
+    },
+    {
+      id: 'fimdesemana',
+      name: 'Guerreiro de Fim de Semana',
+      icon: CalendarCheck,
+      earned: false,
+      desc: 'Completar pelo menos um simulado no sábado e no domingo em 4 fins de semana diferentes.',
+      color: 'text-teal-400',
+      bg: 'bg-teal-950/20',
+      border: 'border-teal-500/50'
+    },
+    {
+      id: 'historiador',
+      name: 'Historiador de Combate',
+      icon: Landmark,
+      earned: false,
+      desc: 'Responder pelo menos 100 questões de Blocos de Provas com no mínimo 80% de acerto.',
+      color: 'text-cyan-400',
+      bg: 'bg-cyan-950/20',
+      border: 'border-cyan-500/50'
+    },
+    {
+      id: 'lider_equipe',
+      name: 'Líder de Equipe',
+      icon: Users,
+      earned: false,
+      desc: 'Vencer pelo menos 3 partidas do Modo Competição em Equipes.',
+      color: 'text-lime-400',
+      bg: 'bg-lime-950/20',
+      border: 'border-lime-500/50'
+    },
+    {
+      id: 'sprint',
+      name: 'Sprint Tático',
+      icon: Rocket,
+      earned: false,
+      desc: 'Vencer pelo menos 5 rodadas do Modo Corrida.',
+      color: 'text-sky-400',
+      bg: 'bg-sky-950/20',
+      border: 'border-sky-500/50'
     },
     {
       id: 'bizonho',
@@ -1426,12 +1505,12 @@ export default function StudentDashboardClient({
               </button>
             ))}
 
-            {/* Brevês Desbloqueados */}
+            {/* Brevês Desbloqueados (só os que já têm arte de avatar em public/avatars/) */}
             {getBadges(stats).map(badge => {
               const isUnlocked = user?.unlockedBadges?.includes(badge.id);
               const Icon = badge.icon;
-              
-              if (!isUnlocked) return null;
+
+              if (!isUnlocked || !BADGE_AVATAR_IDS.has(badge.id)) return null;
 
               return (
                 <button 

@@ -114,6 +114,19 @@ model ExclusiveBadge {
   createdAt   DateTime @default(now())
 }
 
+// Resultado de um aluno em uma sala LIVE de Competição em Equipes, gravado quando o
+// instrutor encerra o simulado. Alimenta os brevês "Líder de Equipe" e "Sprint Tático".
+model LiveMatchResult {
+  id          String   @id @default(uuid())
+  simuladoId  String
+  studentId   String
+  wonTeam     Boolean  @default(false) // esteve na equipe com maior pontuação somada ao encerrar a sala
+  raceWins    Int      @default(0) // quantas rodadas do Modo Corrida o aluno venceu nessa sala
+  createdAt   DateTime @default(now())
+
+  @@index([studentId])
+}
+
 model ChatMessage {
   id            String   @id @default(uuid())
   studentId     String
