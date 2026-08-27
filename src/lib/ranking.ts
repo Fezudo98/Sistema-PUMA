@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { computeStudentPerformanceStats } from "./stats";
 import { unstable_cache } from "next/cache";
+import { MAX_DISPLAYED_BADGES } from "./badges";
 
 // In-memory lock to prevent Cache Stampede (múltiplas requisições batendo juntas antes do cache ser populado)
 let rankingPromise: Promise<any> | null = null;
@@ -38,6 +39,7 @@ const calculateRankingData = async () => {
       suspendedUntil: true,
       bonusStreakDays: true,
       unlockedBadges: true,
+      displayedBadges: true,
       answers: {
         select: {
           createdAt: true,
@@ -71,15 +73,23 @@ const calculateRankingData = async () => {
       studentRaffleInSimulado,
       (student as any).bonusStreakDays || 0
     );
-    
+
+    const unlockedBadges = (student as any).unlockedBadges
+      ? (student as any).unlockedBadges.split(',').filter(Boolean)
+      : [];
+    // Só mostra brevês escolhidos pelo aluno (e ainda desbloqueados), até o limite.
+    // Sem escolha salva ainda, cai de volta pros primeiros desbloqueados.
+    const chosenBadges = (student as any).displayedBadges
+      ? (student as any).displayedBadges.split(',').filter(Boolean).filter((id: string) => unlockedBadges.includes(id))
+      : [];
+    const displayedBadges = (chosenBadges.length > 0 ? chosenBadges : unlockedBadges).slice(0, MAX_DISPLAYED_BADGES);
+
     return {
       id: student.id,
       name: student.name,
       numero: (student as any).numero || null,
       avatarUrl: student.avatarUrl,
-      unlockedBadges: (student as any).unlockedBadges
-        ? (student as any).unlockedBadges.split(',').filter(Boolean)
-        : [],
+      displayedBadges,
       totalAnswers: sPerf.totalAnswers,
       accuracy: sPerf.accuracy,
       totalScore: sPerf.totalScore,

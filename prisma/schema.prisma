@@ -18,6 +18,7 @@ model User {
   aiAnalysisSimuladoCount Int? @default(0)
   aiAnalysisDate DateTime?
   unlockedBadges String? @default("")
+  displayedBadges String? @default("") // JSON não; CSV de ids de brevês (subconjunto de unlockedBadges) escolhidos pelo aluno pra aparecer ao lado da divisa no ranking
   numero   Int?
   answers  Answer[]
   suspendedUntil DateTime?
