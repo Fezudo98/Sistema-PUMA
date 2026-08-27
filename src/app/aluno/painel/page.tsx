@@ -26,6 +26,7 @@ export default async function AlunoPainel() {
     name: dbUser?.name || user.name,
     avatarUrl: dbUser?.avatarUrl || null,
     unlockedBadges: (dbUser as any)?.unlockedBadges ? (dbUser as any).unlockedBadges.split(',').filter(Boolean) : [],
+    displayedBadges: (dbUser as any)?.displayedBadges ? (dbUser as any).displayedBadges.split(',').filter(Boolean) : [],
     numero: (dbUser as any)?.numero || null,
     aiAnalysis: dbUser?.aiAnalysis || null,
     aiAnalysisSimuladoCount: dbUser?.aiAnalysisSimuladoCount || null,

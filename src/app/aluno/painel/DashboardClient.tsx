@@ -7,14 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal, Crown, Sunrise, MoonStar, CalendarCheck, Landmark, Users, Rocket } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { AlunoSidebar, getStoredSidebarCollapsed, storeSidebarCollapsed } from "@/components/AlunoSidebar";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { updateUserAvatar, updateUserName } from "@/app/actions/user";
+import { updateUserAvatar, updateUserName, updateDisplayedBadgesAction } from "@/app/actions/user";
+import { MAX_DISPLAYED_BADGES } from "@/lib/badges";
 import { getMorePastDailySimulados } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
@@ -54,6 +55,13 @@ const LEIS_DA_SELVA = [
     destaque: "Inteligência Tática"
   }
 ];
+
+// Ids de brevês com arte de avatar já cadastrada em public/avatars/*.png — usado pra
+// não oferecer como avatar um brevê novo que ainda não tem imagem.
+const BADGE_AVATAR_IDS = new Set([
+  'recruta', 'guerreiro', 'veterano', 'sniper', 'raio', 'caveira', 'padrao',
+  'bizonho', 'afoito', 'dorminhoco', 'pepreto'
+]);
 
 const getBadges = (stats: any) => {
   const s = stats || { simuladosCount: 0, accuracy: 0, avgTime: 0, totalScore: 0, history: [] };
@@ -138,6 +146,78 @@ const getBadges = (stats: any) => {
       border: 'border-blue-500/50'
     },
     {
+      id: 'lenda',
+      name: 'Lenda PUMA',
+      icon: Crown,
+      earned: false,
+      exclusive: false,
+      isElite: true,
+      desc: 'Alcançar 750.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 95%.',
+      color: 'text-fuchsia-400',
+      bg: 'bg-fuchsia-950/20',
+      border: 'border-fuchsia-500/50'
+    },
+    {
+      id: 'madrugador',
+      name: 'Madrugador',
+      icon: Sunrise,
+      earned: false,
+      desc: 'Responder pelo menos 20 questões entre 5h e 7h da manhã.',
+      color: 'text-orange-300',
+      bg: 'bg-orange-950/20',
+      border: 'border-orange-400/50'
+    },
+    {
+      id: 'coruja',
+      name: 'Coruja da Guarita',
+      icon: MoonStar,
+      earned: false,
+      desc: 'Responder pelo menos 20 questões entre 23h e 3h da madrugada.',
+      color: 'text-indigo-300',
+      bg: 'bg-indigo-950/20',
+      border: 'border-indigo-400/50'
+    },
+    {
+      id: 'fimdesemana',
+      name: 'Guerreiro de Fim de Semana',
+      icon: CalendarCheck,
+      earned: false,
+      desc: 'Completar pelo menos um simulado no sábado e no domingo em 4 fins de semana diferentes.',
+      color: 'text-teal-400',
+      bg: 'bg-teal-950/20',
+      border: 'border-teal-500/50'
+    },
+    {
+      id: 'historiador',
+      name: 'Historiador de Combate',
+      icon: Landmark,
+      earned: false,
+      desc: 'Responder pelo menos 100 questões de Blocos de Provas com no mínimo 80% de acerto.',
+      color: 'text-cyan-400',
+      bg: 'bg-cyan-950/20',
+      border: 'border-cyan-500/50'
+    },
+    {
+      id: 'lider_equipe',
+      name: 'Líder de Equipe',
+      icon: Users,
+      earned: false,
+      desc: 'Vencer pelo menos 3 partidas do Modo Competição em Equipes.',
+      color: 'text-lime-400',
+      bg: 'bg-lime-950/20',
+      border: 'border-lime-500/50'
+    },
+    {
+      id: 'sprint',
+      name: 'Sprint Tático',
+      icon: Rocket,
+      earned: false,
+      desc: 'Vencer pelo menos 5 rodadas do Modo Corrida.',
+      color: 'text-sky-400',
+      bg: 'bg-sky-950/20',
+      border: 'border-sky-500/50'
+    },
+    {
       id: 'bizonho',
       name: 'Bizonho',
       icon: Frown,
@@ -207,6 +287,9 @@ export default function StudentDashboardClient({
   const [aiAnalysis, setAiAnalysis] = useState(user?.aiAnalysis || "");
   const [loadingAi, setLoadingAi] = useState(false);
   const [isArmariaOpen, setIsArmariaOpen] = useState(false);
+  const [isBadgeMenuOpen, setIsBadgeMenuOpen] = useState(false);
+  const [selectedBadges, setSelectedBadges] = useState<string[]>(user?.displayedBadges || []);
+  const [savingBadges, setSavingBadges] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
   const [updatingName, setUpdatingName] = useState(false);
   const [nameError, setNameError] = useState("");
@@ -355,6 +438,30 @@ export default function StudentDashboardClient({
       setNameError("Erro interno ao atualizar o nome.");
     } finally {
       setUpdatingName(false);
+    }
+  };
+
+  const handleOpenBadgeMenu = () => {
+    setSelectedBadges(user?.displayedBadges || []);
+    setIsBadgeMenuOpen(true);
+  };
+
+  const handleToggleBadgeSelection = (badgeId: string) => {
+    setSelectedBadges((prev) => {
+      if (prev.includes(badgeId)) return prev.filter((id) => id !== badgeId);
+      if (prev.length >= MAX_DISPLAYED_BADGES) return prev;
+      return [...prev, badgeId];
+    });
+  };
+
+  const handleSaveDisplayedBadges = async () => {
+    setSavingBadges(true);
+    try {
+      await updateDisplayedBadgesAction(selectedBadges);
+      setIsBadgeMenuOpen(false);
+      router.refresh();
+    } finally {
+      setSavingBadges(false);
     }
   };
 
@@ -1109,7 +1216,7 @@ export default function StudentDashboardClient({
                                 </div>
                               );
                             })()}
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               {(() => {
                                 const p = getPatentByScore(aluno.totalScore || 0);
                                 const PIcon = p.icon;
@@ -1124,6 +1231,20 @@ export default function StudentDashboardClient({
                                   </>
                                 );
                               })()}
+                              {(aluno.displayedBadges || []).length > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {getBadges(undefined)
+                                    .filter((b: any) => aluno.displayedBadges.includes(b.id))
+                                    .map((b: any) => {
+                                      const BIcon = b.icon;
+                                      return (
+                                        <span key={b.id} className={b.color} title={b.name}>
+                                          <BIcon className="w-3.5 h-3.5" />
+                                        </span>
+                                      );
+                                    })}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center justify-between gap-2 pl-9">
@@ -1166,12 +1287,24 @@ export default function StudentDashboardClient({
             {/* Mural de Brevês */}
             <Card className="border-border bg-card/40 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-amber-600"></div>
-              <CardHeader>
-                <CardTitle className="text-lg text-heading flex items-center gap-2">
-                  <Award className="w-5 h-5 text-yellow-500" />
-                  Mural de Brevês
-                </CardTitle>
-                <CardDescription className="text-xs">Desbloqueie insígnias pelo seu desempenho em combate.</CardDescription>
+              <CardHeader className="flex flex-row items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg text-heading flex items-center gap-2">
+                    <Award className="w-5 h-5 text-yellow-500" />
+                    Mural de Brevês
+                  </CardTitle>
+                  <CardDescription className="text-xs">Desbloqueie insígnias pelo seu desempenho em combate.</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenBadgeMenu}
+                  className="h-9 px-3 text-xs font-bold uppercase tracking-wider border-border text-muted-foreground hover:text-heading shrink-0"
+                  title="Escolher quais brevês aparecem ao lado da sua divisa no ranking"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5" />
+                  Exibir no Ranking
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                 {getBadges(stats).map((b: any) => {
@@ -1372,12 +1505,12 @@ export default function StudentDashboardClient({
               </button>
             ))}
 
-            {/* Brevês Desbloqueados */}
+            {/* Brevês Desbloqueados (só os que já têm arte de avatar em public/avatars/) */}
             {getBadges(stats).map(badge => {
               const isUnlocked = user?.unlockedBadges?.includes(badge.id);
               const Icon = badge.icon;
-              
-              if (!isUnlocked) return null;
+
+              if (!isUnlocked || !BADGE_AVATAR_IDS.has(badge.id)) return null;
 
               return (
                 <button 
@@ -1402,6 +1535,68 @@ export default function StudentDashboardClient({
               <strong>Nota do Comando:</strong> Continue cumprindo missões e se destacando nas operações para desbloquear novos avatares. Os brevês não conquistados ainda não aparecem no seu arsenal.
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Escolha dos Brevês exibidos ao lado da divisa no Ranking */}
+      <Dialog open={isBadgeMenuOpen} onOpenChange={setIsBadgeMenuOpen}>
+        <DialogContent className="bg-background border-border text-foreground sm:max-w-lg max-h-[80vh] overflow-y-auto custom-scrollbar">
+          <DialogHeader className="border-b border-border pb-4">
+            <DialogTitle className="text-xl font-black uppercase tracking-widest text-heading flex items-center gap-3">
+              <SlidersHorizontal className="w-6 h-6 text-yellow-500" />
+              Brevês no Ranking
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground font-bold uppercase tracking-widest text-xs pt-1">
+              Escolha até {MAX_DISPLAYED_BADGES} brevês desbloqueados para aparecer ao lado da sua divisa no Ranking Geral da Sala ({selectedBadges.length}/{MAX_DISPLAYED_BADGES} selecionados).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="pt-4 space-y-2">
+            {getBadges(stats).filter((b: any) => user?.unlockedBadges?.includes(b.id)).length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-xs font-bold uppercase tracking-wider">
+                Você ainda não desbloqueou nenhum brevê.
+              </div>
+            ) : (
+              getBadges(stats)
+                .filter((b: any) => user?.unlockedBadges?.includes(b.id))
+                .map((b: any) => {
+                  const Icon = b.icon;
+                  const isSelected = selectedBadges.includes(b.id);
+                  const isDisabled = !isSelected && selectedBadges.length >= MAX_DISPLAYED_BADGES;
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => handleToggleBadgeSelection(b.id)}
+                      disabled={isDisabled}
+                      className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                        isSelected
+                          ? b.border + ' ' + b.bg
+                          : isDisabled
+                          ? 'border-border bg-card/20 opacity-40 cursor-not-allowed'
+                          : 'border-border bg-card/30 hover:bg-card/50 cursor-pointer'
+                      }`}
+                    >
+                      <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center border-2 ${isSelected ? b.border + ' ' + b.color : 'border-border text-muted-foreground'}`}>
+                        <Icon className="w-4.5 h-4.5" />
+                      </div>
+                      <span className={`flex-1 text-xs font-black uppercase tracking-wider ${isSelected ? b.color : 'text-muted-foreground'}`}>
+                        {b.name}
+                      </span>
+                      {isSelected && <Check className="w-4 h-4 text-emerald-400 shrink-0" />}
+                    </button>
+                  );
+                })
+            )}
+          </div>
+
+          <Button
+            onClick={handleSaveDisplayedBadges}
+            disabled={savingBadges}
+            className="w-full h-11 bg-yellow-600 hover:bg-yellow-500 font-bold uppercase tracking-wider text-xs mt-4"
+          >
+            {savingBadges ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Seleção"}
+          </Button>
         </DialogContent>
       </Dialog>
 

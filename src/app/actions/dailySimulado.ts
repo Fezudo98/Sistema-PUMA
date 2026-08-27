@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getFortalezaHour, countCompleteWeekends } from "@/lib/badges";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
@@ -858,6 +859,34 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
       }
     });
 
+    const hasLenda = totalScore >= 750000 && accuracy >= 95;
+
+    const madrugadorCount = student.answers.filter(a => {
+      const h = getFortalezaHour(a.createdAt);
+      return h >= 5 && h < 7;
+    }).length;
+    const hasMadrugador = madrugadorCount >= 20;
+
+    const corujaCount = student.answers.filter(a => {
+      const h = getFortalezaHour(a.createdAt);
+      return h >= 23 || h < 3;
+    }).length;
+    const hasCoruja = corujaCount >= 20;
+
+    const hasFimDeSemana = countCompleteWeekends(sPerf.completedDaysSet) >= 4;
+
+    const blocoAnswers = student.answers.filter(a => (a.question.simulado as any).tipo === 'BLOCO_PROVA');
+    const blocoAccuracy = blocoAnswers.length > 0
+      ? Math.round((blocoAnswers.filter(a => a.isCorrect).length / blocoAnswers.length) * 100)
+      : 0;
+    const hasHistoriador = blocoAnswers.length >= 100 && blocoAccuracy >= 80;
+
+    const liveMatchResults = await prisma.liveMatchResult.findMany({ where: { studentId } });
+    const teamWinsCount = liveMatchResults.filter(r => r.wonTeam).length;
+    const totalRaceWins = liveMatchResults.reduce((sum, r) => sum + r.raceWins, 0);
+    const hasLiderEquipe = teamWinsCount >= 3;
+    const hasSprint = totalRaceWins >= 5;
+
     let badges = [
       { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
       { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
@@ -866,6 +895,13 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
       { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: false },
       { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 92 && totalScore >= 200000, exclusive: false },
       { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 300000 && accuracy >= 92, exclusive: false },
+      { id: 'lenda', name: 'Lenda PUMA', earned: hasLenda, exclusive: false },
+      { id: 'madrugador', name: 'Madrugador', earned: hasMadrugador, exclusive: false },
+      { id: 'coruja', name: 'Coruja da Guarita', earned: hasCoruja, exclusive: false },
+      { id: 'fimdesemana', name: 'Guerreiro de Fim de Semana', earned: hasFimDeSemana, exclusive: false },
+      { id: 'historiador', name: 'Historiador de Combate', earned: hasHistoriador, exclusive: false },
+      { id: 'lider_equipe', name: 'Líder de Equipe', earned: hasLiderEquipe, exclusive: false },
+      { id: 'sprint', name: 'Sprint Tático', earned: hasSprint, exclusive: false },
       { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
       { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
       { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },
