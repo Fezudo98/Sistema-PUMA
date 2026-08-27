@@ -65,6 +65,7 @@ import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { jwtVerify } from 'jose';
 import { computeStudentPerformanceStats } from './src/lib/stats';
+import { getFortalezaHour, countCompleteWeekends } from './src/lib/badges';
 import { getJwtSecret } from './src/lib/env';
 
 const prisma = new PrismaClient();
@@ -309,6 +310,34 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       }
     });
 
+    const hasLenda = totalScore >= 750000 && accuracy >= 95;
+
+    const madrugadorCount = student.answers.filter(a => {
+      const h = getFortalezaHour(a.createdAt);
+      return h >= 5 && h < 7;
+    }).length;
+    const hasMadrugador = madrugadorCount >= 20;
+
+    const corujaCount = student.answers.filter(a => {
+      const h = getFortalezaHour(a.createdAt);
+      return h >= 23 || h < 3;
+    }).length;
+    const hasCoruja = corujaCount >= 20;
+
+    const hasFimDeSemana = countCompleteWeekends(sPerf.completedDaysSet) >= 4;
+
+    const blocoAnswers = student.answers.filter(a => (a.question.simulado as any).tipo === 'BLOCO_PROVA');
+    const blocoAccuracy = blocoAnswers.length > 0
+      ? Math.round((blocoAnswers.filter(a => a.isCorrect).length / blocoAnswers.length) * 100)
+      : 0;
+    const hasHistoriador = blocoAnswers.length >= 100 && blocoAccuracy >= 80;
+
+    const liveMatchResults = await prisma.liveMatchResult.findMany({ where: { studentId } });
+    const teamWinsCount = liveMatchResults.filter((r: any) => r.wonTeam).length;
+    const totalRaceWins = liveMatchResults.reduce((sum: number, r: any) => sum + r.raceWins, 0);
+    const hasLiderEquipe = teamWinsCount >= 3;
+    const hasSprint = totalRaceWins >= 5;
+
     let badges = [
       { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
       { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
@@ -317,6 +346,13 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
       { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: false },
       { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: false },
       { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: false },
+      { id: 'lenda', name: 'Lenda PUMA', earned: hasLenda, exclusive: false },
+      { id: 'madrugador', name: 'Madrugador', earned: hasMadrugador, exclusive: false },
+      { id: 'coruja', name: 'Coruja da Guarita', earned: hasCoruja, exclusive: false },
+      { id: 'fimdesemana', name: 'Guerreiro de Fim de Semana', earned: hasFimDeSemana, exclusive: false },
+      { id: 'historiador', name: 'Historiador de Combate', earned: hasHistoriador, exclusive: false },
+      { id: 'lider_equipe', name: 'Líder de Equipe', earned: hasLiderEquipe, exclusive: false },
+      { id: 'sprint', name: 'Sprint Tático', earned: hasSprint, exclusive: false },
       { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
       { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
       { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },
@@ -381,6 +417,8 @@ interface RoomState {
   // Modo Corrida (só relevante quando isTeamCompetition = true)
   raceMode?: boolean;
   raceWinner: { studentId: string; name: string; teamId: string | null } | null;
+  // Quantas vezes cada aluno venceu uma rodada do Modo Corrida nessa sala (chave = studentId).
+  raceWinCounts: Record<string, number>;
   disqualifiedTeams: Set<string>;
   // Quem foi o primeiro de cada equipe a responder nessa questão (chave = teamId),
   // certo ou errado — é quem "decide" a sorte da equipe no Modo Corrida.
@@ -619,6 +657,7 @@ app.prepare().then(() => {
           studentTeams,
           raceMode: !!dbSimulado?.isRaceMode,
           raceWinner: null,
+          raceWinCounts: {},
           disqualifiedTeams: new Set(),
           teamFirstAnswered: new Map()
         });
@@ -1300,6 +1339,9 @@ app.prepare().then(() => {
       });
 
       if (raceJustWon && room.raceWinner) {
+        const winnerId = room.raceWinner.studentId;
+        room.raceWinCounts[winnerId] = (room.raceWinCounts[winnerId] || 0) + 1;
+
         const winnerTeam = room.teams?.find(t => t.id === room.raceWinner!.teamId);
         io.to(roomCode).emit('race_winner', {
           studentId: room.raceWinner.studentId,
@@ -1390,9 +1432,43 @@ app.prepare().then(() => {
           s.totalScore = totalScores[s.id] ?? 0;
         });
 
+        // Salva o resultado da Competição em Equipes (equipe vencedora = maior pontuação
+        // somada dos membros) e reavalia os brevês "Líder de Equipe" e "Sprint Tático".
+        if (room.isTeamCompetition && room.teams && room.teams.length > 0) {
+          try {
+            const teamTotals = room.teams.map(team => ({
+              teamId: team.id,
+              totalScore: Object.values(room.studentScores)
+                .filter(s => room.studentTeams?.[s.id] === team.id)
+                .reduce((sum, s) => sum + (s.score || 0), 0)
+            }));
+            const winningTeamId = teamTotals.length > 0
+              ? teamTotals.reduce((best, t) => (t.totalScore > best.totalScore ? t : best)).teamId
+              : null;
+
+            const participantIds = Object.keys(room.studentScores).filter(id => room.studentTeams?.[id]);
+            if (participantIds.length > 0) {
+              await prisma.liveMatchResult.createMany({
+                data: participantIds.map(studentId => ({
+                  simuladoId,
+                  studentId,
+                  wonTeam: room.studentTeams?.[studentId] === winningTeamId,
+                  raceWins: room.raceWinCounts[studentId] || 0
+                }))
+              });
+
+              participantIds.forEach(studentId => {
+                checkAndUnlockBadges(studentId, io, simuladoId);
+              });
+            }
+          } catch (err) {
+            console.error("Erro ao salvar resultado da Competição em Equipes:", err);
+          }
+        }
+
         // Garante que o último estado do ranking seja enviado antes de deletar a sala
         emitRankingAndTeams(io, roomCode, room);
-        
+
         io.to(roomCode).emit('simulado_ended');
         rooms.delete(roomCode); // Limpa da memória
       }
