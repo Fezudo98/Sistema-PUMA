@@ -513,19 +513,21 @@ export default function ApostilaManagerClient({
                         )}
                       </Button>
 
-                      {/* Editar Tópicos (só quando já é matéria de prova) */}
-                      {apo.isProvaSubject && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenTopicsDialog(apo, false)}
-                          className="h-10 px-3 font-bold text-xs uppercase tracking-wider border border-border bg-background text-muted-foreground hover:bg-card hover:text-heading rounded-lg transition-all cursor-pointer"
-                          title="Editar a lista de tópicos usada pra classificar as questões desta matéria"
-                        >
-                          <ListTree className="w-3.5 h-3.5 mr-1.5" />
-                          Tópicos
-                        </Button>
-                      )}
+                      {/* Editar/extrair Tópicos (disponível pra qualquer apostila, não só matéria de prova) */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenTopicsDialog(apo, false)}
+                        className="h-10 px-3 font-bold text-xs uppercase tracking-wider border border-border bg-background text-muted-foreground hover:bg-card hover:text-heading rounded-lg transition-all cursor-pointer"
+                        title={
+                          apo.isProvaSubject
+                            ? "Editar a lista de tópicos usada pra classificar as questões desta matéria"
+                            : "Extrair/revisar a lista de tópicos desta apostila"
+                        }
+                      >
+                        <ListTree className="w-3.5 h-3.5 mr-1.5" />
+                        Tópicos
+                      </Button>
 
                       {/* Toggle Button */}
                       <Button
