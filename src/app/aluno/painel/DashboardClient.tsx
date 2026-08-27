@@ -60,7 +60,8 @@ const LEIS_DA_SELVA = [
 // não oferecer como avatar um brevê novo que ainda não tem imagem.
 const BADGE_AVATAR_IDS = new Set([
   'recruta', 'guerreiro', 'veterano', 'sniper', 'raio', 'caveira', 'padrao',
-  'bizonho', 'afoito', 'dorminhoco', 'pepreto'
+  'bizonho', 'afoito', 'dorminhoco', 'pepreto',
+  'lenda', 'madrugador', 'coruja', 'fimdesemana', 'historiador', 'lider_equipe', 'sprint'
 ]);
 
 const getBadges = (stats: any) => {
