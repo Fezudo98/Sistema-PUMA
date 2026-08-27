@@ -68,39 +68,10 @@ export async function deleteApostila(id: string) {
       return { error: "Apostila não encontrada." };
     }
 
-    // 1. Buscar todos os simulados diários e o bloco de provas gerados a partir desta apostila
-    const dailySimulados = await prisma.simulado.findMany({
-      where: {
-        tipo: { in: ["DAILY", "BLOCO_PROVA"] },
-        apostilaName: apostila.title
-      },
-      select: { id: true }
-    });
-
-    const dailySimuladoIds = dailySimulados.map(s => s.id);
-
-    // 2. Deletar os simulados diários antigos e dependências em cascata manual (SQLite)
-    if (dailySimuladoIds.length > 0) {
-      await prisma.answer.deleteMany({
-        where: {
-          question: {
-            simuladoId: { in: dailySimuladoIds }
-          }
-        }
-      });
-
-      await prisma.question.deleteMany({
-        where: {
-          simuladoId: { in: dailySimuladoIds }
-        }
-      });
-
-      await prisma.simulado.deleteMany({
-        where: {
-          id: { in: dailySimuladoIds }
-        }
-      });
-    }
+    // Os simulados diários e o Bloco de Provas já gerados a partir desta apostila são
+    // preservados: excluir o material da biblioteca não deve apagar o histórico de
+    // questões/respostas que os alunos já resolveram. Só o registro da apostila (e o
+    // arquivo físico) some — o que impede novas gerações futuras a partir dela.
 
     // Apaga o arquivo físico da pasta public
     if (apostila.filePath) {
