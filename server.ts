@@ -67,6 +67,7 @@ import { jwtVerify } from 'jose';
 import { computeStudentPerformanceStats } from './src/lib/stats';
 import { getFortalezaHour, countCompleteWeekends } from './src/lib/badges';
 import { getJwtSecret } from './src/lib/env';
+import { setIoInstance } from './src/lib/socketBridge';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = getJwtSecret();
@@ -423,6 +424,18 @@ interface RoomState {
   // Quem foi o primeiro de cada equipe a responder nessa questão (chave = teamId),
   // certo ou errado — é quem "decide" a sorte da equipe no Modo Corrida.
   teamFirstAnswered: Map<string, { studentId: string; name: string }>;
+  // Duelo 1v1 (tipo "DUELO"): sem instrutor na sala, o próprio servidor conduz a
+  // sequência de questões pré-sorteadas (duelQuestions), avançando automaticamente.
+  isDuelo?: boolean;
+  duelo?: { id: string; challengerId: string; challengedId: string; flexoesAposta: number };
+  duelQuestions?: any[];
+  duelQuestionIndex?: number;
+  // Id de quem acertou primeiro a questão atual do duelo (null/undefined = ninguém
+  // ainda) — só esse aluno vence a rodada; o outro pode responder, mas não conta.
+  duelQuestionFirstCorrectId?: string | null;
+  // Placar do duelo (melhor de N): quantas rodadas cada participante já venceu,
+  // chave = userId. Decide o vencedor — não é soma de pontos.
+  duelRoundsWon?: Record<string, number>;
 }
 const rooms = new Map<string, RoomState>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
@@ -449,9 +462,24 @@ const TEAM_COLORS = [
   { color: "#f97316", bg: "rgba(249, 115, 22, 0.15)", border: "rgba(249, 115, 22, 0.4)" }
 ];
 
+// Em salas de Duelo, room.currentQuestion guarda a linha completa do banco (inclusive
+// 'correta'/'justificativa', necessárias pro submit_answer pontuar) — nunca deve ser
+// reenviada como está a um aluno via 'room_update', ou a resposta certa vaza pro
+// cliente a cada reconexão/F5 durante uma questão em aberto. Salas AO VIVO mantêm o
+// comportamento de sempre (o instrutor já enxerga o gabarito de qualquer forma).
+function publicCurrentQuestion(room: RoomState) {
+  if (!room.currentQuestion) return null;
+  if (!room.isDuelo) return room.currentQuestion;
+  const { correta, justificativa, ...safe } = room.currentQuestion;
+  return safe;
+}
+
 function emitRankingAndTeams(io: any, roomCode: string, room: RoomState) {
   const currentRanking = Object.values(room.studentScores).sort((a: any, b: any) => b.score - a.score);
-  io.to(roomCode).emit('ranking_update', { ranking: currentRanking });
+  io.to(roomCode).emit('ranking_update', {
+    ranking: currentRanking,
+    ...(room.isDuelo && room.duelo ? { duelRounds: room.duelRoundsWon || {} } : {})
+  });
 
   if (room.isTeamCompetition && room.teams) {
     const enrichedTeams = room.teams.map(team => {
@@ -473,6 +501,303 @@ function emitRankingAndTeams(io: any, roomCode: string, room: RoomState) {
       studentTeams: room.studentTeams || {}
     });
   }
+}
+
+// Marca a questão atual como FINISHED, registra respostas em branco de quem não
+// respondeu, calcula as estatísticas de marcação e revela o gabarito pra sala —
+// mesma lógica usada pelo instrutor via 'reveal_result' na sala AO VIVO, reaproveitada
+// aqui pro avanço automático do Duelo (sem instrutor pra clicar em revelar).
+async function revealQuestionResult(io: any, roomCode: string, room: RoomState) {
+  const question = room.currentQuestion;
+  if (!question) return;
+  room.isPaused = false;
+
+  await prisma.question.update({ where: { id: question.id }, data: { status: 'FINISHED' } });
+
+  const answeredIds = room.answeredStudentIds || [];
+  let unansweredStudents = room.students.filter(st => !answeredIds.includes(st.id));
+
+  if (room.raffleWinnerId) {
+    unansweredStudents = unansweredStudents.filter(st => st.id === room.raffleWinnerId);
+  }
+
+  for (const st of unansweredStudents) {
+    try {
+      await prisma.answer.create({
+        data: {
+          questionId: question.id,
+          studentId: st.id,
+          alternativa: -1,
+          tempoGasto: question.tempoLimite,
+          isCorrect: false,
+          pontuacao: 0,
+          isRaffle: !!room.raffleWinnerId
+        }
+      });
+
+      if (room.studentScores[st.id]) {
+        const currentStreak = room.studentScores[st.id].streak;
+        const newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
+        room.studentScores[st.id].streak = newStreak;
+
+        const studentName = room.studentScores[st.id].name.split(' ')[0];
+        if (!room.pendingNotifications) room.pendingNotifications = [];
+
+        if (currentStreak >= 7) {
+          room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
+        } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
+          room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
+        }
+      }
+    } catch (e) {
+      console.error("Error saving unanswered record:", e);
+    }
+  }
+
+  const questionAnswers = await prisma.answer.findMany({
+    where: { questionId: question.id },
+    include: { student: { select: { id: true, name: true, avatarUrl: true } } }
+  });
+
+  const totalAnswers = questionAnswers.length;
+  const distribution = [0, 0, 0, 0, 0];
+  let unansweredCount = 0;
+
+  const answersByAlt: Record<string, Array<{ name: string; avatarUrl: string | null }>> = {
+    "-1": [], "0": [], "1": [], "2": [], "3": [], "4": []
+  };
+
+  questionAnswers.forEach(ans => {
+    if (ans.alternativa >= 0 && ans.alternativa < 5) {
+      distribution[ans.alternativa]++;
+    } else {
+      unansweredCount++;
+    }
+    const key = String(ans.alternativa);
+    if (answersByAlt[key]) {
+      answersByAlt[key].push({ name: ans.student.name, avatarUrl: ans.student.avatarUrl });
+    }
+  });
+
+  const percentages = distribution.map(count => totalAnswers > 0 ? Math.round((count / totalAnswers) * 100) : 0);
+  const unansweredPercentage = totalAnswers > 0 ? Math.round((unansweredCount / totalAnswers) * 100) : 0;
+
+  room.questionEndedData = {
+    correta: question.correta,
+    justificativa: question.justificativa,
+    percentages,
+    unansweredPercentage,
+    answersByAlt,
+    raceWinner: room.raceWinner
+  };
+
+  io.to(roomCode).emit('question_ended', {
+    questionId: question.id,
+    correta: question.correta,
+    justificativa: question.justificativa,
+    percentages,
+    unansweredPercentage,
+    answersByAlt,
+    raceWinner: room.raceWinner
+  });
+
+  emitRankingAndTeams(io, roomCode, room);
+
+  if (room.pendingNotifications && room.pendingNotifications.length > 0) {
+    io.to(roomCode).emit('streak_notifications', { notifications: room.pendingNotifications });
+    room.pendingNotifications = [];
+  }
+}
+
+// Inicia (ou reinicia, após recuperação de queda) a questão atual de um Duelo,
+// espelhando exatamente o que o handler 'next_question' faz para salas AO VIVO, mas
+// disparado pelo próprio servidor em vez de um comando de instrutor.
+function startDuelQuestion(io: any, roomCode: string, room: RoomState) {
+  if (!room.duelQuestions || room.duelQuestionIndex === undefined) return;
+  const question = room.duelQuestions[room.duelQuestionIndex];
+  if (!question) return;
+
+  if (room.timerInterval) clearInterval(room.timerInterval);
+
+  room.currentQuestion = question;
+  room.timeLeft = question.tempoLimite;
+  room.answersReceived = 0;
+  room.isPaused = false;
+  room.questionEndedData = null;
+  room.answeredStudentIds = [];
+  room.duelQuestionFirstCorrectId = null;
+
+  prisma.question.update({ where: { id: question.id }, data: { status: 'ACTIVE' } })
+    .catch(err => console.error('[Duelo] Erro ao ativar questão:', err));
+
+  io.to(roomCode).emit('new_question', {
+    id: question.id,
+    enunciado: question.enunciado,
+    alternativas: question.alternativas,
+    tempoLimite: question.tempoLimite
+  });
+
+  room.timerInterval = setInterval(() => {
+    room.timeLeft -= 1;
+    io.to(roomCode).emit('time_tick', { timeLeft: room.timeLeft });
+
+    if (room.timeLeft <= 0) {
+      clearInterval(room.timerInterval!);
+      room.timerInterval = null;
+      room.isPaused = false;
+      io.to(roomCode).emit('time_up');
+      scheduleDuelAdvance(io, roomCode);
+    }
+  }, 1000);
+}
+
+// Pausa de correção antes de avançar pra próxima questão do duelo — mesmo ritmo
+// usado hoje na sala AO VIVO entre o "time_up" e o instrutor clicar em avançar.
+function scheduleDuelAdvance(io: any, roomCode: string) {
+  setTimeout(async () => {
+    const room = rooms.get(roomCode);
+    if (!room || !room.isDuelo || room.status === 'FINISHED') return;
+    try {
+      await revealQuestionResult(io, roomCode, room);
+    } catch (err) {
+      console.error('[Duelo] Erro ao revelar resultado da questão:', err);
+    }
+    setTimeout(() => {
+      const stillRoom = rooms.get(roomCode);
+      if (!stillRoom || !stillRoom.isDuelo || stillRoom.status === 'FINISHED') return;
+      advanceDuel(io, roomCode, stillRoom);
+    }, 4000);
+  }, 500);
+}
+
+// Melhor de N: o duelo já está decidido assim que um dos dois atinge a maioria das
+// rodadas (ex.: 6 de 10) — não precisa rodar as questões restantes.
+function isDuelDecided(room: RoomState): boolean {
+  if (!room.duelo || !room.duelQuestions || room.duelQuestions.length === 0) return false;
+  const majority = Math.floor(room.duelQuestions.length / 2) + 1;
+  const roundsA = room.duelRoundsWon?.[room.duelo.challengerId] || 0;
+  const roundsB = room.duelRoundsWon?.[room.duelo.challengedId] || 0;
+  return roundsA >= majority || roundsB >= majority;
+}
+
+async function advanceDuel(io: any, roomCode: string, room: RoomState) {
+  room.duelQuestionIndex = (room.duelQuestionIndex ?? 0) + 1;
+  const noMoreQuestions = !room.duelQuestions || room.duelQuestionIndex >= room.duelQuestions.length;
+  if (!noMoreQuestions && !isDuelDecided(room)) {
+    startDuelQuestion(io, roomCode, room);
+  } else {
+    await finishDuel(io, roomCode, room);
+  }
+}
+
+async function finishDuel(io: any, roomCode: string, room: RoomState) {
+  if (!room.duelo) return;
+  const { id: duelId, challengerId, challengedId, flexoesAposta } = room.duelo;
+
+  const roundsA = room.duelRoundsWon?.[challengerId] || 0;
+  const roundsB = room.duelRoundsWon?.[challengedId] || 0;
+
+  let winnerId: string | null = null;
+  let loserId: string | null = null;
+  let isDraw = false;
+
+  if (roundsA === roundsB) {
+    try {
+      const questionIds = (room.duelQuestions || []).map((q: any) => q.id);
+      const answers = await prisma.answer.findMany({
+        where: { questionId: { in: questionIds }, studentId: { in: [challengerId, challengedId] } },
+        select: { studentId: true, tempoGasto: true }
+      });
+      const timeByStudent: Record<string, number> = { [challengerId]: 0, [challengedId]: 0 };
+      answers.forEach(a => { timeByStudent[a.studentId] = (timeByStudent[a.studentId] || 0) + a.tempoGasto; });
+
+      if (timeByStudent[challengerId] < timeByStudent[challengedId]) {
+        winnerId = challengerId; loserId = challengedId;
+      } else if (timeByStudent[challengedId] < timeByStudent[challengerId]) {
+        winnerId = challengedId; loserId = challengerId;
+      } else {
+        isDraw = true;
+      }
+    } catch (err) {
+      console.error('[Duelo] Erro ao calcular desempate por tempo:', err);
+      isDraw = true;
+    }
+  } else if (roundsA > roundsB) {
+    winnerId = challengerId; loserId = challengedId;
+  } else {
+    winnerId = challengedId; loserId = challengerId;
+  }
+
+  try {
+    await prisma.duelo.update({
+      where: { id: duelId },
+      data: { status: 'FINISHED', winnerId, loserId, isDraw, finishedAt: new Date() }
+    });
+    if (room.simuladoId) {
+      await prisma.simulado.update({ where: { id: room.simuladoId }, data: { status: 'FINISHED' } });
+    }
+  } catch (err) {
+    console.error('[Duelo] Erro ao finalizar duelo:', err);
+  }
+
+  room.status = 'FINISHED';
+  io.to(roomCode).emit('duel_ended', {
+    winnerId,
+    loserId,
+    isDraw,
+    flexoesAposta,
+    rounds: { [challengerId]: roundsA, [challengedId]: roundsB }
+  });
+
+  rooms.delete(roomCode);
+}
+
+// Aluno desconectou de um duelo em andamento e não voltou dentro da tolerância de
+// 15s: se nenhuma questão foi respondida ainda, cancela sem vencedor nem dívida
+// (desistência antes de começar de verdade); caso contrário, quem ficou conectado
+// vence por W.O. e a dívida se aplica normalmente (evita abandono pra fugir da aposta).
+async function handleDuelDisconnect(io: any, roomCode: string, room: RoomState, disconnectedUid: string) {
+  if (room.timerInterval) {
+    clearInterval(room.timerInterval);
+    room.timerInterval = null;
+  }
+  if (!room.duelo) {
+    rooms.delete(roomCode);
+    return;
+  }
+  const duelo = room.duelo;
+  const noQuestionsAnsweredYet = (room.duelQuestionIndex ?? 0) === 0 && (room.answeredStudentIds || []).length === 0;
+
+  try {
+    if (noQuestionsAnsweredYet) {
+      await prisma.duelo.update({ where: { id: duelo.id }, data: { status: 'CANCELLED' } });
+      if (room.simuladoId) {
+        await prisma.simulado.update({ where: { id: room.simuladoId }, data: { status: 'FINISHED' } }).catch(() => {});
+      }
+      io.to(roomCode).emit('duel_ended', { cancelled: true });
+    } else {
+      const winnerId = duelo.challengerId === disconnectedUid ? duelo.challengedId : duelo.challengerId;
+      await prisma.duelo.update({
+        where: { id: duelo.id },
+        data: { status: 'FINISHED', winnerId, loserId: disconnectedUid, forfeitedById: disconnectedUid, finishedAt: new Date() }
+      });
+      if (room.simuladoId) {
+        await prisma.simulado.update({ where: { id: room.simuladoId }, data: { status: 'FINISHED' } }).catch(() => {});
+      }
+      io.to(roomCode).emit('duel_ended', {
+        winnerId,
+        loserId: disconnectedUid,
+        isDraw: false,
+        forfeit: true,
+        flexoesAposta: duelo.flexoesAposta,
+        rounds: room.duelRoundsWon || {}
+      });
+    }
+  } catch (err) {
+    console.error('[Duelo] Erro ao processar desconexão:', err);
+  }
+
+  rooms.delete(roomCode);
 }
 
 app.prepare().then(() => {
@@ -524,6 +849,8 @@ app.prepare().then(() => {
     pingInterval: 10000
   });
 
+  setIoInstance(io);
+
   io.on('connection', async (socket) => {
     const identity = await verifyIdentityFromCookieHeader(socket.handshake.headers.cookie);
     if (!identity) {
@@ -532,6 +859,9 @@ app.prepare().then(() => {
       return;
     }
     verifiedSockets.set(socket.id, identity);
+    // Sala pessoal do socket (fora de qualquer sala de simulado), usada pelo
+    // socketBridge para notificar este aluno em tempo real (ex.: convite de duelo).
+    socket.join(`user:${identity.userId}`);
 
     console.log(`[Socket] User connected: ${socket.id} (${identity.role} ${identity.name})`);
 
@@ -579,6 +909,7 @@ app.prepare().then(() => {
         let restoredAnsweredIds: string[] = [];
         let restoredAnswersReceived = 0;
         let restoredQuestionEndedData = null;
+        let restoredFirstCorrectId: string | null = null;
 
         if (dbSimulado && dbSimulado.status === 'ACTIVE') {
           try {
@@ -595,10 +926,11 @@ app.prepare().then(() => {
               restoredTimeLeft = activeQ.tempoLimite;
               const qAnswers = await prisma.answer.findMany({
                 where: { questionId: activeQ.id },
-                select: { studentId: true }
+                select: { studentId: true, isCorrect: true }
               });
               restoredAnsweredIds = qAnswers.map(a => a.studentId);
               restoredAnswersReceived = restoredAnsweredIds.length;
+              restoredFirstCorrectId = qAnswers.find(a => a.isCorrect)?.studentId || null;
             } else {
               // Se não tem questão ativa, checa se havia uma finalizada para manter o gráfico de respostas
               const finishedQ = await prisma.question.findFirst({
@@ -670,6 +1002,53 @@ app.prepare().then(() => {
             room.studentScores[r.id] = r;
           });
 
+          if (dbSimulado.tipo === 'DUELO') {
+            try {
+              const duelo = await prisma.duelo.findUnique({ where: { simuladoId: dbSimulado.id } });
+              const duelQuestions = await prisma.question.findMany({
+                where: { simuladoId: dbSimulado.id },
+                orderBy: { id: 'asc' } // ordem só precisa ser estável dentro da mesma sala, não cronológica
+              });
+              room.duelQuestions = duelQuestions;
+
+              if (restoredQuestion) {
+                const idx = duelQuestions.findIndex(q => q.id === restoredQuestion!.id);
+                room.duelQuestionIndex = idx >= 0 ? idx : 0;
+                // O restoredQuestion genérico (linha ~885) só carrega campos seguros
+                // pra exibição — sem 'correta', o que quebraria a correção da resposta.
+                // Como é uma sala de Duelo, substitui pela linha completa já carregada
+                // acima (nunca sai crua pro cliente: room_update usa publicCurrentQuestion).
+                if (idx >= 0) room.currentQuestion = duelQuestions[idx];
+                room.duelQuestionFirstCorrectId = restoredFirstCorrectId;
+              } else {
+                const pendingIdx = duelQuestions.findIndex(q => q.status === 'PENDING');
+                room.duelQuestionIndex = pendingIdx >= 0 ? pendingIdx : duelQuestions.length;
+              }
+
+              if (duelo && duelo.challengedId) {
+                room.isDuelo = true;
+                room.duelo = {
+                  id: duelo.id,
+                  challengerId: duelo.challengerId,
+                  challengedId: duelo.challengedId,
+                  flexoesAposta: duelo.flexoesAposta
+                };
+
+                // Reconstrói o placar (rodadas vencidas) a partir das respostas já
+                // gravadas — a rodada foi vencida por quem tem pontuacao > 0 na questão.
+                const roundWins = await prisma.answer.findMany({
+                  where: { questionId: { in: duelQuestions.map(q => q.id) }, pontuacao: { gt: 0 } },
+                  select: { studentId: true }
+                });
+                const duelRoundsWon: Record<string, number> = { [duelo.challengerId]: 0, [duelo.challengedId]: 0 };
+                roundWins.forEach(a => { duelRoundsWon[a.studentId] = (duelRoundsWon[a.studentId] || 0) + 1; });
+                room.duelRoundsWon = duelRoundsWon;
+              }
+            } catch (duelRecoveryErr) {
+              console.error('[Duelo] Erro ao recuperar estado do duelo pós-reinício:', duelRecoveryErr);
+            }
+          }
+
           // Se há questão ativa com tempo rodando sem temporizador no Node, inicia o temporizador com segurança
           if (room.currentQuestion && room.status === 'ACTIVE' && !room.timerInterval) {
             room.timerInterval = setInterval(async () => {
@@ -681,6 +1060,7 @@ app.prepare().then(() => {
                 room.timerInterval = null;
                 room.isPaused = false;
                 io.to(roomCode).emit('time_up');
+                if (room.isDuelo) scheduleDuelAdvance(io, roomCode);
               }
             }, 1000);
           }
@@ -688,6 +1068,20 @@ app.prepare().then(() => {
       }
 
       const room = rooms.get(roomCode)!;
+
+      // Duelo é uma sala privada 1v1 com aposta de flexões — diferente das salas AO
+      // VIVO (propositalmente públicas por código), só os dois participantes podem
+      // entrar. Recusa silenciosamente qualquer outro aluno autenticado.
+      if (identity.role === 'STUDENT' && room.isDuelo && room.duelo) {
+        const isParticipant = identity.userId === room.duelo.challengerId || identity.userId === room.duelo.challengedId;
+        if (!isParticipant) {
+          console.warn(`[Duelo] Aluno ${identity.userId} tentou entrar num duelo alheio (sala ${roomCode}).`);
+          socket.leave(roomCode);
+          socketInfo.delete(socket.id);
+          return;
+        }
+      }
+
       let studentAnswer = null;
 
       if (identity.role === 'STUDENT') {
@@ -750,6 +1144,23 @@ app.prepare().then(() => {
             }
           });
         }
+
+        // Duelo: quando os dois participantes estiverem conectados, o próprio
+        // servidor inicia a partida — não há instrutor na sala pra comandar.
+        if (room.isDuelo && room.duelo && room.status === 'WAITING') {
+          const bothPresent = room.students.some(s => s.id === room.duelo!.challengerId)
+            && room.students.some(s => s.id === room.duelo!.challengedId);
+          if (bothPresent && room.duelQuestions && room.duelQuestions.length > 0) {
+            room.status = 'ACTIVE';
+            if (room.simuladoId) {
+              prisma.simulado.update({ where: { id: room.simuladoId }, data: { status: 'ACTIVE' } })
+                .catch(err => console.error('[Duelo] Erro ao ativar simulado:', err));
+            }
+            room.duelQuestionIndex = 0;
+            room.duelRoundsWon = { [room.duelo.challengerId]: 0, [room.duelo.challengedId]: 0 };
+            startDuelQuestion(io, roomCode, room);
+          }
+        }
       } else {
         if (user?.simuladoId) room.simuladoId = user.simuladoId;
       }
@@ -759,7 +1170,7 @@ app.prepare().then(() => {
         status: room.status, 
         studentCount: room.students.length,
         students: room.students,
-        currentQuestion: room.currentQuestion,
+        currentQuestion: publicCurrentQuestion(room),
         timeLeft: room.timeLeft,
         isPaused: room.isPaused,
         raffleWinnerId: room.raffleWinnerId,
@@ -777,7 +1188,7 @@ app.prepare().then(() => {
         status: room.status, 
         studentCount: room.students.length,
         students: room.students,
-        currentQuestion: room.currentQuestion,
+        currentQuestion: publicCurrentQuestion(room),
         timeLeft: room.timeLeft,
         isPaused: room.isPaused,
         raffleWinnerId: room.raffleWinnerId,
@@ -805,7 +1216,7 @@ app.prepare().then(() => {
           status: room.status, 
           studentCount: room.students.length,
           students: room.students,
-          currentQuestion: room.currentQuestion,
+          currentQuestion: publicCurrentQuestion(room),
           timeLeft: room.timeLeft,
           isPaused: room.isPaused,
           raffleWinnerId: room.raffleWinnerId,
@@ -830,7 +1241,7 @@ app.prepare().then(() => {
           status: room.status, 
           studentCount: room.students.length,
           students: room.students,
-          currentQuestion: room.currentQuestion,
+          currentQuestion: publicCurrentQuestion(room),
           timeLeft: room.timeLeft,
           isPaused: room.isPaused,
           raffleWinnerId: room.raffleWinnerId,
@@ -990,127 +1401,7 @@ app.prepare().then(() => {
       if (identity.role !== 'INSTRUCTOR') return;
       const room = rooms.get(roomCode);
       if (room && room.currentQuestion) {
-        const question = room.currentQuestion;
-        room.isPaused = false;
-        
-        await prisma.question.update({ where: { id: question.id }, data: { status: 'FINISHED' } });
-
-        // Registra respostas em branco para os alunos na sala que não responderam
-        const answeredIds = room.answeredStudentIds || [];
-        let unansweredStudents = room.students.filter(st => !answeredIds.includes(st.id));
-        
-        // Se for modo de sorteio, apenas o aluno sorteado pode ter resposta em branco registrada (caso não tenha respondido)
-        if (room.raffleWinnerId) {
-          unansweredStudents = unansweredStudents.filter(st => st.id === room.raffleWinnerId);
-        }
-        
-        for (const st of unansweredStudents) {
-          try {
-            await prisma.answer.create({
-              data: {
-                questionId: question.id,
-                studentId: st.id,
-                alternativa: -1, // -1 indica timeout / sem resposta
-                tempoGasto: question.tempoLimite,
-                isCorrect: false,
-                pontuacao: 0,
-                isRaffle: !!room.raffleWinnerId
-              }
-            });
-
-            // Atualiza o streak de erro para quem não respondeu
-            if (room.studentScores[st.id]) {
-              const currentStreak = room.studentScores[st.id].streak;
-              const newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
-              room.studentScores[st.id].streak = newStreak;
-
-              const studentName = room.studentScores[st.id].name.split(' ')[0];
-              if (!room.pendingNotifications) room.pendingNotifications = [];
-
-              if (currentStreak >= 7) {
-                room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
-              } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
-                room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
-              }
-            }
-          } catch (e) {
-            console.error("Error saving unanswered record:", e);
-          }
-        }
-
-        // Buscar todas as respostas da questão para calcular as estatísticas de marcação
-        const questionAnswers = await prisma.answer.findMany({
-          where: { questionId: question.id },
-          include: {
-            student: {
-              select: {
-                id: true,
-                name: true,
-                avatarUrl: true
-              }
-            }
-          }
-        });
-
-        const totalAnswers = questionAnswers.length;
-        const distribution = [0, 0, 0, 0, 0];
-        let unansweredCount = 0;
-
-        const answersByAlt: Record<string, Array<{ name: string; avatarUrl: string | null }>> = {
-          "-1": [],
-          "0": [],
-          "1": [],
-          "2": [],
-          "3": [],
-          "4": []
-        };
-
-        questionAnswers.forEach(ans => {
-          if (ans.alternativa >= 0 && ans.alternativa < 5) {
-            distribution[ans.alternativa]++;
-          } else {
-            unansweredCount++;
-          }
-          const key = String(ans.alternativa);
-          if (answersByAlt[key]) {
-            answersByAlt[key].push({
-              name: ans.student.name,
-              avatarUrl: ans.student.avatarUrl
-            });
-          }
-        });
-
-        const percentages = distribution.map(count => 
-          totalAnswers > 0 ? Math.round((count / totalAnswers) * 100) : 0
-        );
-        const unansweredPercentage = totalAnswers > 0 ? Math.round((unansweredCount / totalAnswers) * 100) : 0;
-
-        // Armazena no estado em memória para reconectados
-        room.questionEndedData = {
-          correta: question.correta,
-          justificativa: question.justificativa,
-          percentages,
-          unansweredPercentage,
-          answersByAlt,
-          raceWinner: room.raceWinner
-        };
-
-        io.to(roomCode).emit('question_ended', {
-          questionId: question.id,
-          correta: question.correta,
-          justificativa: question.justificativa,
-          percentages,
-          unansweredPercentage,
-          answersByAlt,
-          raceWinner: room.raceWinner
-        });
-        
-        emitRankingAndTeams(io, roomCode, room);
-        
-        if (room.pendingNotifications && room.pendingNotifications.length > 0) {
-          io.to(roomCode).emit('streak_notifications', { notifications: room.pendingNotifications });
-          room.pendingNotifications = []; // Clear for next round
-        }
+        await revealQuestionResult(io, roomCode, room);
       }
     });
 
@@ -1234,10 +1525,24 @@ app.prepare().then(() => {
           raceJustWon = true;
         }
       } else if (isCorrect) {
-        // Velocidade importa: quanto menor o tempo gasto, maior o bônus
-        const tempoRestante = Math.max(0, room.currentQuestion.tempoLimite - tempoGasto);
-        const bonus = Math.max(0, Math.floor((tempoRestante / room.currentQuestion.tempoLimite) * 50));
-        pontuacao = 100 + bonus;
+        // Duelo 1v1: não é pontuação acumulada, é placar (melhor de N rodadas) — só
+        // quem acerta PRIMEIRO vence a rodada (pontuacao=1, sem bônus de velocidade).
+        // O adversário ainda pode responder (não trava), mas não vence a rodada.
+        // A checagem+atribuição abaixo é síncrona (antes de qualquer await), então é
+        // segura mesmo se os dois submit_answer chegarem quase juntos.
+        if (room.isDuelo) {
+          if (!room.duelQuestionFirstCorrectId) {
+            pontuacao = 1;
+            room.duelQuestionFirstCorrectId = studentId;
+            if (!room.duelRoundsWon) room.duelRoundsWon = {};
+            room.duelRoundsWon[studentId] = (room.duelRoundsWon[studentId] || 0) + 1;
+          }
+        } else {
+          // Velocidade importa: quanto menor o tempo gasto, maior o bônus
+          const tempoRestante = Math.max(0, room.currentQuestion.tempoLimite - tempoGasto);
+          const bonus = Math.max(0, Math.floor((tempoRestante / room.currentQuestion.tempoLimite) * 50));
+          pontuacao = 100 + bonus;
+        }
       }
 
       let safeTempoGasto = Number(tempoGasto) || 0;
@@ -1360,6 +1665,7 @@ app.prepare().then(() => {
         room.timerInterval = null;
         room.isPaused = false;
         io.to(roomCode).emit('time_up');
+        if (room.isDuelo) scheduleDuelAdvance(io, roomCode);
       }
 
       // Checagem silenciosa de brevês conquistados e envio global caso haja novo
@@ -1488,16 +1794,20 @@ app.prepare().then(() => {
             clearTimeout(disconnectTimeouts.get(uid)!);
           }
           
-          const timeout = setTimeout(() => {
+          const timeout = setTimeout(async () => {
             disconnectTimeouts.delete(uid);
             const currentRoom = rooms.get(info.roomCode);
             if (currentRoom) {
+              if (currentRoom.isDuelo && currentRoom.duelo && currentRoom.status !== 'FINISHED') {
+                await handleDuelDisconnect(io, info.roomCode, currentRoom, uid);
+                return;
+              }
               currentRoom.students = currentRoom.students.filter(s => s.id !== uid);
               io.to(info.roomCode).emit('room_update', { 
                 status: currentRoom.status, 
                 studentCount: currentRoom.students.length,
                 students: currentRoom.students,
-                currentQuestion: currentRoom.currentQuestion,
+                currentQuestion: publicCurrentQuestion(currentRoom),
                 timeLeft: currentRoom.timeLeft,
                 isPaused: currentRoom.isPaused,
                 raffleWinnerId: currentRoom.raffleWinnerId,

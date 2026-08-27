@@ -31,7 +31,8 @@ export default async function AlunoPainel() {
     aiAnalysis: dbUser?.aiAnalysis || null,
     aiAnalysisSimuladoCount: dbUser?.aiAnalysisSimuladoCount || null,
     aiAnalysisDate: dbUser?.aiAnalysisDate ? dbUser.aiAnalysisDate.toISOString() : null,
-    isTestUser: dbUser?.isTestUser || false
+    isTestUser: dbUser?.isTestUser || false,
+    hasSeenDueloIntro: (dbUser as any)?.hasSeenDueloIntro || false
   };
 
   const todayStart = new Date();

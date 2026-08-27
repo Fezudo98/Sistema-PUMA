@@ -6,6 +6,27 @@ import { getUser } from "./auth";
 import bcrypt from "bcryptjs";
 import { MAX_DISPLAYED_BADGES } from "@/lib/badges";
 
+// Marca que o aluno já viu o modal de apresentação do modo Duelo, pra não aparecer
+// de novo em próximos acessos (persistido no usuário, não em localStorage, pra
+// funcionar igual em qualquer dispositivo que ele use).
+export async function markDueloIntroSeenAction() {
+  const user = await getUser();
+  if (!user) {
+    return { success: false, error: "Não autenticado." };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: user.userId },
+      data: { hasSeenDueloIntro: true }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error marking duelo intro as seen:", error);
+    return { success: false, error: "Erro ao registrar visualização." };
+  }
+}
+
 // Aluno escolhe, dentre os brevês já desbloqueados, quais aparecem ao lado da
 // divisa no ranking (até MAX_DISPLAYED_BADGES).
 export async function updateDisplayedBadgesAction(badgeIds: string[]) {

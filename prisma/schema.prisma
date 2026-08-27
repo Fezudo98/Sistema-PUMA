@@ -24,6 +24,7 @@ model User {
   suspendedUntil DateTime?
   isTestUser Boolean  @default(false)
   bonusStreakDays Int @default(0) // Correção administrativa manual da sequência diária (ex.: falha do sistema fez o aluno perder a sequência)
+  hasSeenDueloIntro Boolean @default(false) // Já viu o modal de apresentação do modo Duelo
 
   @@index([role])
 }
@@ -104,6 +105,42 @@ model Apostila {
   provaTopics String? // JSON array de strings — lista fixa de tópicos da apostila, extraída pela IA e revisada pelo instrutor
   vadeMecum    String?
   createdAt    DateTime @default(now())
+}
+
+// Duelo 1v1 entre dois alunos, com aposta de flexões. Cada linha já é o desafio + o
+// resultado + a dívida (sem tabela de ledger separada) — status caminha por
+// PENDING_INVITE|DECLINED|EXPIRED|CANCELLED (desafio direto) ou QUEUED|MATCHED (fila
+// de pareamento) até ACTIVE (partida em andamento num Simulado tipo "DUELO") e
+// FINISHED (resultado gravado). Sem @relation pra User/Apostila/Simulado, seguindo a
+// mesma convenção de LiveMatchResult.studentId/Simulado.instructorId (strings soltas).
+model Duelo {
+  id              String    @id @default(uuid())
+  challengerId    String
+  challengedId    String?   // null enquanto QUEUED sem par
+  apostilaId      String
+  apostilaName    String    // snapshot — sobrevive a rename/exclusão da apostila
+  flexoesAposta   Int
+  questionCount   Int       @default(10)
+  status          String    @default("PENDING_INVITE")
+  origin          String    @default("CHALLENGE") // CHALLENGE | QUEUE
+  simuladoId      String?   @unique // Simulado tipo "DUELO" que hospeda a partida
+  winnerId        String?
+  loserId         String?
+  isDraw          Boolean   @default(false)
+  debtPaid        Boolean   @default(false)
+  debtPaidAt      DateTime?
+  debtClearedByInstructorId String?
+  forfeitedById   String?
+  createdAt       DateTime  @default(now())
+  respondedAt     DateTime?
+  finishedAt      DateTime?
+
+  @@index([challengerId])
+  @@index([challengedId])
+  @@index([status])
+  @@index([apostilaId, status])
+  @@index([winnerId, status, debtPaid])
+  @@index([loserId, status, debtPaid])
 }
 
 model ExclusiveBadge {

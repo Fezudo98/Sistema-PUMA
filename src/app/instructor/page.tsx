@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import Image from "next/image";
-import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy, Shield, Presentation } from "lucide-react";
+import { Play, LogOut, PlusCircle, Users, Target, Clock, Trophy, Shield, Presentation, Swords } from "lucide-react";
 import { getUser, logout } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import { prisma } from '@/lib/prisma';
@@ -170,6 +170,12 @@ export default async function InstructorDashboard() {
             </TabsList>
             
             <div className="flex gap-2 w-full lg:w-auto">
+              <Link href="/instructor/duelos" className="flex-1 lg:flex-none">
+                <Button variant="outline" className="w-full h-12 lg:h-14 font-black text-xs uppercase tracking-wider border-red-800/50 text-red-400 hover:bg-red-950/30">
+                  <Swords className="w-5 h-5 mr-1 sm:mr-2" />
+                  Duelos
+                </Button>
+              </Link>
               <Link href="/instructor/simulado/presentation/new" className="flex-1 lg:flex-none">
                 <Button className="w-full bg-amber-600 hover:bg-amber-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)]">
                   <Presentation className="w-5 h-5 mr-1 sm:mr-2" />

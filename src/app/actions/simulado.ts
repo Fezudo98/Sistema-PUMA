@@ -3,15 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "./auth";
 import { revalidatePath } from "next/cache";
-
-function generateCode() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let result = "";
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
+import { generateUniqueRoomCode } from "@/lib/roomCode";
 
 function shuffleAlternatives(alternativas: string[], corretaIdx: number) {
   if (!alternativas || !Array.isArray(alternativas) || alternativas.length === 0) {
@@ -84,12 +76,7 @@ export async function createSimulado(data: {
   }
 
   // Gera um código de sala único
-  let codigoSala = generateCode();
-  let codeExists = await prisma.simulado.findUnique({ where: { codigoSala } });
-  while (codeExists) {
-    codigoSala = generateCode();
-    codeExists = await prisma.simulado.findUnique({ where: { codigoSala } });
-  }
+  const codigoSala = await generateUniqueRoomCode();
 
   // Salva no banco de dados
   try {

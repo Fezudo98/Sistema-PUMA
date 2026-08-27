@@ -7,14 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal, Crown, Sunrise, MoonStar, CalendarCheck, Landmark, Users, Rocket } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal, Crown, Sunrise, MoonStar, CalendarCheck, Landmark, Users, Rocket, Swords } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { AlunoSidebar, getStoredSidebarCollapsed, storeSidebarCollapsed } from "@/components/AlunoSidebar";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { updateUserAvatar, updateUserName, updateDisplayedBadgesAction } from "@/app/actions/user";
+import { updateUserAvatar, updateUserName, updateDisplayedBadgesAction, markDueloIntroSeenAction } from "@/app/actions/user";
 import { MAX_DISPLAYED_BADGES } from "@/lib/badges";
 import { getMorePastDailySimulados } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
@@ -285,6 +285,7 @@ export default function StudentDashboardClient({
   isGeneratingDaily?: boolean;
 }) {
   const [codigo, setCodigo] = useState("");
+  const [showDueloIntro, setShowDueloIntro] = useState(!user?.hasSeenDueloIntro);
   const [aiAnalysis, setAiAnalysis] = useState(user?.aiAnalysis || "");
   const [loadingAi, setLoadingAi] = useState(false);
   const [isArmariaOpen, setIsArmariaOpen] = useState(false);
@@ -440,6 +441,12 @@ export default function StudentDashboardClient({
     } finally {
       setUpdatingName(false);
     }
+  };
+
+  const handleDismissDueloIntro = (goToDuelo: boolean) => {
+    setShowDueloIntro(false);
+    markDueloIntroSeenAction().catch(() => {});
+    if (goToDuelo) router.push("/aluno/duelo");
   };
 
   const handleOpenBadgeMenu = () => {
@@ -694,7 +701,23 @@ export default function StudentDashboardClient({
           
           {/* Left Column: Join Room & Strengths/Weaknesses */}
           <div className="lg:col-span-1 space-y-8">
-            
+
+             {/* Duelo Card */}
+             <Link href="/aluno/duelo">
+               <Card className="border-red-900/50 bg-red-950/20 shadow-xl overflow-hidden relative hover:bg-red-950/30 transition-colors cursor-pointer">
+                 <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+                 <CardContent className="py-4 flex items-center justify-between gap-3">
+                   <div className="flex items-center gap-3">
+                     <Swords className="w-6 h-6 text-red-400" />
+                     <div>
+                       <p className="font-black uppercase tracking-widest text-heading text-sm">Duelo</p>
+                       <p className="text-xs text-muted-foreground">Desafie um combatente e aposte flexões</p>
+                     </div>
+                   </div>
+                 </CardContent>
+               </Card>
+             </Link>
+
              {/* Join Room Card */}
              <Card className="border-blue-900/50 bg-blue-950/20 shadow-2xl overflow-hidden relative">
                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
@@ -1275,7 +1298,16 @@ export default function StudentDashboardClient({
                                 </span>
                               )}
                             </div>
-                            <span className="font-mono font-black text-xs text-blue-400 shrink-0">{aluno.totalScore} pts</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {!isMe && (
+                                <Link href={`/aluno/duelo?challenge=${aluno.id}`}>
+                                  <Button size="sm" variant="outline" className="h-6 px-2 text-[10px] font-black uppercase tracking-wider border-red-800/50 text-red-400 hover:bg-red-950/30" title="Desafiar para um duelo">
+                                    <Swords className="w-3 h-3 mr-1" /> Desafiar
+                                  </Button>
+                                </Link>
+                              )}
+                              <span className="font-mono font-black text-xs text-blue-400">{aluno.totalScore} pts</span>
+                            </div>
                           </div>
                         </div>
                       );
@@ -1434,6 +1466,51 @@ export default function StudentDashboardClient({
         </div>
       </main>
       </div>
+
+      {/* Apresentação do modo Duelo (só na primeira vez) */}
+      <Dialog open={showDueloIntro} onOpenChange={(open) => { if (!open) handleDismissDueloIntro(false); }}>
+        <DialogContent className="bg-background border-red-900/50 text-foreground sm:max-w-md">
+          <DialogHeader className="border-b border-border pb-4">
+            <DialogTitle className="text-xl font-black uppercase tracking-widest text-heading flex items-center gap-3">
+              <Swords className="w-6 h-6 text-red-500" />
+              Novidade: Duelo
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground pt-1">
+              Chegou o modo de combate 1 contra 1 entre combatentes.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2 text-sm text-foreground">
+            <p>
+              Desafie um colega (ou entre na fila e seja pareado automaticamente), escolha a matéria e aposte
+              <strong className="text-heading"> flexões</strong> no resultado.
+            </p>
+            <ul className="space-y-2 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <Trophy className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+                <span><strong className="text-heading">Melhor de 10:</strong> em cada questão, quem responde certo primeiro vence a rodada. O duelo termina assim que alguém garante a vitória.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Zap className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                <span>Tempo real, sem instrutor conduzindo — a partida roda sozinha assim que os dois entram na sala.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <span>Quem perde fica devendo as flexões apostadas; o vencedor marca como paga quando o combate físico acontecer de verdade.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button variant="outline" onClick={() => handleDismissDueloIntro(false)} className="flex-1 border-border">
+              Depois
+            </Button>
+            <Button onClick={() => handleDismissDueloIntro(true)} className="flex-1 bg-red-600 hover:bg-red-700 font-black uppercase tracking-widest">
+              <Swords className="w-4 h-4 mr-2" /> Ver Duelo
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Armaria Modal */}
       <Dialog open={isArmariaOpen} onOpenChange={setIsArmariaOpen}>
