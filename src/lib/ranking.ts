@@ -78,11 +78,14 @@ const calculateRankingData = async () => {
       ? (student as any).unlockedBadges.split(',').filter(Boolean)
       : [];
     // Só mostra brevês escolhidos pelo aluno (e ainda desbloqueados), até o limite.
-    // Sem escolha salva ainda, cai de volta pros primeiros desbloqueados.
+    // Sem escolha salva ainda, cai de volta pros brevês desbloqueados mais recentemente
+    // (unlockedBadges é preenchido em ordem de conquista, do mais antigo pro mais novo).
     const chosenBadges = (student as any).displayedBadges
       ? (student as any).displayedBadges.split(',').filter(Boolean).filter((id: string) => unlockedBadges.includes(id))
       : [];
-    const displayedBadges = (chosenBadges.length > 0 ? chosenBadges : unlockedBadges).slice(0, MAX_DISPLAYED_BADGES);
+    const displayedBadges = chosenBadges.length > 0
+      ? chosenBadges.slice(0, MAX_DISPLAYED_BADGES)
+      : unlockedBadges.slice(-MAX_DISPLAYED_BADGES).reverse();
 
     return {
       id: student.id,
