@@ -37,6 +37,7 @@ const calculateRankingData = async () => {
       avatarUrl: true,
       suspendedUntil: true,
       bonusStreakDays: true,
+      unlockedBadges: true,
       answers: {
         select: {
           createdAt: true,
@@ -76,6 +77,9 @@ const calculateRankingData = async () => {
       name: student.name,
       numero: (student as any).numero || null,
       avatarUrl: student.avatarUrl,
+      unlockedBadges: (student as any).unlockedBadges
+        ? (student as any).unlockedBadges.split(',').filter(Boolean)
+        : [],
       totalAnswers: sPerf.totalAnswers,
       accuracy: sPerf.accuracy,
       totalScore: sPerf.totalScore,

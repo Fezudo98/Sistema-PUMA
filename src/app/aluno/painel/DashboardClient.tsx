@@ -1109,7 +1109,7 @@ export default function StudentDashboardClient({
                                 </div>
                               );
                             })()}
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               {(() => {
                                 const p = getPatentByScore(aluno.totalScore || 0);
                                 const PIcon = p.icon;
@@ -1124,6 +1124,20 @@ export default function StudentDashboardClient({
                                   </>
                                 );
                               })()}
+                              {(aluno.unlockedBadges || []).length > 0 && (
+                                <span className="flex items-center gap-1">
+                                  {getBadges(undefined)
+                                    .filter((b: any) => aluno.unlockedBadges.includes(b.id))
+                                    .map((b: any) => {
+                                      const BIcon = b.icon;
+                                      return (
+                                        <span key={b.id} className={b.color} title={b.name}>
+                                          <BIcon className="w-3.5 h-3.5" />
+                                        </span>
+                                      );
+                                    })}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center justify-between gap-2 pl-9">
