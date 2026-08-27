@@ -106,11 +106,12 @@ const responseSchema = {
   }
 };
 
-// Variante do schema acima usada só para apostilas marcadas como matéria de prova
-// (Apostila.isProvaSubject com Apostila.provaTopics preenchida): acrescenta o campo
-// "topico", travado (format "enum") na lista fixa de tópicos da apostila, pra manter
-// a classificação consistente entre gerações — é o que alimenta o filtro por tópico
-// no Bloco de Provas.
+// Variante do schema acima usada quando a apostila já tem uma lista fixa de tópicos
+// revisada (Apostila.provaTopics): acrescenta o campo "topico", travado (format "enum")
+// na lista fixa de tópicos da apostila, pra manter a classificação consistente entre
+// gerações — assim as questões já acumulam classificadas por tópico mesmo antes de a
+// apostila virar matéria de prova, alimentando o filtro por tópico no Bloco de Provas
+// assim que ela for marcada.
 function buildDailyQuestionsSchema(topics: string[] | null) {
   if (!topics || topics.length === 0) return responseSchema;
 
@@ -419,11 +420,11 @@ export async function checkAndGenerateDailySimulados(force: boolean = false) {
               }
             };
 
-            // Matéria de prova com lista de tópicos definida: a IA deve classificar
-            // cada questão dentro dessa lista fixa, alimentando o filtro por tópico
-            // do Bloco de Provas.
+            // Apostila com lista de tópicos revisada: a IA já classifica cada questão
+            // dentro dessa lista fixa, mesmo antes de a apostila virar matéria de
+            // prova, pra alimentar o filtro por tópico do Bloco de Provas assim que ela for marcada.
             let provaTopicsList: string[] = [];
-            if (apostila.isProvaSubject && apostila.provaTopics) {
+            if (apostila.provaTopics) {
               try {
                 const parsed = JSON.parse(apostila.provaTopics);
                 if (Array.isArray(parsed)) provaTopicsList = parsed;
@@ -948,10 +949,11 @@ export async function generateDailySimuladoForSingleApostila(apostilaId: string,
       }
     };
 
-    // Matéria de prova com lista de tópicos definida: a IA deve classificar cada
-    // questão dentro dessa lista fixa, alimentando o filtro por tópico do Bloco de Provas.
+    // Apostila com lista de tópicos revisada: a IA já classifica cada questão dentro
+    // dessa lista fixa, mesmo antes de a apostila virar matéria de prova, pra alimentar
+    // o filtro por tópico do Bloco de Provas assim que ela for marcada.
     let provaTopicsList: string[] = [];
-    if (apostila.isProvaSubject && apostila.provaTopics) {
+    if (apostila.provaTopics) {
       try {
         const parsed = JSON.parse(apostila.provaTopics);
         if (Array.isArray(parsed)) provaTopicsList = parsed;
