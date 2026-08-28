@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
-import { getFortalezaHour, countCompleteWeekends } from "@/lib/badges";
+import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from "@/lib/badges";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
@@ -862,12 +862,14 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
     const hasLenda = totalScore >= 750000 && accuracy >= 95;
 
     const madrugadorCount = student.answers.filter(a => {
+      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
       const h = getFortalezaHour(a.createdAt);
       return h >= 5 && h < 7;
     }).length;
     const hasMadrugador = madrugadorCount >= 20;
 
     const corujaCount = student.answers.filter(a => {
+      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
       const h = getFortalezaHour(a.createdAt);
       return h >= 23 || h < 3;
     }).length;

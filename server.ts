@@ -65,7 +65,7 @@ import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { jwtVerify } from 'jose';
 import { computeStudentPerformanceStats } from './src/lib/stats';
-import { getFortalezaHour, countCompleteWeekends } from './src/lib/badges';
+import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from './src/lib/badges';
 import { getJwtSecret } from './src/lib/env';
 import { setIoInstance } from './src/lib/socketBridge';
 
@@ -314,12 +314,14 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
     const hasLenda = totalScore >= 750000 && accuracy >= 95;
 
     const madrugadorCount = student.answers.filter(a => {
+      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
       const h = getFortalezaHour(a.createdAt);
       return h >= 5 && h < 7;
     }).length;
     const hasMadrugador = madrugadorCount >= 20;
 
     const corujaCount = student.answers.filter(a => {
+      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
       const h = getFortalezaHour(a.createdAt);
       return h >= 23 || h < 3;
     }).length;

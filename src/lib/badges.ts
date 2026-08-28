@@ -18,6 +18,17 @@ export function getFortalezaHour(date: Date): number {
   }
 }
 
+// Um script de correção histórica (scripts/backfill_answers_createdAt.ts) reescreveu
+// o createdAt de respostas antigas para "createdAt do simulado + tempoGasto segundos"
+// — uma aproximação sintética, bem diferente do horário real em que o aluno
+// respondeu (os simulados diários costumam ser gerados de madrugada, assim que o
+// primeiro aluno do dia abre o sistema). Brevês sensíveis à hora do dia (Madrugador,
+// Coruja da Guarita) precisam ignorar essas respostas "sintéticas", ou acabam sendo
+// concedidos por engano pra quem nunca respondeu de fato naquele horário.
+export function isSyntheticBackfilledTimestamp(answerCreatedAt: Date, simuladoCreatedAt: Date, tempoGasto: number): boolean {
+  return answerCreatedAt.getTime() === simuladoCreatedAt.getTime() + (tempoGasto || 0) * 1000;
+}
+
 // Dia da semana (0=domingo..6=sábado) de uma string "YYYY-MM-DD" (já no fuso de
 // Fortaleza, como as que getLocalDayString produz), sem depender do fuso do servidor.
 function dayStringToWeekday(dayStr: string): number {
