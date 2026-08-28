@@ -20,11 +20,17 @@ export default function DuelBattleClient({ user, simulado, duelo, opponentName }
   const [duelRounds, setDuelRounds] = useState<{ mine: number; opponent: number }>({ mine: 0, opponent: 0 });
   const [duelResult, setDuelResult] = useState<any>(null);
   const [studentCount, setStudentCount] = useState(0);
+  const [joinFailed, setJoinFailed] = useState(false);
 
   const selectedAltRef = useRef(-1);
   const hasConfirmedRef = useRef(false);
   const currentQuestionRef = useRef<any>(null);
   const startTimeRef = useRef(0);
+  // O servidor só registra o handler de 'join_room' depois de verificar o JWT de
+  // forma assíncrona — se o cliente emitir rápido demais (comum no Duelo, com os
+  // dois entrando quase juntos), o evento pode chegar antes do handler existir e
+  // ser descartado sem erro nenhum. Reenviar até receber um 'room_update' resolve.
+  const joinedAckRef = useRef(false);
 
   useEffect(() => { selectedAltRef.current = selectedAlt; }, [selectedAlt]);
   useEffect(() => { hasConfirmedRef.current = hasConfirmed; }, [hasConfirmed]);
@@ -35,11 +41,28 @@ export default function DuelBattleClient({ user, simulado, duelo, opponentName }
     const s = io({ reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
     setSocket(s);
 
-    s.on("connect", () => {
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+    const attemptJoin = (attempt: number) => {
       s.emit("join_room", { roomCode: simulado.codigoSala, user });
+      retryTimeout = setTimeout(() => {
+        if (joinedAckRef.current || !s.connected) return;
+        if (attempt < 5) {
+          attemptJoin(attempt + 1);
+        } else {
+          setJoinFailed(true);
+        }
+      }, 2500);
+    };
+
+    s.on("connect", () => {
+      joinedAckRef.current = false;
+      setJoinFailed(false);
+      attemptJoin(1);
     });
 
     s.on("room_update", (data) => {
+      joinedAckRef.current = true;
+      if (retryTimeout) { clearTimeout(retryTimeout); retryTimeout = null; }
       if (data.status) setStatus(data.status);
       if (typeof data.studentCount === "number") setStudentCount(data.studentCount);
       if (data.currentQuestion) {
@@ -86,7 +109,10 @@ export default function DuelBattleClient({ user, simulado, duelo, opponentName }
 
     s.on("duel_ended", (data) => setDuelResult(data));
 
-    return () => { s.disconnect(); };
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+      s.disconnect();
+    };
   }, [simulado.codigoSala, user.userId]);
 
   const handleConfirmAnswer = () => {
@@ -155,6 +181,21 @@ export default function DuelBattleClient({ user, simulado, duelo, opponentName }
           <Link href="/aluno/duelo">
             <Button className="w-full h-12 bg-red-600 hover:bg-red-700 font-black uppercase tracking-widest">Voltar ao Duelo</Button>
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (joinFailed) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center space-y-4">
+          <XCircle className="w-12 h-12 mx-auto text-red-500" />
+          <h1 className="text-xl font-black uppercase tracking-widest text-heading">Não foi possível entrar na sala</h1>
+          <p className="text-sm text-muted-foreground">A conexão com o servidor não confirmou sua entrada. Tente recarregar a página.</p>
+          <Button onClick={() => window.location.reload()} className="w-full h-12 bg-red-600 hover:bg-red-700 font-black uppercase tracking-widest">
+            Tentar novamente
+          </Button>
         </div>
       </div>
     );

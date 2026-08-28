@@ -439,6 +439,12 @@ interface RoomState {
 }
 const rooms = new Map<string, RoomState>();
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
+// Trava a criação de uma sala por roomCode: sem isso, dois alunos entrando quase ao
+// mesmo tempo (o caso normal no Duelo — só 2 pessoas, ambas chegando juntas) disparam
+// o bloco de criação em paralelo, e o segundo "rooms.set" sobrescreve o primeiro,
+// perdendo o participante que já tinha entrado (cada um fica preso numa versão
+// diferente da sala, esperando um pelo outro pra sempre).
+const roomCreationLocks = new Map<string, Promise<void>>();
 
 // Track socket connection info to handle disconnects
 const socketInfo = new Map<string, { roomCode: string; userId: string; role: string; name: string }>();
@@ -872,6 +878,8 @@ app.prepare().then(() => {
       socketInfo.set(socket.id, { roomCode, userId: identity.userId, role: identity.role, name: identity.name });
 
       if (!rooms.has(roomCode)) {
+        if (!roomCreationLocks.has(roomCode)) {
+          const creationPromise = (async () => {
         const dbSimulado = await prisma.simulado.findUnique({
           where: { codigoSala: roomCode }
         });
@@ -1065,6 +1073,11 @@ app.prepare().then(() => {
             }, 1000);
           }
         }
+          })();
+          roomCreationLocks.set(roomCode, creationPromise);
+          creationPromise.finally(() => roomCreationLocks.delete(roomCode));
+        }
+        await roomCreationLocks.get(roomCode);
       }
 
       const room = rooms.get(roomCode)!;
