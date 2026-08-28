@@ -91,6 +91,24 @@ export function computeStudentPerformanceStats(
     }
   });
 
+  // Bloco de Provas nunca "termina" de verdade (acumula todas as questões diárias já
+  // geradas da matéria e só cresce) — exigir 100% dele pra contar como sequência,
+  // como as demais linhas acima fazem, tornaria a sequência impossível de manter só
+  // treinando ali. Em vez disso, resolver pelo menos 25 questões de Bloco de Provas
+  // num dia (somando todas as apostilas que o aluno treinou naquele dia) já garante
+  // aquele dia na sequência, igual a terminar um simulado diário normal.
+  const BLOCO_PROVA_DAILY_THRESHOLD = 25;
+  const blocoAnswersByDay = new Map<string, number>();
+  answers.forEach(a => {
+    if (!a.question || !a.question.simulado) return;
+    if (a.question.simulado.tipo !== "BLOCO_PROVA") return;
+    const day = getLocalDayString(a.createdAt || a.question.simulado.createdAt || new Date());
+    blocoAnswersByDay.set(day, (blocoAnswersByDay.get(day) || 0) + 1);
+  });
+  blocoAnswersByDay.forEach((count, day) => {
+    if (count >= BLOCO_PROVA_DAILY_THRESHOLD) completedDaysSet.add(day);
+  });
+
   const accuracy = completedTotalQuestions > 0
     ? Math.round((completedCorrectAnswers / completedTotalQuestions) * 100)
     : 0;
