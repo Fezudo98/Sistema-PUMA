@@ -316,8 +316,8 @@ export async function updateStudentNumber(studentId: string, newNumero: number) 
     return { success: false, error: "Acesso negado. Apenas instrutores autorizados." };
   }
 
-  if (isNaN(newNumero) || newNumero < 1 || newNumero > 34) {
-    return { success: false, error: "O número do combatente deve ser entre 1 e 34." };
+  if (isNaN(newNumero) || newNumero < 1 || newNumero > 35) {
+    return { success: false, error: "O número do combatente deve ser entre 1 e 35." };
   }
 
   try {

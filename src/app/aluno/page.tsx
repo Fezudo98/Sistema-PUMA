@@ -105,15 +105,15 @@ export default function StudentAuth() {
                     <Input name="username" placeholder="Seu QRA" required className="bg-muted/50 border-border h-12 uppercase" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Número do Combatente (1 a 34)</label>
-                    <select 
-                      name="numero" 
-                      required 
+                    <label className="text-sm font-medium text-muted-foreground">Número do Combatente (1 a 35)</label>
+                    <select
+                      name="numero"
+                      required
                       defaultValue=""
                       className="flex h-12 w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-sm text-heading placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="" disabled>Selecione seu número</option>
-                      {Array.from({ length: 34 }, (_, i) => i + 1).map(num => (
+                      {Array.from({ length: 35 }, (_, i) => i + 1).map(num => (
                         <option key={num} value={num} disabled={takenNumbers.includes(num)}>
                           {num < 10 ? `0${num}` : num} {takenNumbers.includes(num) ? "(Indisponível)" : ""}
                         </option>
