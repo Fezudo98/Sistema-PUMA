@@ -5,6 +5,7 @@ import { getUser } from "./auth";
 import { generateUniqueRoomCode } from "@/lib/roomCode";
 import { pickRandomDuelQuestions, countAvailableDuelQuestions } from "@/lib/duelQuestions";
 import { emitToUser } from "@/lib/socketBridge";
+import { sendPushToUser } from "@/lib/push";
 import { revalidatePath } from "next/cache";
 
 const MIN_FLEXOES = 1;
@@ -156,6 +157,12 @@ export async function createDuelChallengeAction(challengedId: string, apostilaId
     });
 
     emitToUser(challengedId, "duel_invite_received", { duelId: duelo.id });
+    sendPushToUser(challengedId, {
+      title: "Novo Duelo!",
+      body: `${user.name} te desafiou pra um duelo (${flexoesAposta} flexões em jogo). Toque pra responder.`,
+      url: "/aluno/duelo",
+      tag: `duelo-convite-${duelo.id}`
+    }).catch(() => {});
     revalidatePath("/aluno/duelo");
 
     return { success: true, duelId: duelo.id };

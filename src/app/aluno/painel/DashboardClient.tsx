@@ -22,6 +22,7 @@ import { getPatentByScore } from "@/lib/patents";
 import { BepiEagleIcon, ChoqueSkullIcon } from "@/components/PatentIcons";
 import { BepiUnlockToast } from "@/components/BepiUnlockToast";
 import { ChoqueUnlockToast } from "@/components/ChoqueUnlockToast";
+import PushNotificationManager from "@/components/PushNotificationManager";
 
 const LEIS_DA_SELVA = [
   {
@@ -490,6 +491,7 @@ export default function StudentDashboardClient({
     <div className="min-h-screen bg-background text-foreground lg:flex">
       <BepiUnlockToast unlocked={hasBepiUnlocked} />
       <ChoqueUnlockToast unlocked={hasChoqueUnlocked} />
+      <PushNotificationManager />
       <AlunoSidebar
         mobileOpen={sidebarMobileOpen}
         onCloseMobile={() => setSidebarMobileOpen(false)}

@@ -12,6 +12,15 @@ const geistMono = {
 export const metadata: Metadata = {
   title: "Sistema PUMA",
   description: "Plataforma Unificada de Métricas e Aprendizado",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png"
+  }
+};
+
+export const viewport = {
+  themeColor: "#020617"
 };
 
 import { ThemeProvider } from "@/components/ThemeProvider";
