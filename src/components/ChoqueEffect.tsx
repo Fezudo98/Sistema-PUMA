@@ -92,10 +92,9 @@ function playTacticalImpact() {
   }
 }
 
-// Duração do vídeo da cutscene (public/choque-cutscene.mp4) e o instante, dentro dela,
-// em que o brilho vermelho do emblema atinge o pico — usado pra sincronizar o som de impacto.
+// Duração do vídeo da cutscene (public/choque-cutscene.mp4) — já vem com o áudio original
+// (trilha AAC cortada junto com o vídeo), então não precisa de um som sintetizado por cima.
 const CUTSCENE_DURATION_MS = 3500;
-const CUTSCENE_IMPACT_MS = 2300;
 
 export function ChoqueEffect() {
   const { theme, resolvedTheme } = useTheme();
@@ -118,8 +117,8 @@ export function ChoqueEffect() {
     }
   }, [theme, resolvedTheme]);
 
-  // Enquanto a animação estiver ativa, toca o vídeo (ou o fallback) e agenda o som de
-  // impacto + o fechamento do overlay. Reage também se `videoFailed` mudar no meio da
+  // Enquanto a animação estiver ativa, toca o vídeo (com o áudio original) ou o fallback,
+  // e agenda o fechamento do overlay. Reage também se `videoFailed` mudar no meio da
   // animação (ex.: o vídeo travou depois de já ter começado a tocar), trocando pro
   // fallback e reagendando o fechamento em vez de deixar o overlay preso na tela.
   useEffect(() => {
@@ -128,15 +127,21 @@ export function ChoqueEffect() {
     const video = videoRef.current;
     if (video && !videoFailed) {
       video.currentTime = 0;
+      video.muted = false;
       const playPromise = video.play();
-      if (playPromise) playPromise.catch(() => setVideoFailed(true));
+      if (playPromise) {
+        playPromise.catch(() => {
+          // Autoplay com som bloqueado pelo navegador — toca mudo em vez de perder o
+          // vídeo inteiro (o gatilho é o clique no seletor de tema, então na prática
+          // isso só deve acontecer em navegadores com política de autoplay mais rígida).
+          video.muted = true;
+          const mutedRetry = video.play();
+          if (mutedRetry) mutedRetry.catch(() => setVideoFailed(true));
+        });
+      }
 
-      const impactTimer = setTimeout(playTacticalImpact, CUTSCENE_IMPACT_MS);
       const endTimer = setTimeout(() => setIsFlashing(false), CUTSCENE_DURATION_MS);
-      return () => {
-        clearTimeout(impactTimer);
-        clearTimeout(endTimer);
-      };
+      return () => clearTimeout(endTimer);
     }
 
     playTacticalImpact();
@@ -158,7 +163,6 @@ export function ChoqueEffect() {
           ref={videoRef}
           src="/choque-cutscene.mp4"
           preload="auto"
-          muted
           playsInline
           onError={() => setVideoFailed(true)}
           onEnded={() => setIsFlashing(false)}
