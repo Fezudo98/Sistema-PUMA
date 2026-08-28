@@ -122,13 +122,29 @@ export function ChoqueEffect() {
     <div className="fixed inset-0 pointer-events-none z-[99999] overflow-hidden flex items-center justify-center bg-black/70">
       <StaticNoiseCanvas />
 
-      {/* Strobe vermelho de alerta */}
-      <div className="absolute inset-0 bg-red-600 animate-[flash_0.6s_ease-out_forwards]" style={{ mixBlendMode: "overlay" }} />
+      {/* Varredura de HUD tático de cima a baixo */}
+      <div
+        className="absolute left-0 right-0 top-0 h-[2px] bg-neutral-300/70 z-[5] animate-[hud-scan_1.2s_linear_forwards]"
+        style={{ boxShadow: "0 0 12px rgba(232,232,232,0.8)" }}
+      />
+
+      {/* Strobe cinza-claro de alerta (tático, não mais vermelho) */}
+      <div className="absolute inset-0 bg-neutral-400 animate-[flash_0.6s_ease-out_forwards]" style={{ mixBlendMode: "overlay" }} />
       <div className="absolute inset-0 bg-white animate-[flash_0.3s_ease-out_forwards]" style={{ mixBlendMode: "overlay" }} />
+      {/* Terceiro strobe, mais discreto e mais longo — o único "hit" de vermelho da sequência */}
+      <div className="absolute inset-0 bg-red-600/40 animate-[flash_0.9s_ease-out_forwards]" style={{ mixBlendMode: "overlay" }} />
 
       {/* Emblema do Choque em impacto */}
       <div className="relative z-10 w-[260px] h-[240px] drop-shadow-[0_0_90px_rgba(185,28,28,0.9)] animate-[strike_0.8s_ease-in-out_forwards]">
         <img src="/badges/choque-emblem.png" alt="Emblema CP Choque" className="w-full h-full object-contain" />
+
+        {/* Cantos de mira "travando" no emblema */}
+        <div className="absolute -inset-4 animate-[hud-lock_1s_ease-out_forwards]">
+          <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 border-neutral-300" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 border-neutral-300" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 border-neutral-300" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 border-neutral-300" />
+        </div>
       </div>
     </div>
   );

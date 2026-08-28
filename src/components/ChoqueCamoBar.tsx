@@ -22,16 +22,19 @@ export function ChoqueCamoBar() {
   return (
     <div
       aria-hidden="true"
-      className="fixed top-0 inset-x-0 h-[7px] sm:h-[9px] z-[60] pointer-events-none shadow-[0_1px_8px_rgba(0,0,0,0.6)]"
+      className="fixed top-0 inset-x-0 h-[10px] sm:h-[14px] z-[60] pointer-events-none shadow-[0_1px_8px_rgba(0,0,0,0.6)]"
     >
       <svg width="100%" height="100%" preserveAspectRatio="none" className="block w-full h-full">
         <defs>
-          <pattern id="choqueCamoTile" width="28" height="9" patternUnits="userSpaceOnUse">
-            <rect width="28" height="9" fill="#0c0c0d" />
-            <polygon points="0,0 9,0 6,9 0,7" fill="#d4d4d8" />
-            <polygon points="9,0 17,0 20,9 12,9" fill="#52525b" />
-            <polygon points="17,0 22,0 28,3 28,9 22,9" fill="#d4d4d8" />
-            <polygon points="0,7 6,9 4,9 0,9" fill="#52525b" />
+          <pattern id="choqueCamoTile" width="32" height="32" patternUnits="userSpaceOnUse">
+            <rect width="32" height="32" fill="#0a0a0a" />
+            <rect x="0" y="0" width="8" height="8" fill="#3a3a3a" />
+            <rect x="16" y="0" width="8" height="8" fill="#6b6b6b" />
+            <rect x="8" y="8" width="16" height="8" fill="#a8a8a8" />
+            <rect x="0" y="16" width="16" height="8" fill="#3a3a3a" />
+            <rect x="24" y="16" width="8" height="8" fill="#6b6b6b" />
+            <rect x="0" y="24" width="8" height="8" fill="#6b6b6b" />
+            <rect x="16" y="24" width="16" height="8" fill="#3a3a3a" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#choqueCamoTile)" />

@@ -32,23 +32,26 @@ export function ChoqueBackdrop() {
             <stop offset="0%" stopColor="#ececec" stopOpacity="0.55" />
             <stop offset="100%" stopColor="#ececec" stopOpacity="0" />
           </linearGradient>
-          <pattern id="choqueBackdropCamo" width="28" height="9" patternUnits="userSpaceOnUse">
-            <rect width="28" height="9" fill="#0c0c0d" />
-            <polygon points="0,0 9,0 6,9 0,7" fill="#d4d4d8" />
-            <polygon points="9,0 17,0 20,9 12,9" fill="#52525b" />
-            <polygon points="17,0 22,0 28,3 28,9 22,9" fill="#d4d4d8" />
-            <polygon points="0,7 6,9 4,9 0,9" fill="#52525b" />
+          <pattern id="choqueBackdropCamo" width="32" height="32" patternUnits="userSpaceOnUse">
+            <rect width="32" height="32" fill="#0a0a0a" />
+            <rect x="0" y="0" width="8" height="8" fill="#3a3a3a" />
+            <rect x="16" y="0" width="8" height="8" fill="#6b6b6b" />
+            <rect x="8" y="8" width="16" height="8" fill="#a8a8a8" />
+            <rect x="0" y="16" width="16" height="8" fill="#3a3a3a" />
+            <rect x="24" y="16" width="8" height="8" fill="#6b6b6b" />
+            <rect x="0" y="24" width="8" height="8" fill="#6b6b6b" />
+            <rect x="16" y="24" width="16" height="8" fill="#3a3a3a" />
           </pattern>
         </defs>
 
         {/* Faixa de camuflado digital na base, como o rodapé camuflado das viaturas */}
-        <rect x="0" y="192" width="1200" height="8" fill="url(#choqueBackdropCamo)" />
+        <rect x="0" y="176" width="1200" height="24" fill="url(#choqueBackdropCamo)" />
 
         {/* Facho de holofote de vigia */}
         <polygon points="1130,0 930,200 1200,200 1200,30" fill="url(#choqueBeam)" />
 
         {/* Skyline urbano */}
-        <g fill="#52525b">
+        <g fill="#4a4a4a">
           <rect x="0" y="140" width="70" height="60" />
           <rect x="76" y="112" width="50" height="88" />
           <rect x="132" y="156" width="92" height="44" />
@@ -96,7 +99,7 @@ export function ChoqueBackdrop() {
       <img
         src="/badges/choque-emblem.png"
         alt=""
-        className="absolute left-1/2 top-1 -translate-x-1/2 w-16 h-14 sm:w-24 sm:h-20 object-contain opacity-[0.09]"
+        className="absolute left-1/2 top-1 -translate-x-1/2 w-16 h-14 sm:w-24 sm:h-20 object-contain opacity-[0.12]"
       />
     </div>
   );
