@@ -126,7 +126,12 @@ export const getCachedGeneralRanking = unstable_cache(
   },
   ['general-ranking'],
   {
-    revalidate: 60, // Cache válido por 60 segundos. Isso previne pico de CPU se muitos alunos abrirem ao mesmo tempo.
+    // calculateRankingData carrega o histórico completo de respostas de TODOS os alunos
+    // (join aninhado, sem paginação) — com a base já em ~38 mil respostas, cada recálculo
+    // é caro o bastante pra sobrecarregar o SQLite e inflar a memória do processo se disparado
+    // com frequência (ex.: chat de IA chama isso a cada mensagem). 5 min de cache tolera bem
+    // a defasagem num ranking/leaderboard, e corta a frequência de recálculo em 5x.
+    revalidate: 300,
     tags: ['ranking']
   }
 );
