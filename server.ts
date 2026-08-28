@@ -188,8 +188,20 @@ async function getStudentsTotalScores(studentIds: string[]): Promise<Record<stri
 // de alunos disparam essa query pesada no MESMO instante, competindo pelo SQLite.
 const pendingBadgeChecks = new Set<string>();
 
-async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSimuladoId: string) {
+// A checagem de brevês recarrega TODO o histórico de respostas do aluno (query pesada,
+// com joins aninhados) — em sala Ao Vivo/Duelo ela é disparada a cada resposta individual,
+// então sem um limite de frequência um aluno com milhares de respostas gera uma consulta
+// gigante a cada questão, sobrecarregando o SQLite e inflando a memória do processo.
+// `force: true` (usado no fim de partida) ignora o cooldown pra garantir o brevê na hora.
+const lastBadgeCheckAt = new Map<string, number>();
+const BADGE_CHECK_COOLDOWN_MS = 60_000;
+
+async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSimuladoId: string, force = false) {
   if (pendingBadgeChecks.has(studentId)) return;
+  if (!force) {
+    const last = lastBadgeCheckAt.get(studentId) || 0;
+    if (Date.now() - last < BADGE_CHECK_COOLDOWN_MS) return;
+  }
   pendingBadgeChecks.add(studentId);
   try {
     await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 1350));
@@ -381,6 +393,7 @@ async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSim
     console.error("Error checking badges:", error);
   } finally {
     pendingBadgeChecks.delete(studentId);
+    lastBadgeCheckAt.set(studentId, Date.now());
   }
 }
 
@@ -757,6 +770,11 @@ async function finishDuel(io: any, roomCode: string, room: RoomState) {
     rounds: { [challengerId]: roundsA, [challengedId]: roundsB }
   });
 
+  if (room.simuladoId) {
+    checkAndUnlockBadges(challengerId, io, room.simuladoId, true);
+    checkAndUnlockBadges(challengedId, io, room.simuladoId, true);
+  }
+
   rooms.delete(roomCode);
 }
 
@@ -800,6 +818,11 @@ async function handleDuelDisconnect(io: any, roomCode: string, room: RoomState, 
         flexoesAposta: duelo.flexoesAposta,
         rounds: room.duelRoundsWon || {}
       });
+
+      if (room.simuladoId) {
+        checkAndUnlockBadges(duelo.challengerId, io, room.simuladoId, true);
+        checkAndUnlockBadges(duelo.challengedId, io, room.simuladoId, true);
+      }
     }
   } catch (err) {
     console.error('[Duelo] Erro ao processar desconexão:', err);
@@ -1779,7 +1802,7 @@ app.prepare().then(() => {
               });
 
               participantIds.forEach(studentId => {
-                checkAndUnlockBadges(studentId, io, simuladoId);
+                checkAndUnlockBadges(studentId, io, simuladoId, true);
               });
             }
           } catch (err) {
