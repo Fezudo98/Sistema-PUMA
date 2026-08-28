@@ -1802,11 +1802,16 @@ app.prepare().then(() => {
         const room = rooms.get(info.roomCode);
         if (room && info.role === 'STUDENT') {
           const uid = info.userId;
-          
+
           if (disconnectTimeouts.has(uid)) {
             clearTimeout(disconnectTimeouts.get(uid)!);
           }
-          
+
+          // Duelo é 1v1: perder um dos dois por uma queda breve de internet cancela a
+          // partida inteira (diferente da sala AO VIVO, onde um aluno cair não afeta os
+          // demais) — por isso a tolerância de reconexão é bem maior aqui.
+          const graceMs = room.isDuelo ? 45000 : 15000;
+
           const timeout = setTimeout(async () => {
             disconnectTimeouts.delete(uid);
             const currentRoom = rooms.get(info.roomCode);
@@ -1829,10 +1834,10 @@ app.prepare().then(() => {
               });
               console.log(`[Socket] Removed user ${uid} from room ${info.roomCode} after grace period`);
             }
-          }, 15000);
-          
+          }, graceMs);
+
           disconnectTimeouts.set(uid, timeout);
-          console.log(`[Socket] User ${uid} disconnected. Started 15s grace period.`);
+          console.log(`[Socket] User ${uid} disconnected. Started ${graceMs / 1000}s grace period.`);
         }
       }
     });

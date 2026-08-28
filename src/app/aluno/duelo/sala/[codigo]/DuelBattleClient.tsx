@@ -46,12 +46,14 @@ export default function DuelBattleClient({ user, simulado, duelo, opponentName }
       s.emit("join_room", { roomCode: simulado.codigoSala, user });
       retryTimeout = setTimeout(() => {
         if (joinedAckRef.current || !s.connected) return;
-        if (attempt < 5) {
+        // Tolerância alinhada com a do servidor (45s antes de desistir do duelo por
+        // desconexão) — internet de celular pode oscilar bastante nesse meio-tempo.
+        if (attempt < 15) {
           attemptJoin(attempt + 1);
         } else {
           setJoinFailed(true);
         }
-      }, 2500);
+      }, 3000);
     };
 
     s.on("connect", () => {
