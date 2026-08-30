@@ -37,6 +37,7 @@ export default function SettingsClient({
 
   const [announcementEnabled, setAnnouncementEnabled] = useState(initialAnnouncementEnabled);
   const [announcementText, setAnnouncementText] = useState("");
+  const [announcementScheduleText, setAnnouncementScheduleText] = useState(""); // datetime-local, vazio = publicar já
   const [publishingAnnouncement, setPublishingAnnouncement] = useState(false);
   const [announcementMessage, setAnnouncementMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -131,19 +132,28 @@ export default function SettingsClient({
       return;
     }
 
+    const scheduledForMs = announcementScheduleText ? new Date(announcementScheduleText).getTime() : null;
+    if (scheduledForMs && scheduledForMs <= Date.now()) {
+      setAnnouncementMessage({ type: "error", text: "O horário agendado precisa ser no futuro." });
+      return;
+    }
+
     setPublishingAnnouncement(true);
     setAnnouncementMessage(null);
 
     try {
-      const res = await publishAnnouncementAction(announcementText);
+      const res = await publishAnnouncementAction(announcementText, scheduledForMs);
       if (res.error) {
         setAnnouncementMessage({ type: "error", text: res.error });
       } else {
         setAnnouncementEnabled(true);
         setAnnouncementText("");
+        setAnnouncementScheduleText("");
         setAnnouncementMessage({
           type: "success",
-          text: "Aviso publicado! Cada aluno vai ver o modal uma única vez, em até 15s de qualquer página."
+          text: scheduledForMs
+            ? `Aviso agendado! Vai começar a aparecer sozinho a partir de ${new Date(scheduledForMs).toLocaleString("pt-BR")}, sem precisar de nada da sua parte nesse horário.`
+            : "Aviso publicado! Cada aluno vai ver o modal uma única vez, em até 15s de qualquer página."
         });
       }
     } catch (e: any) {
@@ -413,6 +423,22 @@ export default function SettingsClient({
                 rows={2}
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium resize-none"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                Agendar Para (opcional)
+              </label>
+              <input
+                type="datetime-local"
+                value={announcementScheduleText}
+                onChange={(e) => setAnnouncementScheduleText(e.target.value)}
+                className="w-full sm:w-auto bg-background border border-border rounded-xl px-4 py-3 text-xs text-heading focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+              />
+              <p className="text-[10px] text-muted-foreground/80 font-medium">
+                Deixe em branco pra publicar imediatamente. Se preencher, o aviso já fica salvo mas só começa a
+                aparecer pros alunos sozinho, a partir desse horário — sem precisar de ninguém online pra "ligar" nada.
+              </p>
             </div>
 
             <div className="flex flex-wrap gap-3">

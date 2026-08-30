@@ -93,18 +93,22 @@ export function AnnouncementModal() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
-            <button
-              onClick={handleReload}
-              className="flex-1 h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <RotateCw className="w-3.5 h-3.5" />
-              Recarregar Página
-            </button>
+            {/* "Entendi" é a ação principal (serve pra qualquer aviso, técnico ou não).
+                "Recarregar" fica secundário — só é relevante nos casos de instabilidade
+                técnica, então não deve dominar visualmente um aviso motivacional/geral. */}
             <button
               onClick={handleClose}
-              className="h-11 px-4 rounded-xl bg-background border border-border text-muted-foreground hover:text-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+              className="flex-1 h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
             >
-              Fechar
+              Entendi
+            </button>
+            <button
+              onClick={handleReload}
+              title="Use se sua resposta não estiver avançando pra próxima questão"
+              className="h-11 px-4 rounded-xl bg-background border border-border text-muted-foreground hover:text-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              Recarregar
             </button>
           </div>
         </div>

@@ -13,15 +13,28 @@ import { getUser } from "./auth";
 // quando o id mudar, então republicar o mesmo texto (ou um texto diferente) sempre
 // aparece de novo pra todo mundo, mas fechar o modal uma vez nunca mais reaparece
 // aquele mesmo aviso.
+//
+// Suporta agendamento (ANNOUNCEMENT_SCHEDULED_FOR, epoch ms): o aviso pode ser
+// publicado desde já mas só passar a aparecer pros alunos a partir de um horário
+// futuro. Não depende de nenhum cron/job rodando naquele exato instante — como o
+// modal já faz polling a cada 15s, o gate por horário é reavaliado a cada consulta,
+// então o aviso "liga sozinho" assim que o relógio do servidor passar do horário
+// marcado, mesmo sem ninguém tocar em nada nesse momento.
 export async function getAnnouncementAction() {
   try {
-    const [enabledSetting, messageSetting, idSetting] = await Promise.all([
+    const [enabledSetting, messageSetting, idSetting, scheduledForSetting] = await Promise.all([
       prisma.systemSetting.findUnique({ where: { key: "ANNOUNCEMENT_ENABLED" } }),
       prisma.systemSetting.findUnique({ where: { key: "ANNOUNCEMENT_MESSAGE" } }),
       prisma.systemSetting.findUnique({ where: { key: "ANNOUNCEMENT_ID" } }),
+      prisma.systemSetting.findUnique({ where: { key: "ANNOUNCEMENT_SCHEDULED_FOR" } }),
     ]);
+
+    const enabled = enabledSetting?.value === "true";
+    const scheduledForMs = scheduledForSetting?.value ? parseInt(scheduledForSetting.value, 10) : null;
+    const isScheduledForFuture = !!scheduledForMs && Date.now() < scheduledForMs;
+
     return {
-      enabled: enabledSetting?.value === "true",
+      enabled: enabled && !isScheduledForFuture,
       message: messageSetting?.value || "",
       id: idSetting?.value || ""
     };
@@ -31,7 +44,7 @@ export async function getAnnouncementAction() {
   }
 }
 
-export async function publishAnnouncementAction(message: string) {
+export async function publishAnnouncementAction(message: string, scheduledForMs?: number | null) {
   const user = await getUser();
   if (!user || user.role !== "INSTRUCTOR") {
     return { error: "Não autorizado. Apenas instrutores podem publicar avisos." };
@@ -40,6 +53,10 @@ export async function publishAnnouncementAction(message: string) {
   const trimmedMessage = message.trim();
   if (!trimmedMessage) {
     return { error: "Escreva uma mensagem antes de publicar." };
+  }
+
+  if (scheduledForMs && scheduledForMs <= Date.now()) {
+    return { error: "O horário agendado precisa ser no futuro. Deixe em branco pra publicar imediatamente." };
   }
 
   const newId = randomUUID();
@@ -60,6 +77,11 @@ export async function publishAnnouncementAction(message: string) {
         where: { key: "ANNOUNCEMENT_ID" },
         update: { value: newId },
         create: { key: "ANNOUNCEMENT_ID", value: newId }
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: "ANNOUNCEMENT_SCHEDULED_FOR" },
+        update: { value: scheduledForMs ? String(scheduledForMs) : "" },
+        create: { key: "ANNOUNCEMENT_SCHEDULED_FOR", value: scheduledForMs ? String(scheduledForMs) : "" }
       }),
     ]);
 
