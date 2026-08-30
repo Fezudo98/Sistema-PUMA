@@ -1,3 +1,13 @@
+// Fase 6 da migração pra estatísticas pré-agregadas (ver plano em
+// C:\Users\Sergio\.claude\plans\eager-pondering-puddle.md): este arquivo deixou de
+// ser o caminho quente de leitura — todo lugar que precisa das estatísticas de um
+// aluno lê StudentStats (src/lib/studentStatsRead.ts), O(1), em vez de chamar
+// computeStudentPerformanceStats aqui, que recarrega o histórico completo de
+// respostas. Mantido de propósito como referência/auditoria: scripts/
+// backfill_student_stats.ts usa esta implementação como fonte da verdade pra
+// popular StudentStats, e scripts/audit_student_stats_parity.ts compara os dois
+// caminhos periodicamente pra detectar qualquer desvio entre eles.
+
 // Helper to get YYYY-MM-DD string adjusted for Ceará/Local time (America/Fortaleza)
 export function getLocalDayString(date: Date): string {
   try {
