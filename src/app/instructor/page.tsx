@@ -51,6 +51,12 @@ export default async function InstructorDashboard() {
   const isWarningEnabled = warningEnabledSetting?.value === "true";
   const warningMessageText = warningMessageSetting?.value || "";
 
+  // Fetch estado do aviso único (modal)
+  const announcementEnabledSetting = await prisma.systemSetting.findUnique({
+    where: { key: "ANNOUNCEMENT_ENABLED" }
+  });
+  const isAnnouncementEnabled = announcementEnabledSetting?.value === "true";
+
   // Primeiro login do dia do instrutor: se houver apostilas ativas sem simulado gerado hoje, dispara em background
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -412,6 +418,7 @@ export default async function InstructorDashboard() {
               initialMaintenanceEnabled={isMaintenanceEnabled}
               initialWarningEnabled={isWarningEnabled}
               initialWarningMessage={warningMessageText}
+              initialAnnouncementEnabled={isAnnouncementEnabled}
             />
           </TabsContent>
         </Tabs>

@@ -6,18 +6,21 @@ import { Button } from "@/components/ui/button";
 import { toggleChatEnabledAction } from "@/app/actions/chat";
 import { createInstructorAction } from "@/app/actions/auth";
 import { toggleMaintenanceAction, toggleMaintenanceWarningAction } from "@/app/actions/maintenance";
-import { MessageSquare, ShieldAlert, Check, Loader2, UserPlus, Wrench, Megaphone } from "lucide-react";
+import { publishAnnouncementAction, clearAnnouncementAction } from "@/app/actions/announcement";
+import { MessageSquare, ShieldAlert, Check, Loader2, UserPlus, Wrench, Megaphone, Send } from "lucide-react";
 
 export default function SettingsClient({
   initialChatEnabled,
   initialMaintenanceEnabled = false,
   initialWarningEnabled = false,
-  initialWarningMessage = ""
+  initialWarningMessage = "",
+  initialAnnouncementEnabled = false
 }: {
   initialChatEnabled: boolean;
   initialMaintenanceEnabled?: boolean;
   initialWarningEnabled?: boolean;
   initialWarningMessage?: string;
+  initialAnnouncementEnabled?: boolean;
 }) {
   const [chatEnabled, setChatEnabled] = useState(initialChatEnabled);
   const [updating, setUpdating] = useState(false);
@@ -31,6 +34,11 @@ export default function SettingsClient({
   const [warningText, setWarningText] = useState(initialWarningMessage);
   const [updatingWarning, setUpdatingWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [announcementEnabled, setAnnouncementEnabled] = useState(initialAnnouncementEnabled);
+  const [announcementText, setAnnouncementText] = useState("");
+  const [publishingAnnouncement, setPublishingAnnouncement] = useState(false);
+  const [announcementMessage, setAnnouncementMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // States for creating a new instructor
   const [newInstName, setNewInstName] = useState("");
@@ -114,6 +122,53 @@ export default function SettingsClient({
       setWarningMessage({ type: "error", text: e.message || "Erro de conexão." });
     } finally {
       setUpdatingWarning(false);
+    }
+  };
+
+  const handlePublishAnnouncement = async () => {
+    if (!announcementText.trim()) {
+      setAnnouncementMessage({ type: "error", text: "Escreva uma mensagem antes de publicar." });
+      return;
+    }
+
+    setPublishingAnnouncement(true);
+    setAnnouncementMessage(null);
+
+    try {
+      const res = await publishAnnouncementAction(announcementText);
+      if (res.error) {
+        setAnnouncementMessage({ type: "error", text: res.error });
+      } else {
+        setAnnouncementEnabled(true);
+        setAnnouncementText("");
+        setAnnouncementMessage({
+          type: "success",
+          text: "Aviso publicado! Cada aluno vai ver o modal uma única vez, em até 15s de qualquer página."
+        });
+      }
+    } catch (e: any) {
+      setAnnouncementMessage({ type: "error", text: e.message || "Erro de conexão." });
+    } finally {
+      setPublishingAnnouncement(false);
+    }
+  };
+
+  const handleClearAnnouncement = async () => {
+    setPublishingAnnouncement(true);
+    setAnnouncementMessage(null);
+
+    try {
+      const res = await clearAnnouncementAction();
+      if (res.error) {
+        setAnnouncementMessage({ type: "error", text: res.error });
+      } else {
+        setAnnouncementEnabled(false);
+        setAnnouncementMessage({ type: "success", text: "Aviso retirado. Quem ainda não viu não verá mais." });
+      }
+    } catch (e: any) {
+      setAnnouncementMessage({ type: "error", text: e.message || "Erro de conexão." });
+    } finally {
+      setPublishingAnnouncement(false);
     }
   };
 
@@ -306,6 +361,101 @@ export default function SettingsClient({
                 <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
               )}
               <span>{warningMessage.text}</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Aviso Único (Modal) Card */}
+      <Card className={`border-border backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors ${
+        announcementEnabled ? "bg-blue-950/20 border-blue-500/40" : "bg-card/40"
+      }`}>
+        <CardHeader className="border-b border-border pb-4">
+          <div className="flex items-center gap-3">
+            <Send className={`w-6 h-6 ${announcementEnabled ? "text-blue-400" : "text-blue-500"}`} />
+            <div>
+              <CardTitle className="text-xl font-black uppercase tracking-wider text-heading">
+                Aviso Único (Modal)
+              </CardTitle>
+              <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
+                Comunicado pontual — cada aluno vê só uma vez, em qualquer página
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-6 space-y-6">
+          <div className={`flex flex-col gap-4 p-4 border rounded-xl ${
+            announcementEnabled ? "bg-blue-950/30 border-blue-500/30" : "bg-background/60 border-border"
+          }`}>
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-heading uppercase tracking-wider flex items-center gap-2">
+                Status
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                  announcementEnabled
+                    ? "bg-blue-500/20 text-blue-300 border-blue-500/40 animate-pulse"
+                    : "bg-background/60 text-muted-foreground border-border"
+                }`}>
+                  {announcementEnabled ? "AVISO ATIVO" : "SEM AVISO ATIVO"}
+                </span>
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                Diferente do aviso prévio acima (faixa persistente até desativar), isso é um modal bloqueante que aparece UMA vez por aluno e some sozinho depois de fechado. Publicar um novo texto sempre reexibe pra todo mundo, mesmo quem já viu avisos anteriores.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Nova Mensagem</label>
+              <textarea
+                value={announcementText}
+                onChange={(e) => setAnnouncementText(e.target.value)}
+                placeholder="Ex.: Estamos com instabilidade no sistema. Se sua resposta não avançar, toque em Recarregar Página."
+                rows={2}
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium resize-none"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={handlePublishAnnouncement}
+                disabled={publishingAnnouncement}
+                className="h-11 px-6 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+              >
+                {publishingAnnouncement ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                    Publicando...
+                  </>
+                ) : (
+                  "Publicar Aviso"
+                )}
+              </Button>
+
+              {announcementEnabled && (
+                <Button
+                  onClick={handleClearAnnouncement}
+                  disabled={publishingAnnouncement}
+                  variant="ghost"
+                  className="h-11 px-6 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer bg-background border border-border text-muted-foreground hover:text-heading"
+                >
+                  Retirar Aviso
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {announcementMessage && (
+            <div className={`p-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 animate-fadeIn ${
+              announcementMessage.type === "success"
+                ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-300"
+                : "bg-red-950/20 border-red-500/30 text-red-300"
+            }`}>
+              {announcementMessage.type === "success" ? (
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
+              )}
+              <span>{announcementMessage.text}</span>
             </div>
           )}
         </CardContent>

@@ -1,5 +1,6 @@
 import React from "react";
 import { MaintenanceWarningBanner } from "@/components/MaintenanceWarningBanner";
+import { AnnouncementModal } from "@/components/AnnouncementModal";
 
 export default function AlunoLayout({
   children,
@@ -12,6 +13,7 @@ export default function AlunoLayout({
   return (
     <>
       <MaintenanceWarningBanner />
+      <AnnouncementModal />
       {children}
     </>
   );
