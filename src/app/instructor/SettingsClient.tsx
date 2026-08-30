@@ -5,15 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { toggleChatEnabledAction } from "@/app/actions/chat";
 import { createInstructorAction } from "@/app/actions/auth";
-import { toggleMaintenanceAction } from "@/app/actions/maintenance";
-import { MessageSquare, ShieldAlert, Check, Loader2, UserPlus, Wrench } from "lucide-react";
+import { toggleMaintenanceAction, toggleMaintenanceWarningAction } from "@/app/actions/maintenance";
+import { MessageSquare, ShieldAlert, Check, Loader2, UserPlus, Wrench, Megaphone } from "lucide-react";
 
-export default function SettingsClient({ 
+export default function SettingsClient({
   initialChatEnabled,
-  initialMaintenanceEnabled = false
-}: { 
+  initialMaintenanceEnabled = false,
+  initialWarningEnabled = false,
+  initialWarningMessage = ""
+}: {
   initialChatEnabled: boolean;
   initialMaintenanceEnabled?: boolean;
+  initialWarningEnabled?: boolean;
+  initialWarningMessage?: string;
 }) {
   const [chatEnabled, setChatEnabled] = useState(initialChatEnabled);
   const [updating, setUpdating] = useState(false);
@@ -22,6 +26,11 @@ export default function SettingsClient({
   const [maintenanceEnabled, setMaintenanceEnabled] = useState(initialMaintenanceEnabled);
   const [updatingMaintenance, setUpdatingMaintenance] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [warningEnabled, setWarningEnabled] = useState(initialWarningEnabled);
+  const [warningText, setWarningText] = useState(initialWarningMessage);
+  const [updatingWarning, setUpdatingWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // States for creating a new instructor
   const [newInstName, setNewInstName] = useState("");
@@ -64,15 +73,47 @@ export default function SettingsClient({
         setMaintenanceMessage({ type: "error", text: res.error });
       } else {
         setMaintenanceEnabled(newValue);
-        setMaintenanceMessage({ 
-          type: "success", 
-          text: `Modo de Manutenção ${newValue ? "ATIVADO" : "DESATIVADO"} com sucesso! Todos os alunos ${newValue ? "foram bloqueados temporariamente." : "recuperaram o acesso normal."}` 
+        // O servidor desativa o aviso prévio automaticamente ao ativar a manutenção de
+        // verdade — refletir aqui pra não mostrar o card de aviso como "ativo" desatualizado.
+        if (newValue) setWarningEnabled(false);
+        setMaintenanceMessage({
+          type: "success",
+          text: `Modo de Manutenção ${newValue ? "ATIVADO" : "DESATIVADO"} com sucesso! Todos os alunos ${newValue ? "foram bloqueados temporariamente." : "recuperaram o acesso normal."}`
         });
       }
     } catch (e: any) {
       setMaintenanceMessage({ type: "error", text: e.message || "Erro de conexão." });
     } finally {
       setUpdatingMaintenance(false);
+    }
+  };
+
+  const handleToggleWarning = async () => {
+    const newValue = !warningEnabled;
+
+    if (newValue && !warningText.trim()) {
+      setWarningMessage({ type: "error", text: "Escreva uma mensagem de aviso antes de ativar." });
+      return;
+    }
+
+    setUpdatingWarning(true);
+    setWarningMessage(null);
+
+    try {
+      const res = await toggleMaintenanceWarningAction(newValue, warningText);
+      if (res.error) {
+        setWarningMessage({ type: "error", text: res.error });
+      } else {
+        setWarningEnabled(newValue);
+        setWarningMessage({
+          type: "success",
+          text: `Aviso prévio ${newValue ? "ATIVADO" : "DESATIVADO"} com sucesso! ${newValue ? "Os alunos vão ver a faixa de aviso em todas as páginas." : "A faixa de aviso foi removida."}`
+        });
+      }
+    } catch (e: any) {
+      setWarningMessage({ type: "error", text: e.message || "Erro de conexão." });
+    } finally {
+      setUpdatingWarning(false);
     }
   };
 
@@ -177,6 +218,94 @@ export default function SettingsClient({
                 <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
               )}
               <span>{maintenanceMessage.text}</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Aviso Prévio de Manutenção Card */}
+      <Card className={`border-border backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors ${
+        warningEnabled ? "bg-amber-950/20 border-amber-500/40" : "bg-card/40"
+      }`}>
+        <CardHeader className="border-b border-border pb-4">
+          <div className="flex items-center gap-3">
+            <Megaphone className={`w-6 h-6 ${warningEnabled ? "text-amber-400" : "text-amber-500"}`} />
+            <div>
+              <CardTitle className="text-xl font-black uppercase tracking-wider text-heading">
+                Aviso Prévio de Manutenção
+              </CardTitle>
+              <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
+                Mostra uma faixa de aviso pros alunos sem bloquear o acesso
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-6 space-y-6">
+          <div className={`flex flex-col gap-4 p-4 border rounded-xl ${
+            warningEnabled ? "bg-amber-950/30 border-amber-500/30" : "bg-background/60 border-border"
+          }`}>
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-heading uppercase tracking-wider flex items-center gap-2">
+                Status do Aviso
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                  warningEnabled
+                    ? "bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse"
+                    : "bg-emerald-950/30 text-emerald-400 border-emerald-500/30"
+                }`}>
+                  {warningEnabled ? "AVISO ATIVO" : "SEM AVISO"}
+                </span>
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                Diferente do modo de manutenção acima, isso NÃO bloqueia ninguém — só mostra uma faixa no topo de todas as páginas do aluno, avisando com antecedência que uma manutenção real vai acontecer. Ativar o modo de manutenção desativa este aviso automaticamente.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Mensagem do Aviso</label>
+              <textarea
+                value={warningText}
+                onChange={(e) => setWarningText(e.target.value)}
+                placeholder="Ex.: O sistema vai passar por manutenção hoje às 22h. Salve seu progresso antes desse horário."
+                rows={2}
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-600 font-medium resize-none"
+              />
+            </div>
+
+            <Button
+              onClick={handleToggleWarning}
+              disabled={updatingWarning}
+              className={`h-11 px-6 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0 self-start ${
+                warningEnabled
+                  ? "bg-emerald-600 hover:bg-emerald-500 text-heading shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                  : "bg-amber-600 hover:bg-amber-500 text-foreground shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+              }`}
+            >
+              {updatingWarning ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                  Salvando...
+                </>
+              ) : warningEnabled ? (
+                "Desativar Aviso"
+              ) : (
+                "Ativar Aviso"
+              )}
+            </Button>
+          </div>
+
+          {warningMessage && (
+            <div className={`p-4 rounded-xl border text-xs font-semibold flex items-center gap-2.5 animate-fadeIn ${
+              warningMessage.type === "success"
+                ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-300"
+                : "bg-red-950/20 border-red-500/30 text-red-300"
+            }`}>
+              {warningMessage.type === "success" ? (
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
+              )}
+              <span>{warningMessage.text}</span>
             </div>
           )}
         </CardContent>

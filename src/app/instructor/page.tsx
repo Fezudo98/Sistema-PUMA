@@ -43,6 +43,14 @@ export default async function InstructorDashboard() {
   });
   const isMaintenanceEnabled = maintenanceSetting?.value === "true";
 
+  // Fetch pre-maintenance warning banner state
+  const [warningEnabledSetting, warningMessageSetting] = await Promise.all([
+    prisma.systemSetting.findUnique({ where: { key: "MAINTENANCE_WARNING" } }),
+    prisma.systemSetting.findUnique({ where: { key: "MAINTENANCE_WARNING_MESSAGE" } })
+  ]);
+  const isWarningEnabled = warningEnabledSetting?.value === "true";
+  const warningMessageText = warningMessageSetting?.value || "";
+
   // Primeiro login do dia do instrutor: se houver apostilas ativas sem simulado gerado hoje, dispara em background
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -399,7 +407,12 @@ export default async function InstructorDashboard() {
           </TabsContent>
 
           <TabsContent value="config" className="mt-0">
-            <SettingsClient initialChatEnabled={isChatEnabled} initialMaintenanceEnabled={isMaintenanceEnabled} />
+            <SettingsClient
+              initialChatEnabled={isChatEnabled}
+              initialMaintenanceEnabled={isMaintenanceEnabled}
+              initialWarningEnabled={isWarningEnabled}
+              initialWarningMessage={warningMessageText}
+            />
           </TabsContent>
         </Tabs>
       </div>
