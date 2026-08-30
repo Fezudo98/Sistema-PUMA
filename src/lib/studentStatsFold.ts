@@ -224,21 +224,58 @@ export async function foldSimuladoCompletionIfNeeded(
   const isStatsCompleted = isFinished && qCount >= expectedQ && expectedQ > 0;
   if (!isStatsCompleted) return;
 
+  await applyStatsFold(studentId, simuladoId, {
+    tipo: simuladoMeta.tipo,
+    codigoSala: simuladoMeta.codigoSala,
+    completionDate,
+    totalQuestionsRaw,
+    corrects,
+    scoreSim,
+    avgTimeSim,
+    expectedQ
+  });
+}
+
+// Metade "estatística" do fold (simuladosCount/accuracy/streak/histórico), extraída
+// pra ser reaproveitada tanto por foldSimuladoCompletionIfNeeded (simulado individual,
+// sem sorteio) quanto por foldLiveSimuladoFinish (sala Ao Vivo/Duelo, com o
+// expectedQ já resolvido pelo sorteio da sala inteira). Idempotente via o mesmo
+// guard optimistic-update em StudentSimuladoCompletion.statsFoldedAt.
+async function applyStatsFold(
+  studentId: string,
+  simuladoId: string,
+  info: {
+    tipo: string;
+    codigoSala: string | null;
+    completionDate: Date;
+    totalQuestionsRaw: number;
+    corrects: number;
+    scoreSim: number;
+    avgTimeSim: number;
+    expectedQ: number;
+  }
+): Promise<void> {
+  await prisma.studentSimuladoCompletion.upsert({
+    where: { studentId_simuladoId: { studentId, simuladoId } },
+    create: { studentId, simuladoId },
+    update: {}
+  });
+
   const won = await prisma.studentSimuladoCompletion.updateMany({
     where: { studentId, simuladoId, statsFoldedAt: null },
     data: {
-      statsFoldedAt: completionDate,
-      totalQuestions: totalQuestionsRaw,
-      correctAnswers: corrects,
-      score: scoreSim,
-      avgTime: avgTimeSim,
-      simuladoTipo: simuladoMeta.tipo,
-      codigoSala: simuladoMeta.codigoSala
+      statsFoldedAt: info.completionDate,
+      totalQuestions: info.totalQuestionsRaw,
+      correctAnswers: info.corrects,
+      score: info.scoreSim,
+      avgTime: info.avgTimeSim,
+      simuladoTipo: info.tipo,
+      codigoSala: info.codigoSala
     }
   });
   if (won.count !== 1) return;
 
-  const day = getLocalDayString(completionDate);
+  const day = getLocalDayString(info.completionDate);
   await prisma.$transaction(async (tx) => {
     const current = await tx.studentStats.upsert({ where: { studentId }, create: { studentId }, update: {} });
     const dayUpdates = computeNewCompletedDayUpdates(current, day);
@@ -246,12 +283,75 @@ export async function foldSimuladoCompletionIfNeeded(
       where: { studentId },
       data: {
         simuladosCount: { increment: 1 },
-        completedTotalQuestions: { increment: expectedQ },
-        completedCorrectAnswers: { increment: corrects },
+        completedTotalQuestions: { increment: info.expectedQ },
+        completedCorrectAnswers: { increment: info.corrects },
         ...dayUpdates
       }
     });
   });
+}
+
+// Chamada UMA vez, nas 3 transições de sala Ao Vivo/Duelo pra FINISHED (fim normal
+// de partida, fim de Duelo, W.O. por desconexão) — nunca por resposta individual.
+// Resolve o sorteio pra sala inteira de uma vez (só aqui dá pra saber quantas
+// questões cada aluno realmente precisava responder), então aplica o fold de
+// estatística pra cada participante. A metade de brevê já rodou por resposta
+// (foldSimuladoCompletionIfNeeded com skipStatsFold), não repete aqui.
+export async function foldLiveSimuladoFinish(simuladoId: string, participantIds: string[]): Promise<void> {
+  if (participantIds.length === 0) return;
+
+  const simulado = await prisma.simulado.findUnique({
+    where: { id: simuladoId },
+    select: { tipo: true, status: true, codigoSala: true, _count: { select: { questions: true } } }
+  });
+  if (!simulado) return;
+
+  const totalQuestionsRaw = simulado._count.questions;
+  if (totalQuestionsRaw <= 0) return;
+
+  const isFinished = simulado.tipo === "LIVE" ? simulado.status === "FINISHED" : true;
+  if (!isFinished) return;
+
+  const raffleAnswers = await prisma.answer.findMany({
+    where: { question: { simuladoId }, isRaffle: true },
+    select: { studentId: true }
+  });
+  const raffleCountByStudent = new Map<string, number>();
+  raffleAnswers.forEach(a => raffleCountByStudent.set(a.studentId, (raffleCountByStudent.get(a.studentId) || 0) + 1));
+  const totalRaffleInSimulado = raffleAnswers.length;
+
+  for (const studentId of participantIds) {
+    const studentAnswers = await prisma.answer.findMany({
+      where: { studentId, question: { simuladoId } },
+      select: { isCorrect: true, tempoGasto: true, pontuacao: true, createdAt: true }
+    });
+    if (studentAnswers.length === 0) continue;
+
+    const qCount = studentAnswers.length;
+    const corrects = studentAnswers.filter(a => a.isCorrect).length;
+    const avgTimeSim = Math.round(studentAnswers.reduce((s, a) => s + (a.tempoGasto || 0), 0) / qCount);
+    const scoreSim = studentAnswers.reduce((s, a) => s + (a.pontuacao || 0), 0);
+    const completionDate = studentAnswers.reduce(
+      (max, a) => (a.createdAt > max ? a.createdAt : max),
+      studentAnswers[0].createdAt
+    );
+
+    const studentOwnRaffle = raffleCountByStudent.get(studentId) || 0;
+    const otherRaffle = totalRaffleInSimulado - studentOwnRaffle;
+    const expectedQ = Math.max(0, totalQuestionsRaw - otherRaffle);
+    if (qCount < expectedQ || expectedQ <= 0) continue;
+
+    await applyStatsFold(studentId, simuladoId, {
+      tipo: simulado.tipo,
+      codigoSala: simulado.codigoSala,
+      completionDate,
+      totalQuestionsRaw,
+      corrects,
+      scoreSim,
+      avgTimeSim,
+      expectedQ
+    });
+  }
 }
 
 const BLOCO_PROVA_DAILY_THRESHOLD = 25;

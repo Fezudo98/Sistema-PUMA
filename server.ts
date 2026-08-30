@@ -68,7 +68,7 @@ import { computeStudentPerformanceStats } from './src/lib/stats';
 import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from './src/lib/badges';
 import { getJwtSecret } from './src/lib/env';
 import { setIoInstance } from './src/lib/socketBridge';
-import { recordAnswerDelta } from './src/lib/studentStatsFold';
+import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldLiveSimuladoFinish } from './src/lib/studentStatsFold';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = getJwtSecret();
@@ -469,15 +469,24 @@ const socketInfo = new Map<string, { roomCode: string; userId: string; role: str
 // Nunca confiar em role/userId/name enviados pelo próprio cliente no payload dos eventos.
 const verifiedSockets = new Map<string, VerifiedIdentity>();
 
-// tipo/createdAt de um Simulado não mudam durante a vida de uma sala — cache local
-// pra não fazer 1 SELECT extra a cada resposta só pra alimentar recordAnswerDelta
-// (StudentStats, ver src/lib/studentStatsFold.ts).
-const simuladoMetaCache = new Map<string, { tipo: string; createdAt: Date }>();
-async function getSimuladoMeta(simuladoId: string): Promise<{ tipo: string; createdAt: Date }> {
+// tipo/createdAt/difficulty/codigoSala/nº de questões de um Simulado não mudam
+// durante a vida de uma sala — cache local pra não fazer 1 SELECT extra a cada
+// resposta só pra alimentar recordAnswerDelta/foldSimuladoCompletionIfNeeded
+// (StudentStats, ver src/lib/studentStatsFold.ts). `status` fica de fora do cache
+// (muda WAITING→ACTIVE→FINISHED durante a sala) — quem precisa dele de verdade
+// (o fold de estatística no fim da partida) consulta na hora, não usa este cache.
+type CachedSimuladoMeta = { tipo: string; createdAt: Date; difficulty: string; codigoSala: string | null; totalQuestions: number };
+const simuladoMetaCache = new Map<string, CachedSimuladoMeta>();
+async function getSimuladoMeta(simuladoId: string): Promise<CachedSimuladoMeta> {
   const cached = simuladoMetaCache.get(simuladoId);
   if (cached) return cached;
-  const simulado = await prisma.simulado.findUnique({ where: { id: simuladoId }, select: { tipo: true, createdAt: true } });
-  const meta = simulado || { tipo: 'LIVE', createdAt: new Date() };
+  const simulado = await prisma.simulado.findUnique({
+    where: { id: simuladoId },
+    select: { tipo: true, createdAt: true, difficulty: true, codigoSala: true, _count: { select: { questions: true } } }
+  });
+  const meta: CachedSimuladoMeta = simulado
+    ? { tipo: simulado.tipo, createdAt: simulado.createdAt, difficulty: simulado.difficulty, codigoSala: simulado.codigoSala, totalQuestions: simulado._count.questions }
+    : { tipo: 'LIVE', createdAt: new Date(), difficulty: 'AVANCADO', codigoSala: null, totalQuestions: 0 };
   simuladoMetaCache.set(simuladoId, meta);
   return meta;
 }
@@ -581,16 +590,25 @@ async function revealQuestionResult(io: any, roomCode: string, room: RoomState) 
       continue;
     }
 
-    recordAnswerDelta({
-      studentId: st.id,
-      isCorrect: false,
-      pontuacao: 0,
-      tempoGasto: question.tempoLimite,
-      alternativa: -1,
-      createdAt: new Date(),
-      simuladoTipo: simuladoMeta.tipo,
-      simuladoCreatedAt: simuladoMeta.createdAt
-    }).catch((err) => console.error("Erro ao atualizar StudentStats:", err));
+    // Encadeado (não em paralelo) pra nunca ter duas escritas concorrentes na mesma
+    // linha de StudentStats — só a metade de brevê do fold roda por resposta aqui;
+    // a metade de estatística (que depende do sorteio da sala inteira) é feita uma
+    // única vez no fim da partida, por foldLiveSimuladoFinish.
+    (async () => {
+      await recordAnswerDelta({
+        studentId: st.id,
+        isCorrect: false,
+        pontuacao: 0,
+        tempoGasto: question.tempoLimite,
+        alternativa: -1,
+        createdAt: new Date(),
+        simuladoTipo: simuladoMeta.tipo,
+        simuladoCreatedAt: simuladoMeta.createdAt
+      });
+      // status não importa aqui — skipStatsFold:true nunca chega a lê-lo (só a
+      // metade de estatística usa `status`, e essa metade é pulada nesta chamada).
+      await foldSimuladoCompletionIfNeeded(st.id, room.simuladoId, { ...simuladoMeta, status: 'ACTIVE' }, { skipStatsFold: true });
+    })().catch((err) => console.error("Erro ao atualizar StudentStats:", err));
 
     if (room.studentScores[st.id]) {
       const currentStreak = room.studentScores[st.id].streak;
@@ -804,6 +822,9 @@ async function finishDuel(io: any, roomCode: string, room: RoomState) {
   });
 
   if (room.simuladoId) {
+    foldLiveSimuladoFinish(room.simuladoId, [challengerId, challengedId]).catch((err) =>
+      console.error("Erro ao fechar fold de estatística do Duelo:", err)
+    );
     checkAndUnlockBadges(challengerId, io, room.simuladoId, true);
     checkAndUnlockBadges(challengedId, io, room.simuladoId, true);
   }
@@ -853,6 +874,9 @@ async function handleDuelDisconnect(io: any, roomCode: string, room: RoomState, 
       });
 
       if (room.simuladoId) {
+        foldLiveSimuladoFinish(room.simuladoId, [duelo.challengerId, duelo.challengedId!]).catch((err) =>
+          console.error("Erro ao fechar fold de estatística do Duelo (W.O.):", err)
+        );
         checkAndUnlockBadges(duelo.challengerId, io, room.simuladoId, true);
         checkAndUnlockBadges(duelo.challengedId, io, room.simuladoId, true);
       }
@@ -1648,8 +1672,13 @@ app.prepare().then(() => {
         throw err;
       }
 
-      getSimuladoMeta(room.simuladoId).then((meta) =>
-        recordAnswerDelta({
+      // Encadeado (não em paralelo) pra nunca ter duas escritas concorrentes na mesma
+      // linha de StudentStats — só a metade de brevê do fold roda por resposta aqui;
+      // a metade de estatística é feita uma única vez no fim da partida
+      // (foldLiveSimuladoFinish), pois depende do sorteio da sala inteira.
+      (async () => {
+        const meta = await getSimuladoMeta(room.simuladoId);
+        await recordAnswerDelta({
           studentId,
           isCorrect,
           pontuacao,
@@ -1658,8 +1687,10 @@ app.prepare().then(() => {
           createdAt: new Date(),
           simuladoTipo: meta.tipo,
           simuladoCreatedAt: meta.createdAt
-        })
-      ).catch((err) => console.error("Erro ao atualizar StudentStats:", err));
+        });
+        // status não importa aqui — skipStatsFold:true nunca chega a lê-lo.
+        await foldSimuladoCompletionIfNeeded(studentId, room.simuladoId, { ...meta, status: 'ACTIVE' }, { skipStatsFold: true });
+      })().catch((err) => console.error("Erro ao atualizar StudentStats:", err));
 
       if (teamJustDecided) {
         const decidedTeam = room.teams?.find(t => t.id === teamJustDecided!.teamId);
@@ -1814,6 +1845,14 @@ app.prepare().then(() => {
         room.status = 'FINISHED';
         if (room.timerInterval) clearInterval(room.timerInterval);
         await prisma.simulado.update({ where: { id: simuladoId }, data: { status: 'FINISHED' } });
+
+        // Fold de estatística pra TODOS os participantes (não só Competição em
+        // Equipes) — só aqui, com a sala já FINISHED, dá pra saber quantas questões
+        // cada aluno realmente precisava responder (o sorteio só termina de decidir
+        // isso no fim da partida).
+        foldLiveSimuladoFinish(simuladoId, Object.keys(room.studentScores)).catch((err) =>
+          console.error("Erro ao fechar fold de estatística da sala Ao Vivo:", err)
+        );
 
         // Busca a pontuação geral de cada aluno pra exibir a patente (divisas) correta
         // no ranking final, em vez da pontuação desta sala isolada.
