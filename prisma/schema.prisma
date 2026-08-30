@@ -27,6 +27,7 @@ model User {
   hasSeenDueloIntro Boolean @default(false) // Já viu o modal de apresentação do modo Duelo
   lastStreakWarningDay String? // YYYY-MM-DD do último aviso "vai perder a sequência" já enviado, pra não repetir no mesmo dia
   pushSubscriptions PushSubscription[]
+  stats StudentStats?
 
   @@index([role])
 }
@@ -95,6 +96,85 @@ model Answer {
   @@unique([questionId, studentId])
   @@index([isRaffle])
   @@index([studentId, isCorrect])
+}
+
+// Estatísticas atuais do aluno, mantidas por incrementos a cada resposta nova (ver
+// src/lib/studentStatsFold.ts) em vez de recalculadas do histórico completo toda vez —
+// é a peça central da migração pra "estatísticas pré-agregadas" (custo O(1) por
+// resposta, não O(histórico total)). src/lib/stats.ts continua existindo como
+// referência/auditoria, não é mais o caminho quente de leitura.
+model StudentStats {
+  studentId String   @id
+  user      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  totalAnswers             Int @default(0)
+  sumPontuacao             Int @default(0) // soma bruta de Answer.pontuacao (todas as respostas)
+  sumTempoGasto            Int @default(0) // pra avgTime = sumTempoGasto / totalAnswers
+  simuladosCount           Int @default(0)
+  completedTotalQuestions  Int @default(0) // denominador da acurácia (só simulados completos)
+  completedCorrectAnswers  Int @default(0) // numerador da acurácia
+
+  todayAccumDay    String? // YYYY-MM-DD (America/Fortaleza) a que o acumulador abaixo pertence
+  todayAccumPoints Int     @default(0)
+
+  lastCompletedDay    String? // YYYY-MM-DD do último dia completado
+  currentStreakLength Int     @default(0) // dias consecutivos terminando em lastCompletedDay (sem bonusStreakDays)
+
+  blocoTotalAnswers    Int     @default(0)
+  blocoCorrectAnswers  Int     @default(0)
+  blocoAnswersToday    Int     @default(0)
+  blocoAnswersTodayDay String?
+
+  pendingWeekendSaturday String? // YYYY-MM-DD de um sábado completado aguardando o domingo
+  completeWeekendsCount  Int     @default(0)
+
+  advancedSimuladosCount Int     @default(0)
+  hardSimuladosWith70Acc Int     @default(0)
+  hardSimuladosWith75Acc Int     @default(0)
+  hasSniper              Boolean @default(false)
+  hasRaio                Boolean @default(false)
+  hasPepreto             Boolean @default(false)
+
+  madrugadorCount          Int     @default(0)
+  corujaCount              Int     @default(0)
+  currentConsecutiveErrors Int     @default(0)
+  maxConsecutiveErrors     Int     @default(0)
+  hasAfoito                Boolean @default(false)
+  hasDorminhoco            Boolean @default(false)
+
+  teamWinsCount Int @default(0)
+  totalRaceWins Int @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+// Um registro por (aluno, simulado) que atingiu qualquer uma das duas noções de
+// "completo" usadas pelo sistema. A própria coluna preenchida (badgeFoldedAt /
+// statsFoldedAt) É o marcador de idempotência — evita contar o mesmo simulado duas
+// vezes sem precisar de tabela de lock separada. Também alimenta a lista de
+// histórico do painel do aluno.
+model StudentSimuladoCompletion {
+  id         String @id @default(uuid())
+  studentId  String
+  simuladoId String
+
+  // Marca quando qCount === totalQuestoes(bruto) || qCount >= 10 — alimenta os
+  // brevês guerreiro/veterano/sniper/raio/pepreto/advancedSimuladosCount.
+  badgeFoldedAt DateTime?
+
+  // Marca quando answeredCount >= expectedQ (ajustado por sorteio) && (tipo !== 'LIVE' || status === 'FINISHED')
+  // — alimenta simuladosCount/accuracy/streak/lista de histórico do painel.
+  statsFoldedAt DateTime?
+
+  totalQuestions Int?
+  correctAnswers Int?
+  score          Int?
+  avgTime        Int?
+  simuladoTipo   String?
+  codigoSala     String?
+
+  @@unique([studentId, simuladoId])
+  @@index([studentId])
 }
 
 model Apostila {

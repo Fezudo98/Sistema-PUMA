@@ -68,6 +68,7 @@ import { computeStudentPerformanceStats } from './src/lib/stats';
 import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from './src/lib/badges';
 import { getJwtSecret } from './src/lib/env';
 import { setIoInstance } from './src/lib/socketBridge';
+import { recordAnswerDelta } from './src/lib/studentStatsFold';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = getJwtSecret();
@@ -468,6 +469,19 @@ const socketInfo = new Map<string, { roomCode: string; userId: string; role: str
 // Nunca confiar em role/userId/name enviados pelo próprio cliente no payload dos eventos.
 const verifiedSockets = new Map<string, VerifiedIdentity>();
 
+// tipo/createdAt de um Simulado não mudam durante a vida de uma sala — cache local
+// pra não fazer 1 SELECT extra a cada resposta só pra alimentar recordAnswerDelta
+// (StudentStats, ver src/lib/studentStatsFold.ts).
+const simuladoMetaCache = new Map<string, { tipo: string; createdAt: Date }>();
+async function getSimuladoMeta(simuladoId: string): Promise<{ tipo: string; createdAt: Date }> {
+  const cached = simuladoMetaCache.get(simuladoId);
+  if (cached) return cached;
+  const simulado = await prisma.simulado.findUnique({ where: { id: simuladoId }, select: { tipo: true, createdAt: true } });
+  const meta = simulado || { tipo: 'LIVE', createdAt: new Date() };
+  simuladoMetaCache.set(simuladoId, meta);
+  return meta;
+}
+
 // Modo Corrida: bônus fixo pra quem for o primeiro a acertar (empata com o bônus
 // máximo de velocidade do modo normal: 100 base + até 50 de bônus).
 const RACE_WIN_BONUS = 150;
@@ -542,6 +556,8 @@ async function revealQuestionResult(io: any, roomCode: string, room: RoomState) 
     unansweredStudents = unansweredStudents.filter(st => st.id === room.raffleWinnerId);
   }
 
+  const simuladoMeta = await getSimuladoMeta(room.simuladoId);
+
   for (const st of unansweredStudents) {
     try {
       await prisma.answer.create({
@@ -555,23 +571,40 @@ async function revealQuestionResult(io: any, roomCode: string, room: RoomState) 
           isRaffle: !!room.raffleWinnerId
         }
       });
-
-      if (room.studentScores[st.id]) {
-        const currentStreak = room.studentScores[st.id].streak;
-        const newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
-        room.studentScores[st.id].streak = newStreak;
-
-        const studentName = room.studentScores[st.id].name.split(' ')[0];
-        if (!room.pendingNotifications) room.pendingNotifications = [];
-
-        if (currentStreak >= 7) {
-          room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
-        } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
-          room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
-        }
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        // Resposta já existia pra essa questão/aluno (corrida rara com submit_answer) —
+        // não é uma resposta nova de verdade, não incrementa StudentStats de novo.
+        continue;
       }
-    } catch (e) {
       console.error("Error saving unanswered record:", e);
+      continue;
+    }
+
+    recordAnswerDelta({
+      studentId: st.id,
+      isCorrect: false,
+      pontuacao: 0,
+      tempoGasto: question.tempoLimite,
+      alternativa: -1,
+      createdAt: new Date(),
+      simuladoTipo: simuladoMeta.tipo,
+      simuladoCreatedAt: simuladoMeta.createdAt
+    }).catch((err) => console.error("Erro ao atualizar StudentStats:", err));
+
+    if (room.studentScores[st.id]) {
+      const currentStreak = room.studentScores[st.id].streak;
+      const newStreak = currentStreak < 0 ? currentStreak - 1 : -1;
+      room.studentScores[st.id].streak = newStreak;
+
+      const studentName = room.studentScores[st.id].name.split(' ')[0];
+      if (!room.pendingNotifications) room.pendingNotifications = [];
+
+      if (currentStreak >= 7) {
+        room.pendingNotifications.push(`💦 ${studentName} vacilou e perdeu uma sequência de ${currentStreak} acertos.`);
+      } else if (newStreak <= -5 && Math.abs(newStreak) % 5 === 0) {
+        room.pendingNotifications.push(`🥶 ${studentName} congelou e chegou a ${Math.abs(newStreak)} erros seguidos... Ta devendo 10 pro Instrutor.`);
+      }
     }
   }
 
@@ -1614,6 +1647,19 @@ app.prepare().then(() => {
         }
         throw err;
       }
+
+      getSimuladoMeta(room.simuladoId).then((meta) =>
+        recordAnswerDelta({
+          studentId,
+          isCorrect,
+          pontuacao,
+          tempoGasto: safeTempoGasto,
+          alternativa,
+          createdAt: new Date(),
+          simuladoTipo: meta.tipo,
+          simuladoCreatedAt: meta.createdAt
+        })
+      ).catch((err) => console.error("Erro ao atualizar StudentStats:", err));
 
       if (teamJustDecided) {
         const decidedTeam = room.teams?.find(t => t.id === teamJustDecided!.teamId);

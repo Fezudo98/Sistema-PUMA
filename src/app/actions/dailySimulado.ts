@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from "@/lib/badges";
+import { recordAnswerDelta } from "@/lib/studentStatsFold";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
@@ -701,6 +702,19 @@ export async function saveSelfPacedAnswer(data: {
       }
       throw err;
     }
+
+    // Só chega aqui numa gravação nova de verdade (o branch de duplicata acima
+    // sempre retorna antes) — seguro incrementar as estatísticas pré-agregadas.
+    recordAnswerDelta({
+      studentId,
+      isCorrect,
+      pontuacao,
+      tempoGasto: safeTempoGasto,
+      alternativa,
+      createdAt: new Date(),
+      simuladoTipo: question.simulado.tipo,
+      simuladoCreatedAt: question.simulado.createdAt
+    }).catch((err) => console.error("Erro ao atualizar StudentStats:", err));
 
     return {
       success: true,
