@@ -30,6 +30,15 @@ const nextConfig: NextConfig = {
     config.resolve.alias.canvas = false;
     return config;
   },
+  // Mesmo fallback do webpack acima, mas pro bundler do Turbopack (usado por padrão
+  // em "next dev") — sem isso, qualquer página que importe o PdfViewer (via
+  // JustificativaWithCitation) quebra em dev com "Module not found: canvas", já que
+  // o pdfjs-dist só precisa desse módulo nativo em ambiente Node puro, não no browser.
+  turbopack: {
+    resolveAlias: {
+      canvas: "./src/lib/emptyModule.ts",
+    },
+  },
 };
 
 export default nextConfig;

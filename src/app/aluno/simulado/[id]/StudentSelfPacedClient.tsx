@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, HelpCircle, Loader2, ListFilter, PartyPopper } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, HelpCircle, Loader2, ListFilter, PartyPopper, Scissors } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveSelfPacedAnswer, completeSelfPacedSimulado } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
@@ -71,6 +71,11 @@ export default function StudentSelfPacedClient({
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null);
+  // Ferramenta de eliminação de alternativas (só rabisco visual do aluno — não afeta
+  // correção nem é enviada ao servidor). Escopo por questão: reseta ao trocar de
+  // questão, persiste no localStorage junto com o resto da "blindagem de progresso".
+  const [eliminatedAlts, setEliminatedAlts] = useState<Set<number>>(new Set());
+  const touchStartRef = useRef<{ idx: number; x: number; y: number } | null>(null);
 
   // Estados do gameplay
   const [isAnswered, setIsAnswered] = useState(false);
@@ -131,6 +136,7 @@ export default function StudentSelfPacedClient({
     setIsCorrect(null);
     setCorrectAltIndex(null);
     setJustificativa("");
+    setEliminatedAlts(new Set());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicFilter, activeQuestionId, workingQuestions]);
 
@@ -154,6 +160,7 @@ export default function StudentSelfPacedClient({
             setJustificativa(saved.justificativa || "");
           }
           if (saved.timeLeft && !saved.isAnswered) setTimeLeft(saved.timeLeft);
+          if (Array.isArray(saved.eliminatedAlts)) setEliminatedAlts(new Set(saved.eliminatedAlts));
         }
       }
     } catch (e) {
@@ -174,13 +181,14 @@ export default function StudentSelfPacedClient({
         correctAltIndex,
         justificativa,
         timeLeft,
+        eliminatedAlts: Array.from(eliminatedAlts),
         timestamp: Date.now()
       }));
     } catch (e) {
       console.warn("Erro ao salvar progresso no localStorage:", e);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuestion?.id, selectedAlt, isAnswered, isCorrect, correctAltIndex, justificativa, timeLeft]);
+  }, [currentQuestion?.id, selectedAlt, isAnswered, isCorrect, correctAltIndex, justificativa, timeLeft, eliminatedAlts]);
 
   // 4. Fila de Respostas Pendentes / Offline (para quando o VPS reiniciar ou entrar em manutenção)
   useEffect(() => {
@@ -262,6 +270,44 @@ export default function StudentSelfPacedClient({
     if (!currentQuestion) return;
     // Submete resposta nula (-1) caso expire o tempo
     submitAnswer(-1, currentQuestion.tempoLimite);
+  };
+
+  // Ferramenta de eliminação: risca/desrisca uma alternativa sem afetar a seleção
+  // de resposta, exceto quando a alternativa selecionada é a que está sendo
+  // eliminada — nesse caso, solta a seleção (não faz sentido manter marcada como
+  // resposta algo que acabou de ser descartado).
+  const toggleEliminated = (idx: number) => {
+    if (isAnswered || submitting) return;
+    setEliminatedAlts((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+        setSelectedAlt((current) => (current === idx ? null : current));
+      }
+      return next;
+    });
+  };
+
+  // Swipe lateral (celular) tem o mesmo efeito da tesoura. Só conta como swipe se o
+  // movimento for majoritariamente horizontal e passar de um limiar — assim um scroll
+  // vertical normal da página nunca é confundido com o gesto.
+  const handleAltTouchStart = (idx: number) => (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStartRef.current = { idx, x: t.clientX, y: t.clientY };
+  };
+
+  const handleAltTouchEnd = (idx: number) => (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start || start.idx !== idx) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      toggleEliminated(idx);
+    }
   };
 
   const handleConfirm = () => {
@@ -507,6 +553,7 @@ export default function StudentSelfPacedClient({
                 <div className="space-y-3">
                   {alternativasList.map((alt, idx) => {
                     const isSelected = selectedAlt === idx;
+                    const isEliminated = eliminatedAlts.has(idx);
                     let altClass = "bg-background/40 border-border text-muted-foreground hover:bg-card/40 hover:text-heading";
 
                     if (isAnswered) {
@@ -520,30 +567,61 @@ export default function StudentSelfPacedClient({
                         // Gray out other options
                         altClass = "bg-background/10 border-border/50 text-muted-foreground cursor-not-allowed";
                       }
+                    } else if (isEliminated) {
+                      altClass = "bg-background/10 border-border/40 text-muted-foreground/50";
                     } else if (isSelected) {
                       altClass = "bg-blue-950/20 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]";
                     }
 
                     return (
-                      <button
+                      <div
                         key={idx}
-                        disabled={isAnswered || submitting}
-                        onClick={() => setSelectedAlt(idx)}
-                        className={`w-full p-4 rounded-xl border text-left font-semibold text-sm transition-all flex items-center justify-between gap-3 ${
-                          !isAnswered ? "cursor-pointer" : ""
-                        } ${altClass}`}
+                        onTouchStart={!isAnswered ? handleAltTouchStart(idx) : undefined}
+                        onTouchEnd={!isAnswered ? handleAltTouchEnd(idx) : undefined}
+                        className={`w-full rounded-xl border transition-all flex items-stretch gap-1 ${altClass}`}
                       >
-                        <span className="leading-relaxed">{renderHighlightedText(alt)}</span>
-                        {isAnswered && idx === correctAltIndex && (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                        <button
+                          disabled={isAnswered || submitting || isEliminated}
+                          onClick={() => setSelectedAlt(idx)}
+                          className={`flex-1 min-w-0 p-4 text-left font-semibold text-sm flex items-center justify-between gap-3 ${
+                            !isAnswered && !isEliminated ? "cursor-pointer" : isEliminated ? "cursor-default" : ""
+                          }`}
+                        >
+                          <span className={`leading-relaxed ${isEliminated ? "line-through opacity-60" : ""}`}>
+                            {renderHighlightedText(alt)}
+                          </span>
+                          {isAnswered && idx === correctAltIndex && (
+                            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                          )}
+                          {isAnswered && isSelected && !isCorrect && (
+                            <XCircle className="w-5 h-5 text-red-500 shrink-0" />
+                          )}
+                        </button>
+                        {!isAnswered && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleEliminated(idx);
+                            }}
+                            title={isEliminated ? "Restaurar alternativa" : "Eliminar alternativa"}
+                            className={`shrink-0 self-center mr-2 p-2 rounded-lg transition-all cursor-pointer ${
+                              isEliminated
+                                ? "text-amber-400 bg-amber-950/30 hover:bg-amber-950/50"
+                                : "text-muted-foreground hover:text-red-400 hover:bg-red-950/20"
+                            }`}
+                          >
+                            <Scissors className="w-4 h-4" />
+                          </button>
                         )}
-                        {isAnswered && isSelected && !isCorrect && (
-                          <XCircle className="w-5 h-5 text-red-500 shrink-0" />
-                        )}
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
+                <p className="text-[10px] text-muted-foreground/70 font-medium -mt-2 flex items-center gap-1.5">
+                  <Scissors className="w-3 h-3 shrink-0" />
+                  Toque na tesoura (ou arraste a alternativa pro lado, no celular) pra eliminar uma opção
+                </p>
 
                 {/* Confirm Action Button */}
                 {!isAnswered && (
