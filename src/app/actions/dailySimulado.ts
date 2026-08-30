@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { computeStudentPerformanceStats } from "@/lib/stats";
 import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from "@/lib/badges";
-import { recordAnswerDelta } from "@/lib/studentStatsFold";
+import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldBlocoProvaDailyProgress } from "@/lib/studentStatsFold";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
@@ -630,7 +630,7 @@ export async function saveSelfPacedAnswer(data: {
     // 2. Buscar a questão para validar
     const question = await prisma.question.findUnique({
       where: { id: questionId },
-      include: { simulado: true }
+      include: { simulado: { include: { _count: { select: { questions: true } } } } }
     });
 
     if (!question) {
@@ -706,16 +706,33 @@ export async function saveSelfPacedAnswer(data: {
 
     // Só chega aqui numa gravação nova de verdade (o branch de duplicata acima
     // sempre retorna antes) — seguro incrementar as estatísticas pré-agregadas.
-    recordAnswerDelta({
-      studentId,
-      isCorrect,
-      pontuacao,
-      tempoGasto: safeTempoGasto,
-      alternativa,
-      createdAt: new Date(),
-      simuladoTipo: question.simulado.tipo,
-      simuladoCreatedAt: question.simulado.createdAt
-    }).catch((err) => console.error("Erro ao atualizar StudentStats:", err));
+    // Encadeado (não disparado em paralelo) pra nunca ter duas escritas concorrentes
+    // na mesma linha de StudentStats; disparado sem await pra não atrasar a resposta
+    // ao aluno com esse trabalho em segundo plano.
+    (async () => {
+      const answerCreatedAt = new Date();
+      await recordAnswerDelta({
+        studentId,
+        isCorrect,
+        pontuacao,
+        tempoGasto: safeTempoGasto,
+        alternativa,
+        createdAt: answerCreatedAt,
+        simuladoTipo: question.simulado.tipo,
+        simuladoCreatedAt: question.simulado.createdAt
+      });
+      await foldSimuladoCompletionIfNeeded(studentId, question.simuladoId, {
+        tipo: question.simulado.tipo,
+        status: question.simulado.status,
+        difficulty: question.simulado.difficulty,
+        createdAt: question.simulado.createdAt,
+        codigoSala: question.simulado.codigoSala,
+        totalQuestions: question.simulado._count.questions
+      });
+      if (question.simulado.tipo === "BLOCO_PROVA") {
+        await foldBlocoProvaDailyProgress(studentId, answerCreatedAt);
+      }
+    })().catch((err) => console.error("Erro ao atualizar StudentStats:", err));
 
     return {
       success: true,
