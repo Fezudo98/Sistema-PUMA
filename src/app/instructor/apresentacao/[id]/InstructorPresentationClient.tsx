@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { renderHighlightedText } from "@/lib/highlightText";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle2, XCircle, ChevronRight, Presentation, Loader2, Info } from "lucide-react";
@@ -154,7 +155,7 @@ export default function InstructorPresentationClient({ simulado }: { simulado: S
                     >
                       {letter}
                     </span>
-                    <span className="flex-1 text-sm sm:text-base font-semibold text-foreground">{cleanAlt}</span>
+                    <span className="flex-1 text-sm sm:text-base font-semibold text-foreground">{renderHighlightedText(cleanAlt)}</span>
                     {isAnswered && isCorrectAlt && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
                     {isAnswered && isMarkedAlt && !isCorrectAlt && <XCircle className="w-5 h-5 text-red-500 shrink-0" />}
                   </button>

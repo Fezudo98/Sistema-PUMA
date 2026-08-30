@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { renderHighlightedText } from "@/lib/highlightText";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
@@ -441,7 +442,7 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
                                   {letter}
                                 </span>
                                 <span className={`flex-1 pt-0.5 text-base md:text-lg lg:text-xl leading-relaxed ${isCorrect ? 'text-emerald-400 font-black' : 'text-foreground font-semibold'}`}>
-                                  {cleanAlt}
+                                  {renderHighlightedText(cleanAlt)}
                                 </span>
                               </div>
 

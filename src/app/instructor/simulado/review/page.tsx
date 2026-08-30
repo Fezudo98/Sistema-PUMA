@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Save, AlertCircle, Loader2, ArrowLeft, Edit2, Trash2, Check, X, BookOpen, Clock, AlertTriangle } from "lucide-react";
 import { createSimulado } from "@/app/actions/simulado";
 import { formatApostilaTitle } from "@/lib/utils";
+import { renderHighlightedText } from "@/lib/highlightText";
 
 type Question = {
   enunciado: string;
@@ -419,7 +420,7 @@ export default function ReviewSimulado() {
                           }`}>
                             {["A", "B", "C", "D", "E"][aIndex] || String(aIndex)}
                           </span>
-                          <p className="pt-0.5 text-base leading-snug flex-1">{alt.replace(/^[A-E]\)\s*/i, '')}</p>
+                          <p className="pt-0.5 text-base leading-snug flex-1">{renderHighlightedText(alt.replace(/^[A-E]\)\s*/i, ''))}</p>
                           
                           {isCorrect && (
                             <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded">

@@ -8,6 +8,7 @@ import Link from "next/link";
 import ReportQuestionButton from "./ReportQuestionButton";
 import { formatApostilaTitle } from "@/lib/utils";
 import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
+import { renderHighlightedText } from "@/lib/highlightText";
 
 export default async function StudentSimuladoReview({ params }: { params: { id: string } }) {
   const user = await getUser();
@@ -316,7 +317,7 @@ export default async function StudentSimuladoReview({ params }: { params: { id: 
                             <span className="font-bold opacity-70">
                               {["A)", "B)", "C)", "D)", "E)"][aIndex] || `${aIndex})`}
                             </span>
-                            <p>{alt.replace(/^[A-E]\)\s*/i, '')}</p>
+                            <p>{renderHighlightedText(alt.replace(/^[A-E]\)\s*/i, ''))}</p>
                           </div>
                           
                           <div className="flex gap-2 shrink-0 md:ml-auto pl-7 md:pl-0">

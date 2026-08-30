@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { renderHighlightedText } from "@/lib/highlightText";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Clock, ShieldAlert, CheckCircle, XCircle, Trophy, BookOpen, Target, BarChart2, Users, Zap, Skull } from "lucide-react";
@@ -804,7 +805,7 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
                       }`}>
                         {String.fromCharCode(65 + index)}
                       </span>
-                      <span className="flex-1 pt-1 text-base leading-snug">{alt.replace(/^[A-E]\)\s*/i, '')}</span>
+                      <span className="flex-1 pt-1 text-base leading-snug">{renderHighlightedText(alt.replace(/^[A-E]\)\s*/i, ''))}</span>
                     </div>
 
                     {isEnded && questionEndedData.percentages && (

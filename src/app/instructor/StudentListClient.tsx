@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { renderHighlightedText } from "@/lib/highlightText";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Users, Target, Clock, Trophy, Search, User as UserIcon, KeyRound, Eye, EyeOff, Check, 
@@ -754,7 +755,7 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
 
                                         return (
                                           <div key={altIdx} className={`flex justify-between items-center p-2.5 rounded-lg border text-xs leading-normal ${borderClass} ${textClass}`}>
-                                            <span>{alt}</span>
+                                            <span>{renderHighlightedText(alt)}</span>
                                             {badge}
                                           </div>
                                         );

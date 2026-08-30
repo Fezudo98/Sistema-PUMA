@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { renderHighlightedText } from "@/lib/highlightText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -313,7 +314,7 @@ export default function NovaApresentacao() {
                       <div className="pl-9 space-y-2">
                         {q.alternativas.map((alt, i) => (
                           <div key={i} className={`p-2 rounded border text-xs ${i === q.correta ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-200" : "border-border text-muted-foreground"}`}>
-                            {alt}
+                            {renderHighlightedText(alt)}
                           </div>
                         ))}
                       </div>

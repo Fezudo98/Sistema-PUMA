@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { renderHighlightedText } from "@/lib/highlightText";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -508,7 +509,7 @@ export default function StudentSelfPacedClient({
                           !isAnswered ? "cursor-pointer" : ""
                         } ${altClass}`}
                       >
-                        <span className="leading-relaxed">{alt}</span>
+                        <span className="leading-relaxed">{renderHighlightedText(alt)}</span>
                         {isAnswered && idx === correctAltIndex && (
                           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         )}

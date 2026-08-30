@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { renderHighlightedText } from "@/lib/highlightText";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -254,7 +255,7 @@ export default function DuelBattleClient({ user, simulado, duelo, opponentName }
               }`}
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-heading">{alt}</span>
+                <span className="text-sm text-heading">{renderHighlightedText(alt)}</span>
                 {isCorrectAlt && <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />}
                 {isWrongSelected && <XCircle className="w-5 h-5 text-red-400 shrink-0" />}
               </div>
