@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from '@/lib/prisma';
 import { getUser } from "@/app/actions/auth";
 import ChatClient from "./ChatClient";
-import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getStudentEffectiveStats } from "@/lib/studentStatsRead";
 export default async function AlunoChatPage() {
   const user = await getUser();
   if (!user || user.role !== "STUDENT") {
@@ -26,20 +26,9 @@ export default async function AlunoChatPage() {
     redirect("/api/auth/force-logout");
   }
 
-  // Calculate stats from completed simulados using reusable stats engine
-  const answers = await prisma.answer.findMany({
-    where: { studentId: user.userId },
-    include: {
-      question: {
-        include: {
-          simulado: {
-            include: { _count: { select: { questions: true } } }
-          }
-        }
-      }
-    }
-  });
-  const perf = computeStudentPerformanceStats(answers, user.userId, undefined, undefined, dbUser.bonusStreakDays || 0);
+  // Estatísticas pré-agregadas (StudentStats) — O(1), não recarrega o histórico
+  // completo de respostas do aluno.
+  const perf = await getStudentEffectiveStats(user.userId);
   const stats = {
     totalQuestions: perf.totalAnswers,
     accuracy: perf.accuracy,

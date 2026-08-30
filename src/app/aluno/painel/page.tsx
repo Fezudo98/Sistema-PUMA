@@ -2,7 +2,7 @@ import { getUser } from "@/app/actions/auth";
 import StudentDashboardClient from "./DashboardClient";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getStudentEffectiveStats } from "@/lib/studentStatsRead";
 import { getCachedGeneralRanking } from "@/lib/ranking";
 
 const PAST_DAILY_SIMULADOS_LIMIT = 30;
@@ -42,7 +42,6 @@ export default async function AlunoPainel() {
 
   // Consultas independentes entre si rodam em paralelo em vez de uma atrás da outra.
   const [
-    answers,
     generalRanking,
     dailySimulados,
     activeApostilasCount,
@@ -52,23 +51,6 @@ export default async function AlunoPainel() {
     specialSimulados,
     provaApostilas
   ] = await Promise.all([
-    prisma.answer.findMany({
-      where: { studentId: user.userId },
-      include: {
-        question: {
-          include: {
-            simulado: {
-              include: {
-                _count: {
-                  select: { questions: true }
-                }
-              }
-            }
-          }
-        }
-      },
-      orderBy: { id: "desc" }
-    }),
     getCachedGeneralRanking(),
     prisma.simulado.findMany({
       where: {
@@ -132,71 +114,29 @@ export default async function AlunoPainel() {
       })
     : [];
 
-  const totalAnswers = answers.length;
+  // Estatísticas pré-agregadas (StudentStats) — O(1), não recarrega o histórico
+  // completo de respostas do aluno.
+  const perfStats = await getStudentEffectiveStats(user.userId);
 
-  // Buscar apenas as respostas de sorteio vencidas por OUTROS alunos nos simulados
-  // que este aluno participou (nunca a tabela inteira do sistema).
-  const simuladoIds = Array.from(new Set(answers.map(a => a.question.simuladoId)));
-  const otherRaffleAnswers = await prisma.answer.findMany({
-    where: {
-      question: { simuladoId: { in: simuladoIds } },
-      isRaffle: true,
-      studentId: { not: user.userId }
-    },
-    select: {
-      question: { select: { simuladoId: true } }
-    }
+  // Histórico de simulados completos: cada linha já foi calculada uma vez no
+  // momento da conclusão (ver src/lib/studentStatsFold.ts) — não precisa
+  // reagrupar nada aqui.
+  const completions = await prisma.studentSimuladoCompletion.findMany({
+    where: { studentId: user.userId, statsFoldedAt: { not: null } },
+    orderBy: { statsFoldedAt: "desc" }
   });
-
-  const otherRaffleCounts = new Map<string, number>();
-  otherRaffleAnswers.forEach(ora => {
-    const sId = ora.question.simuladoId;
-    otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
+  const history = completions.map((c) => {
+    const totalQuestions = c.totalQuestions || 0;
+    const correctAnswers = c.correctAnswers || 0;
+    return {
+      id: c.simuladoId,
+      codigoSala: c.codigoSala,
+      totalQuestions,
+      correctAnswers,
+      score: c.score || 0,
+      accuracy: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0
+    };
   });
-
-  const totalScore = answers.reduce((acc, curr) => acc + curr.pontuacao, 0);
-  const avgTime = totalAnswers > 0 ? Math.round(answers.reduce((acc, curr) => acc + curr.tempoGasto, 0) / totalAnswers) : 0;
-
-  // History grouped by simulado
-  const historyMap = new Map();
-  for (const a of answers) {
-    const sId = a.question.simuladoId;
-    if (!historyMap.has(sId)) {
-      const totalQ = (a.question.simulado as any)._count?.questions || 0;
-      const otherRaffleCount = otherRaffleCounts.get(sId) || 0;
-      const expectedQ = Math.max(0, totalQ - otherRaffleCount);
-      historyMap.set(sId, {
-        id: sId,
-        codigoSala: a.question.simulado.codigoSala,
-        tipo: a.question.simulado.tipo,
-        status: a.question.simulado.status,
-        totalQuestions: expectedQ,
-        correctAnswers: 0,
-        score: 0,
-        answeredCount: 0
-      });
-    }
-    const sStats = historyMap.get(sId);
-    if (a.isCorrect) sStats.correctAnswers++;
-    sStats.score += a.pontuacao;
-    sStats.answeredCount++;
-  }
-
-  const history = Array.from(historyMap.values())
-    .filter(h => {
-      const isFinished = h.tipo === "LIVE" ? h.status === "FINISHED" : true;
-      return isFinished && h.answeredCount >= h.totalQuestions && h.totalQuestions > 0;
-    })
-    .map(h => ({
-      id: h.id,
-      codigoSala: h.codigoSala,
-      totalQuestions: h.totalQuestions,
-      correctAnswers: h.correctAnswers,
-      score: h.score,
-      accuracy: h.totalQuestions > 0 ? Math.round((h.correctAnswers / h.totalQuestions) * 100) : 0
-    }));
-
-  const perfStats = computeStudentPerformanceStats(answers, user.userId, otherRaffleCounts, undefined, (dbUser as any)?.bonusStreakDays || 0);
 
   const stats = {
     simuladosCount: history.length,
@@ -219,9 +159,23 @@ export default async function AlunoPainel() {
     });
   }
 
-  // Set com as questões já respondidas pelo aluno, calculado uma única vez para
-  // evitar varrer o array de respostas inteiro para cada simulado abaixo.
-  const answeredQuestionIds = new Set(answers.map(a => a.questionId));
+  // Set com as questões já respondidas pelo aluno, restrito só às questões dos
+  // simulados exibidos nesta página (não o histórico completo do aluno) — dá pra
+  // marcar "concluído"/"quantas já respondeu" pra cada card sem depender do
+  // tamanho total do histórico.
+  const candidateQuestionIds = [
+    ...dailySimulados.flatMap((sim) => sim.questions.map((q) => q.id)),
+    ...pastDailySimulados.flatMap((sim) => sim.questions.map((q) => q.id)),
+    ...specialSimulados.flatMap((sim) => sim.questions.map((q) => q.id)),
+    ...blocosDeProva.flatMap((bloco) => bloco.questions.map((q) => q.id))
+  ];
+  const answeredCandidateAnswers = candidateQuestionIds.length > 0
+    ? await prisma.answer.findMany({
+        where: { studentId: user.userId, questionId: { in: candidateQuestionIds } },
+        select: { questionId: true }
+      })
+    : [];
+  const answeredQuestionIds = new Set(answeredCandidateAnswers.map((a) => a.questionId));
 
   const dailySimuladosWithStatus = dailySimulados.map((sim) => {
     const questionIds = sim.questions.map((q: { id: string }) => q.id);

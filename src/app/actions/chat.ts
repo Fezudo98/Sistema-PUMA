@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { computeStudentPerformanceStats } from "@/lib/stats";
+import { getStudentEffectiveStats } from "@/lib/studentStatsRead";
 import { getCachedGeneralRanking } from "@/lib/ranking";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
@@ -201,19 +201,7 @@ export async function sendChatMessageAction(content: string, apostilaId: string)
         todayPoints = cachedPerf.todayPoints;
       } else {
         // Fallback (ex.: contas de teste que não entram no ranking geral)
-        const fallbackAnswers = await prisma.answer.findMany({
-          where: { studentId: user.userId },
-          include: {
-            question: {
-              include: {
-                simulado: {
-                  include: { _count: { select: { questions: true } } }
-                }
-              }
-            }
-          }
-        });
-        const perf = computeStudentPerformanceStats(fallbackAnswers, user.userId);
+        const perf = await getStudentEffectiveStats(user.userId);
         totalAnswers = perf.totalAnswers;
         accuracy = perf.accuracy;
         streakDays = perf.streakDays;

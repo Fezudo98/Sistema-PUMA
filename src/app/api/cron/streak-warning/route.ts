@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { computeStudentPerformanceStats, getLocalDayString } from "@/lib/stats";
+import { getLocalDayString } from "@/lib/stats";
+import { deriveEffectiveStats } from "@/lib/studentStatsRead";
 import { sendPushToUser } from "@/lib/push";
 
 // A partir de que hora local (America/Fortaleza) já é "faltam 2h pra virar o dia"
@@ -33,64 +34,32 @@ export async function GET(request: Request) {
 
     const todayStr = getLocalDayString(now);
 
-    // Mesmo cálculo de raffle usado no ranking geral, pra não achar que um simulado
-    // com sorteio ficou "incompleto" indevidamente.
-    const allRaffleAnswers = await prisma.answer.findMany({
-      where: { isRaffle: true },
-      select: { studentId: true, question: { select: { simuladoId: true } } }
-    });
-    const totalRaffleInSimulado = new Map<string, number>();
-    const studentRaffleInSimulado = new Map<string, number>();
-    allRaffleAnswers.forEach((ra) => {
-      const sId = ra.question.simuladoId;
-      const uId = ra.studentId;
-      totalRaffleInSimulado.set(sId, (totalRaffleInSimulado.get(sId) || 0) + 1);
-      studentRaffleInSimulado.set(`${uId}_${sId}`, (studentRaffleInSimulado.get(`${uId}_${sId}`) || 0) + 1);
-    });
-
+    // Estatísticas pré-agregadas (StudentStats) — O(1) por aluno, não recarrega o
+    // histórico completo de respostas de ninguém.
     const students = await prisma.user.findMany({
       where: { role: "STUDENT", isTestUser: false, lastStreakWarningDay: { not: todayStr } },
-      select: {
-        id: true,
-        name: true,
-        bonusStreakDays: true,
-        answers: {
-          select: {
-            createdAt: true,
-            pontuacao: true,
-            tempoGasto: true,
-            isCorrect: true,
-            question: {
-              select: {
-                simuladoId: true,
-                simulado: {
-                  select: { tipo: true, status: true, createdAt: true, _count: { select: { questions: true } } }
-                }
-              }
-            }
-          }
-        }
-      }
+      select: { id: true, name: true, bonusStreakDays: true }
     });
+
+    const statsRows = await prisma.studentStats.findMany({
+      where: { studentId: { in: students.map((s) => s.id) } }
+    });
+    const statsByStudent = new Map(statsRows.map((s) => [s.studentId, s]));
 
     let warned = 0;
     for (const student of students) {
-      const stats = computeStudentPerformanceStats(
-        student.answers as any,
-        student.id,
-        totalRaffleInSimulado,
-        studentRaffleInSimulado,
-        student.bonusStreakDays || 0
-      );
+      const rawStats = statsByStudent.get(student.id) || null;
+      if (!rawStats) continue; // sem histórico ainda — nada a avisar
 
-      const alreadyDoneToday = stats.completedDaysSet.includes(todayStr);
-      const hasStreakAtRisk = !alreadyDoneToday && stats.streakDays > 0;
+      const perf = deriveEffectiveStats(rawStats, student.bonusStreakDays || 0);
+      const alreadyDoneToday = rawStats.lastCompletedDay === todayStr;
+      const hasStreakAtRisk = !alreadyDoneToday && perf.streakDays > 0;
 
       if (!hasStreakAtRisk) continue;
 
       await sendPushToUser(student.id, {
         title: "Sua sequência está em risco!",
-        body: `Faltam poucas horas pra virar o dia e você ainda não garantiu hoje. Não perca sua sequência de ${stats.streakDays} dias!`,
+        body: `Faltam poucas horas pra virar o dia e você ainda não garantiu hoje. Não perca sua sequência de ${perf.streakDays} dias!`,
         url: "/aluno/painel",
         tag: `streak-warning-${todayStr}`
       });

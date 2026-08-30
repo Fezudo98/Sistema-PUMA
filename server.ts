@@ -69,6 +69,7 @@ import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp
 import { getJwtSecret } from './src/lib/env';
 import { setIoInstance } from './src/lib/socketBridge';
 import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldLiveSimuladoFinish } from './src/lib/studentStatsFold';
+import { deriveEffectiveStats } from './src/lib/studentStatsRead';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = getJwtSecret();
@@ -147,35 +148,15 @@ async function getStudentsTotalScores(studentIds: string[]): Promise<Record<stri
   try {
     const students = await prisma.user.findMany({
       where: { id: { in: studentIds } },
-      select: {
-        id: true,
-        bonusStreakDays: true,
-        answers: {
-          select: {
-            createdAt: true,
-            pontuacao: true,
-            tempoGasto: true,
-            isCorrect: true,
-            question: {
-              select: {
-                simuladoId: true,
-                simulado: {
-                  select: {
-                    tipo: true,
-                    status: true,
-                    createdAt: true,
-                    _count: { select: { questions: true } }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      select: { id: true, bonusStreakDays: true }
     });
+    const statsRows = await prisma.studentStats.findMany({
+      where: { studentId: { in: studentIds } }
+    });
+    const statsByStudent = new Map(statsRows.map(s => [s.studentId, s]));
 
     students.forEach(s => {
-      const sPerf = computeStudentPerformanceStats(s.answers as any, s.id, undefined, undefined, (s as any).bonusStreakDays || 0);
+      const sPerf = deriveEffectiveStats(statsByStudent.get(s.id) || null, s.bonusStreakDays || 0);
       result[s.id] = sPerf.totalScore;
     });
   } catch (err) {
