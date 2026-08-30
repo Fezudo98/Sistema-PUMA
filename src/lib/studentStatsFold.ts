@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { getFortalezaHour, isSyntheticBackfilledTimestamp } from "./badges";
 import { getLocalDayString } from "./stats";
+import { deriveEffectiveStats } from "./studentStatsRead";
 
 // Migração pra estatísticas pré-agregadas (ver plano em
 // C:\Users\Sergio\.claude\plans\eager-pondering-puddle.md): mantém StudentStats
@@ -397,4 +398,66 @@ export async function foldBlocoProvaDailyProgress(studentId: string, answerCreat
       }
     });
   });
+}
+
+// --- Avaliação de brevês (Fase 5) --------------------------------------------
+
+export interface BadgeDef {
+  id: string;
+  name: string;
+  earned: boolean;
+  exclusive: boolean;
+}
+
+// Substitui os dois blocos duplicados que existiam em server.ts:checkAndUnlockBadges
+// e dailySimulado.ts:completeSelfPacedSimulado — ambos recarregavam o histórico
+// completo do aluno pra reavaliar os 18 brevês toda vez. Aqui é uma leitura O(1) de
+// StudentStats (via deriveEffectiveStats) + User.unlockedBadges, sem nenhum scan.
+// Critérios de Caveira/Padrão PM: os do antigo dailySimulado.ts (decisão do usuário
+// — os dois blocos discordavam entre si antes desta unificação).
+export async function evaluateAndUnlockBadges(studentId: string): Promise<{ newlyUnlocked: BadgeDef[] }> {
+  const [stats, user] = await Promise.all([
+    prisma.studentStats.findUnique({ where: { studentId } }),
+    prisma.user.findUnique({ where: { id: studentId }, select: { bonusStreakDays: true, unlockedBadges: true } })
+  ]);
+  if (!user || !stats) return { newlyUnlocked: [] };
+
+  const perf = deriveEffectiveStats(stats, user.bonusStreakDays || 0);
+  const { simuladosCount, accuracy, totalScore } = perf;
+
+  const blocoAccuracy = stats.blocoTotalAnswers > 0
+    ? Math.round((stats.blocoCorrectAnswers / stats.blocoTotalAnswers) * 100)
+    : 0;
+
+  const badges: BadgeDef[] = [
+    { id: "recruta", name: "Recruta", earned: simuladosCount >= 3 && totalScore >= 3000, exclusive: false },
+    { id: "guerreiro", name: "Guerreiro", earned: stats.hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
+    { id: "veterano", name: "Veterano", earned: stats.hardSimuladosWith75Acc >= 25 && totalScore >= 60000, exclusive: false },
+    { id: "sniper", name: "Atirador de Elite", earned: stats.hasSniper && totalScore >= 80000, exclusive: false },
+    { id: "raio", name: "Pronto Resposta (Raio)", earned: stats.hasRaio && totalScore >= 50000, exclusive: false },
+    { id: "caveira", name: "Caveira", earned: stats.advancedSimuladosCount >= 40 && accuracy >= 92 && totalScore >= 200000, exclusive: false },
+    { id: "padrao", name: "Padrão PM", earned: totalScore >= 300000 && accuracy >= 92, exclusive: false },
+    { id: "lenda", name: "Lenda PUMA", earned: totalScore >= 750000 && accuracy >= 95, exclusive: false },
+    { id: "madrugador", name: "Madrugador", earned: stats.madrugadorCount >= 20, exclusive: false },
+    { id: "coruja", name: "Coruja da Guarita", earned: stats.corujaCount >= 20, exclusive: false },
+    { id: "fimdesemana", name: "Guerreiro de Fim de Semana", earned: stats.completeWeekendsCount >= 4, exclusive: false },
+    { id: "historiador", name: "Historiador de Combate", earned: stats.blocoTotalAnswers >= 100 && blocoAccuracy >= 80, exclusive: false },
+    { id: "lider_equipe", name: "Líder de Equipe", earned: stats.teamWinsCount >= 3, exclusive: false },
+    { id: "sprint", name: "Sprint Tático", earned: stats.totalRaceWins >= 5, exclusive: false },
+    { id: "bizonho", name: "Bizonho", earned: stats.maxConsecutiveErrors >= 3, exclusive: false },
+    { id: "afoito", name: "Gatilho Afoito", earned: stats.hasAfoito, exclusive: false },
+    { id: "dorminhoco", name: "Dormiu na Guarita", earned: stats.hasDorminhoco, exclusive: false },
+    { id: "pepreto", name: "Pé Preto", earned: stats.hasPepreto, exclusive: false }
+  ];
+
+  const earnedBadgeIds = badges.filter((b) => b.earned).map((b) => b.id);
+  const previouslyUnlocked = user.unlockedBadges ? user.unlockedBadges.split(",").filter(Boolean) : [];
+  const newlyUnlockedIds = earnedBadgeIds.filter((id) => !previouslyUnlocked.includes(id));
+
+  if (newlyUnlockedIds.length > 0) {
+    const newUnlockedBadges = [...previouslyUnlocked, ...newlyUnlockedIds].join(",");
+    await prisma.user.update({ where: { id: studentId }, data: { unlockedBadges: newUnlockedBadges } });
+  }
+
+  return { newlyUnlocked: badges.filter((b) => newlyUnlockedIds.includes(b.id)) };
 }

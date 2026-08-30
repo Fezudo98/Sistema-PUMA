@@ -64,11 +64,9 @@ import next from 'next';
 import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { jwtVerify } from 'jose';
-import { computeStudentPerformanceStats } from './src/lib/stats';
-import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from './src/lib/badges';
 import { getJwtSecret } from './src/lib/env';
 import { setIoInstance } from './src/lib/socketBridge';
-import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldLiveSimuladoFinish } from './src/lib/studentStatsFold';
+import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldLiveSimuladoFinish, evaluateAndUnlockBadges } from './src/lib/studentStatsFold';
 import { deriveEffectiveStats } from './src/lib/studentStatsRead';
 
 const prisma = new PrismaClient();
@@ -165,217 +163,34 @@ async function getStudentsTotalScores(studentIds: string[]): Promise<Record<stri
   return result;
 }
 
-// Evita empilhar checagens pesadas de brevê pro mesmo aluno, e espalha (jitter) o
-// disparo delas no tempo — sem isso, quando o cronômetro de uma questão zera, dezenas
-// de alunos disparam essa query pesada no MESMO instante, competindo pelo SQLite.
-const pendingBadgeChecks = new Set<string>();
-
-// A checagem de brevês recarrega TODO o histórico de respostas do aluno (query pesada,
-// com joins aninhados) — em sala Ao Vivo/Duelo ela é disparada a cada resposta individual,
-// então sem um limite de frequência um aluno com milhares de respostas gera uma consulta
-// gigante a cada questão, sobrecarregando o SQLite e inflando a memória do processo.
-// `force: true` (usado no fim de partida) ignora o cooldown pra garantir o brevê na hora.
-const lastBadgeCheckAt = new Map<string, number>();
-const BADGE_CHECK_COOLDOWN_MS = 60_000;
-
-async function checkAndUnlockBadges(studentId: string, ioServer: any, currentSimuladoId: string, force = false) {
-  if (pendingBadgeChecks.has(studentId)) return;
-  if (!force) {
-    const last = lastBadgeCheckAt.get(studentId) || 0;
-    if (Date.now() - last < BADGE_CHECK_COOLDOWN_MS) return;
-  }
-  pendingBadgeChecks.add(studentId);
+// Fase 5 da migração pra estatísticas pré-agregadas: substitui a antiga
+// checkAndUnlockBadges (recarregava todo o histórico do aluno, precisava de
+// cooldown/debounce pra não sobrecarregar o SQLite). evaluateAndUnlockBadges lê
+// StudentStats em O(1), então não precisa mais de nenhuma dessas proteções — pode
+// rodar em toda resposta sem custo. Emite 'badges_unlocked' globalmente (o cliente
+// já filtra por studentId), igual o sistema antigo fazia.
+async function evaluateAndEmitBadges(ioServer: any, studentId: string) {
   try {
-    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 1350));
-
-    const student = await prisma.user.findUnique({
-      where: { id: studentId },
-      include: {
-        answers: {
-          include: { 
-            question: {
-              include: { 
-                simulado: {
-                  include: {
-                    _count: { select: { questions: true } }
-                  }
-                } 
-              }
-            } 
-          }
-        }
-      }
-    });
-
-    if (!student) return;
-
-    const correctAnswers = student.answers.filter(a => a.isCorrect);
-
-    // Get other students' raffle answers in the participated simulados
-    const simuladoIds = Array.from(new Set(student.answers.map(a => a.question.simuladoId)));
-    const otherRaffleAnswers = await prisma.answer.findMany({
-      where: {
-        question: { simuladoId: { in: simuladoIds } },
-        isRaffle: true,
-        studentId: { not: studentId }
-      },
-      select: {
-        question: { select: { simuladoId: true } }
-      }
-    });
-
-    const otherRaffleCounts = new Map<string, number>();
-    otherRaffleAnswers.forEach(ora => {
-      const sId = ora.question.simuladoId;
-      otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
-    });
-
-    const simuladoGroups: Record<string, typeof student.answers> = {};
-    student.answers.forEach(a => {
-      if (!simuladoGroups[a.question.simuladoId]) simuladoGroups[a.question.simuladoId] = [];
-      simuladoGroups[a.question.simuladoId].push(a);
-    });
-
-    const sPerf = computeStudentPerformanceStats(student.answers as any, student.id, otherRaffleCounts, undefined, (student as any).bonusStreakDays || 0);
-    const simuladosCount = sPerf.simuladosCount;
-    const accuracy = sPerf.accuracy;
-    const totalScore = sPerf.totalScore;
-    
-    let advancedSimuladosCount = 0;
-    let hardSimuladosWith70Acc = 0;
-    let hardSimuladosWith75Acc = 0;
-    let hasSniper = false;
-    let hasRaio = false;
-
-    Object.values(simuladoGroups).forEach(simAnswers => {
-      if (simAnswers.length === 0) return;
-      const qCount = simAnswers.length;
-      const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
-      const corrects = simAnswers.filter(a => a.isCorrect).length;
-      
-      const acc = Math.round((corrects / totalQuestionsInSimulado) * 100);
-      const avgTime = Math.round(simAnswers.reduce((acc, curr) => acc + (curr.tempoGasto || 0), 0) / qCount);
-      const difficulty = simAnswers[0].question.simulado.difficulty;
-
-      // Only evaluate if the student has answered a significant portion of the simulado
-      // Either all questions, or at least 10 questions to prevent 1-question exploits
-      const isCompleteEnough = qCount === totalQuestionsInSimulado || qCount >= 10;
-
-      if (difficulty === "AVANCADO" && isCompleteEnough) {
-        advancedSimuladosCount++;
-        if (acc >= 70) hardSimuladosWith70Acc++;
-        if (acc >= 75) hardSimuladosWith75Acc++;
-        
-        if (qCount >= 20 && acc === 100) hasSniper = true;
-        if (acc >= 85 && avgTime <= 15) hasRaio = true;
-      }
-    });
-
-    const hasRecruta = simuladosCount >= 3 && totalScore >= 3000;
-
-    // Evaluation of Negative/Humorous Badges
-    let maxConsecutiveErrors = 0;
-    let currentConsecutiveErrors = 0;
-    student.answers.forEach(a => {
-      if (!a.isCorrect) {
-        currentConsecutiveErrors++;
-        if (currentConsecutiveErrors > maxConsecutiveErrors) {
-          maxConsecutiveErrors = currentConsecutiveErrors;
-        }
-      } else {
-        currentConsecutiveErrors = 0;
-      }
-    });
-    const hasBizonho = maxConsecutiveErrors >= 3;
-
-    const hasAfoito = student.answers.some(a => !a.isCorrect && a.tempoGasto > 0 && a.tempoGasto < 3);
-    const hasDorminhoco = student.answers.some(a => a.alternativa === -1);
-
-    let hasPepreto = false;
-    Object.values(simuladoGroups).forEach(simAnswers => {
-      if (simAnswers.length === 0) return;
-      const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
-      const corrects = simAnswers.filter(a => a.isCorrect).length;
-      const acc = Math.round((corrects / totalQuestionsInSimulado) * 100);
-      
-      if (totalQuestionsInSimulado >= 5 && simAnswers.length === totalQuestionsInSimulado) {
-        if (acc < 10) {
-          hasPepreto = true;
-        }
-      }
-    });
-
-    const hasLenda = totalScore >= 750000 && accuracy >= 95;
-
-    const madrugadorCount = student.answers.filter(a => {
-      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
-      const h = getFortalezaHour(a.createdAt);
-      return h >= 5 && h < 7;
-    }).length;
-    const hasMadrugador = madrugadorCount >= 20;
-
-    const corujaCount = student.answers.filter(a => {
-      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
-      const h = getFortalezaHour(a.createdAt);
-      return h >= 23 || h < 3;
-    }).length;
-    const hasCoruja = corujaCount >= 20;
-
-    const hasFimDeSemana = countCompleteWeekends(sPerf.completedDaysSet) >= 4;
-
-    const blocoAnswers = student.answers.filter(a => (a.question.simulado as any).tipo === 'BLOCO_PROVA');
-    const blocoAccuracy = blocoAnswers.length > 0
-      ? Math.round((blocoAnswers.filter(a => a.isCorrect).length / blocoAnswers.length) * 100)
-      : 0;
-    const hasHistoriador = blocoAnswers.length >= 100 && blocoAccuracy >= 80;
-
-    const liveMatchResults = await prisma.liveMatchResult.findMany({ where: { studentId } });
-    const teamWinsCount = liveMatchResults.filter((r: any) => r.wonTeam).length;
-    const totalRaceWins = liveMatchResults.reduce((sum: number, r: any) => sum + r.raceWins, 0);
-    const hasLiderEquipe = teamWinsCount >= 3;
-    const hasSprint = totalRaceWins >= 5;
-
-    let badges = [
-      { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
-      { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
-      { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 25 && totalScore >= 60000, exclusive: false },
-      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: false },
-      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: false },
-      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 97 && totalScore >= 100000, exclusive: false },
-      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 150000 && accuracy >= 92, exclusive: false },
-      { id: 'lenda', name: 'Lenda PUMA', earned: hasLenda, exclusive: false },
-      { id: 'madrugador', name: 'Madrugador', earned: hasMadrugador, exclusive: false },
-      { id: 'coruja', name: 'Coruja da Guarita', earned: hasCoruja, exclusive: false },
-      { id: 'fimdesemana', name: 'Guerreiro de Fim de Semana', earned: hasFimDeSemana, exclusive: false },
-      { id: 'historiador', name: 'Historiador de Combate', earned: hasHistoriador, exclusive: false },
-      { id: 'lider_equipe', name: 'Líder de Equipe', earned: hasLiderEquipe, exclusive: false },
-      { id: 'sprint', name: 'Sprint Tático', earned: hasSprint, exclusive: false },
-      { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
-      { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
-      { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },
-      { id: 'pepreto', name: 'Pé Preto', earned: hasPepreto, exclusive: false }
-    ];
-
-    const earnedBadgeIds = badges.filter(b => b.earned).map(b => b.id);
-    const previouslyUnlocked = (student as any).unlockedBadges ? (student as any).unlockedBadges.split(',').filter(Boolean) : [];
-
-    const newlyUnlocked = earnedBadgeIds.filter(id => !previouslyUnlocked.includes(id));
-
+    const { newlyUnlocked } = await evaluateAndUnlockBadges(studentId);
     if (newlyUnlocked.length > 0) {
-      const newUnlockedBadges = [...previouslyUnlocked, ...newlyUnlocked].join(',');
-      await prisma.user.update({
-        where: { id: studentId },
-        data: { unlockedBadges: newUnlockedBadges }
-      });
-
-      const unlockedDetails = badges.filter(b => newlyUnlocked.includes(b.id));
-      ioServer.emit('badges_unlocked', { studentId, newBadges: unlockedDetails });
+      ioServer.emit('badges_unlocked', { studentId, newBadges: newlyUnlocked });
     }
-  } catch (error) {
-    console.error("Error checking badges:", error);
-  } finally {
-    pendingBadgeChecks.delete(studentId);
-    lastBadgeCheckAt.set(studentId, Date.now());
+  } catch (err) {
+    console.error(`Erro ao avaliar brevês para ${studentId}:`, err);
+  }
+}
+
+// Chamada nas 3 transições de sala Ao Vivo/Duelo pra FINISHED — encadeada (nunca em
+// paralelo com foldLiveSimuladoFinish), já que simuladosCount/accuracy/streak só
+// ficam corretos depois que o fold de fim de partida terminar de escrever.
+async function foldFinishAndEmitBadges(ioServer: any, simuladoId: string, participantIds: string[]) {
+  try {
+    await foldLiveSimuladoFinish(simuladoId, participantIds);
+  } catch (err) {
+    console.error("Erro ao fechar fold de estatística:", err);
+  }
+  for (const studentId of participantIds) {
+    await evaluateAndEmitBadges(ioServer, studentId);
   }
 }
 
@@ -803,11 +618,7 @@ async function finishDuel(io: any, roomCode: string, room: RoomState) {
   });
 
   if (room.simuladoId) {
-    foldLiveSimuladoFinish(room.simuladoId, [challengerId, challengedId]).catch((err) =>
-      console.error("Erro ao fechar fold de estatística do Duelo:", err)
-    );
-    checkAndUnlockBadges(challengerId, io, room.simuladoId, true);
-    checkAndUnlockBadges(challengedId, io, room.simuladoId, true);
+    foldFinishAndEmitBadges(io, room.simuladoId, [challengerId, challengedId]);
   }
 
   rooms.delete(roomCode);
@@ -855,11 +666,7 @@ async function handleDuelDisconnect(io: any, roomCode: string, room: RoomState, 
       });
 
       if (room.simuladoId) {
-        foldLiveSimuladoFinish(room.simuladoId, [duelo.challengerId, duelo.challengedId!]).catch((err) =>
-          console.error("Erro ao fechar fold de estatística do Duelo (W.O.):", err)
-        );
-        checkAndUnlockBadges(duelo.challengerId, io, room.simuladoId, true);
-        checkAndUnlockBadges(duelo.challengedId, io, room.simuladoId, true);
+        foldFinishAndEmitBadges(io, room.simuladoId, [duelo.challengerId, duelo.challengedId!]);
       }
     }
   } catch (err) {
@@ -1654,9 +1461,10 @@ app.prepare().then(() => {
       }
 
       // Encadeado (não em paralelo) pra nunca ter duas escritas concorrentes na mesma
-      // linha de StudentStats — só a metade de brevê do fold roda por resposta aqui;
-      // a metade de estatística é feita uma única vez no fim da partida
-      // (foldLiveSimuladoFinish), pois depende do sorteio da sala inteira.
+      // linha de StudentStats, e pra evaluateAndUnlockBadges só rodar depois que o
+      // fold desta resposta já tiver sido aplicado — só a metade de brevê do fold
+      // roda por resposta aqui; a metade de estatística é feita uma única vez no
+      // fim da partida (foldLiveSimuladoFinish), pois depende do sorteio da sala inteira.
       (async () => {
         const meta = await getSimuladoMeta(room.simuladoId);
         await recordAnswerDelta({
@@ -1671,6 +1479,7 @@ app.prepare().then(() => {
         });
         // status não importa aqui — skipStatsFold:true nunca chega a lê-lo.
         await foldSimuladoCompletionIfNeeded(studentId, room.simuladoId, { ...meta, status: 'ACTIVE' }, { skipStatsFold: true });
+        await evaluateAndEmitBadges(io, studentId);
       })().catch((err) => console.error("Erro ao atualizar StudentStats:", err));
 
       if (teamJustDecided) {
@@ -1764,10 +1573,6 @@ app.prepare().then(() => {
         if (room.isDuelo) scheduleDuelAdvance(io, roomCode);
       }
 
-      // Checagem silenciosa de brevês conquistados e envio global caso haja novo
-      const currentSimuladoId = room.currentQuestion.simuladoId;
-      checkAndUnlockBadges(studentId, io, currentSimuladoId);
-
       // Envia o ranking e equipes atualizados em tempo real
       emitRankingAndTeams(io, roomCode, room);
     });
@@ -1827,14 +1632,6 @@ app.prepare().then(() => {
         if (room.timerInterval) clearInterval(room.timerInterval);
         await prisma.simulado.update({ where: { id: simuladoId }, data: { status: 'FINISHED' } });
 
-        // Fold de estatística pra TODOS os participantes (não só Competição em
-        // Equipes) — só aqui, com a sala já FINISHED, dá pra saber quantas questões
-        // cada aluno realmente precisava responder (o sorteio só termina de decidir
-        // isso no fim da partida).
-        foldLiveSimuladoFinish(simuladoId, Object.keys(room.studentScores)).catch((err) =>
-          console.error("Erro ao fechar fold de estatística da sala Ao Vivo:", err)
-        );
-
         // Busca a pontuação geral de cada aluno pra exibir a patente (divisas) correta
         // no ranking final, em vez da pontuação desta sala isolada.
         const totalScores = await getStudentsTotalScores(Object.keys(room.studentScores));
@@ -1843,7 +1640,7 @@ app.prepare().then(() => {
         });
 
         // Salva o resultado da Competição em Equipes (equipe vencedora = maior pontuação
-        // somada dos membros) e reavalia os brevês "Líder de Equipe" e "Sprint Tático".
+        // somada dos membros) — usado pelos brevês "Líder de Equipe"/"Sprint Tático".
         if (room.isTeamCompetition && room.teams && room.teams.length > 0) {
           try {
             const teamTotals = room.teams.map(team => ({
@@ -1866,15 +1663,19 @@ app.prepare().then(() => {
                   raceWins: room.raceWinCounts[studentId] || 0
                 }))
               });
-
-              participantIds.forEach(studentId => {
-                checkAndUnlockBadges(studentId, io, simuladoId, true);
-              });
             }
           } catch (err) {
             console.error("Erro ao salvar resultado da Competição em Equipes:", err);
           }
         }
+
+        // Fold de estatística + reavaliação de brevês pra TODOS os participantes (não
+        // só Competição em Equipes — fecha uma lacuna que existia antes, onde só esse
+        // modo tinha checagem forçada de brevê no fim da partida). Depois do
+        // LiveMatchResult acima (Líder de Equipe/Sprint Tático dependem dele) e com a
+        // sala já FINISHED (o sorteio só termina de decidir quantas questões cada
+        // aluno precisava responder no fim da partida).
+        foldFinishAndEmitBadges(io, simuladoId, Object.keys(room.studentScores));
 
         // Garante que o último estado do ranking seja enviado antes de deletar a sala
         emitRankingAndTeams(io, roomCode, room);

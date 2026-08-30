@@ -1,9 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { computeStudentPerformanceStats } from "@/lib/stats";
-import { getFortalezaHour, countCompleteWeekends, isSyntheticBackfilledTimestamp } from "@/lib/badges";
-import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldBlocoProvaDailyProgress } from "@/lib/studentStatsFold";
+import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldBlocoProvaDailyProgress, evaluateAndUnlockBadges } from "@/lib/studentStatsFold";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { promises as fs } from "fs";
 import path from "path";
@@ -755,205 +753,26 @@ export async function completeSelfPacedSimulado(_studentId: string, currentSimul
     }
     const studentId = currentUser.userId;
 
-    const student = await prisma.user.findUnique({
-      where: { id: studentId },
-      include: {
-        answers: {
-          include: { 
-            question: {
-              include: { 
-                simulado: {
-                  include: {
-                    _count: { select: { questions: true } }
-                  }
-                } 
-              }
-            } 
-          }
-        }
-      }
+    // O fold da última resposta roda em segundo plano (sem await, ver
+    // saveSelfPacedAnswer) — refazer aqui garante que ele já terminou antes de
+    // avaliar brevês, mesmo que o cliente chame completeSelfPacedSimulado antes
+    // desse trabalho em segundo plano concluir. Idempotente, seguro de repetir.
+    const simulado = await prisma.simulado.findUnique({
+      where: { id: currentSimuladoId },
+      select: { tipo: true, status: true, difficulty: true, createdAt: true, codigoSala: true, _count: { select: { questions: true } } }
     });
-
-    if (!student) return { error: "Estudante não encontrado." };
-
-    const correctAnswers = student.answers.filter(a => a.isCorrect);
-
-    // Get other students' raffle answers in the participated simulados
-    const simuladoIds = Array.from(new Set(student.answers.map(a => a.question.simuladoId)));
-    const otherRaffleAnswers = await prisma.answer.findMany({
-      where: {
-        question: { simuladoId: { in: simuladoIds } },
-        isRaffle: true,
-        studentId: { not: studentId }
-      },
-      select: {
-        question: { select: { simuladoId: true } }
-      }
-    });
-
-    const otherRaffleCounts = new Map<string, number>();
-    otherRaffleAnswers.forEach(ora => {
-      const sId = ora.question.simuladoId;
-      otherRaffleCounts.set(sId, (otherRaffleCounts.get(sId) || 0) + 1);
-    });
-
-    // Group answers by simulado to verify complete completion
-    const simuladoStatsMap = new Map<string, { expectedQ: number; answeredCount: number; correctAnswers: number; tipo: string; status: string; answers: typeof student.answers }>();
-    student.answers.forEach(a => {
-      const simuladoId = a.question.simuladoId;
-      if (!simuladoStatsMap.has(simuladoId)) {
-        const totalQ = a.question.simulado._count.questions || 0;
-        const otherRaffleCount = otherRaffleCounts.get(simuladoId) || 0;
-        const expectedQ = Math.max(0, totalQ - otherRaffleCount);
-        simuladoStatsMap.set(simuladoId, {
-          expectedQ,
-          answeredCount: 0,
-          correctAnswers: 0,
-          tipo: (a.question.simulado as any).tipo || "STUDY",
-          status: (a.question.simulado as any).status || "FINISHED",
-          answers: []
-        });
-      }
-      const s = simuladoStatsMap.get(simuladoId)!;
-      s.answeredCount++;
-      s.answers.push(a);
-      if (a.isCorrect) s.correctAnswers++;
-    });
-
-    const simuladoGroups: Record<string, typeof student.answers> = {};
-    simuladoStatsMap.forEach((s, sId) => {
-      simuladoGroups[sId] = s.answers;
-    });
-
-    const sPerf = computeStudentPerformanceStats(student.answers, student.id, otherRaffleCounts, undefined, (student as any).bonusStreakDays || 0);
-    const simuladosCount = sPerf.simuladosCount;
-    const accuracy = sPerf.accuracy;
-    const totalScore = sPerf.totalScore;
-    
-    let advancedSimuladosCount = 0;
-    let hardSimuladosWith70Acc = 0;
-    let hardSimuladosWith75Acc = 0;
-    let hasSniper = false;
-    let hasRaio = false;
-
-    Object.values(simuladoGroups).forEach(simAnswers => {
-      if (simAnswers.length === 0) return;
-      const qCount = simAnswers.length;
-      const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
-      const corrects = simAnswers.filter(a => a.isCorrect).length;
-      
-      const acc = Math.round((corrects / totalQuestionsInSimulado) * 100);
-      const avgTime = Math.round(simAnswers.reduce((acc, curr) => acc + (curr.tempoGasto || 0), 0) / qCount);
-      const difficulty = simAnswers[0].question.simulado.difficulty;
-
-      const isCompleteEnough = qCount === totalQuestionsInSimulado || qCount >= 10;
-
-      if (difficulty === "AVANCADO" && isCompleteEnough) {
-        advancedSimuladosCount++;
-        if (acc >= 70) hardSimuladosWith70Acc++;
-        if (acc >= 75) hardSimuladosWith75Acc++;
-        
-        if (qCount >= 20 && acc === 100) hasSniper = true;
-        if (acc >= 85 && avgTime <= 15) hasRaio = true;
-      }
-    });
-
-    const hasRecruta = simuladosCount >= 3 && totalScore >= 3000;
-
-    let maxConsecutiveErrors = 0;
-    let currentConsecutiveErrors = 0;
-    student.answers.forEach(a => {
-      if (!a.isCorrect) {
-        currentConsecutiveErrors++;
-        if (currentConsecutiveErrors > maxConsecutiveErrors) {
-          maxConsecutiveErrors = currentConsecutiveErrors;
-        }
-      } else {
-        currentConsecutiveErrors = 0;
-      }
-    });
-    const hasBizonho = maxConsecutiveErrors >= 3;
-
-    const hasAfoito = student.answers.some(a => !a.isCorrect && a.tempoGasto > 0 && a.tempoGasto < 3);
-    const hasDorminhoco = student.answers.some(a => a.alternativa === -1);
-
-    let hasPepreto = false;
-    Object.values(simuladoGroups).forEach(simAnswers => {
-      if (simAnswers.length === 0) return;
-      const totalQuestionsInSimulado = simAnswers[0].question.simulado._count.questions;
-      const corrects = simAnswers.filter(a => a.isCorrect).length;
-      const acc = Math.round((corrects / totalQuestionsInSimulado) * 100);
-      
-      if (totalQuestionsInSimulado >= 5 && simAnswers.length === totalQuestionsInSimulado) {
-        if (acc < 10) {
-          hasPepreto = true;
-        }
-      }
-    });
-
-    const hasLenda = totalScore >= 750000 && accuracy >= 95;
-
-    const madrugadorCount = student.answers.filter(a => {
-      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
-      const h = getFortalezaHour(a.createdAt);
-      return h >= 5 && h < 7;
-    }).length;
-    const hasMadrugador = madrugadorCount >= 20;
-
-    const corujaCount = student.answers.filter(a => {
-      if (isSyntheticBackfilledTimestamp(a.createdAt, (a.question.simulado as any).createdAt, a.tempoGasto)) return false;
-      const h = getFortalezaHour(a.createdAt);
-      return h >= 23 || h < 3;
-    }).length;
-    const hasCoruja = corujaCount >= 20;
-
-    const hasFimDeSemana = countCompleteWeekends(sPerf.completedDaysSet) >= 4;
-
-    const blocoAnswers = student.answers.filter(a => (a.question.simulado as any).tipo === 'BLOCO_PROVA');
-    const blocoAccuracy = blocoAnswers.length > 0
-      ? Math.round((blocoAnswers.filter(a => a.isCorrect).length / blocoAnswers.length) * 100)
-      : 0;
-    const hasHistoriador = blocoAnswers.length >= 100 && blocoAccuracy >= 80;
-
-    const liveMatchResults = await prisma.liveMatchResult.findMany({ where: { studentId } });
-    const teamWinsCount = liveMatchResults.filter(r => r.wonTeam).length;
-    const totalRaceWins = liveMatchResults.reduce((sum, r) => sum + r.raceWins, 0);
-    const hasLiderEquipe = teamWinsCount >= 3;
-    const hasSprint = totalRaceWins >= 5;
-
-    let badges = [
-      { id: 'recruta', name: 'Recruta', earned: hasRecruta, exclusive: false },
-      { id: 'guerreiro', name: 'Guerreiro', earned: hardSimuladosWith70Acc >= 10 && totalScore >= 25000, exclusive: false },
-      { id: 'veterano', name: 'Veterano', earned: hardSimuladosWith75Acc >= 25 && totalScore >= 60000, exclusive: false },
-      { id: 'sniper', name: 'Atirador de Elite', earned: hasSniper && totalScore >= 80000, exclusive: false },
-      { id: 'raio', name: 'Pronto Resposta (Raio)', earned: hasRaio && totalScore >= 50000, exclusive: false },
-      { id: 'caveira', name: 'Caveira', earned: advancedSimuladosCount >= 40 && accuracy >= 92 && totalScore >= 200000, exclusive: false },
-      { id: 'padrao', name: 'Padrão PM', earned: totalScore >= 300000 && accuracy >= 92, exclusive: false },
-      { id: 'lenda', name: 'Lenda PUMA', earned: hasLenda, exclusive: false },
-      { id: 'madrugador', name: 'Madrugador', earned: hasMadrugador, exclusive: false },
-      { id: 'coruja', name: 'Coruja da Guarita', earned: hasCoruja, exclusive: false },
-      { id: 'fimdesemana', name: 'Guerreiro de Fim de Semana', earned: hasFimDeSemana, exclusive: false },
-      { id: 'historiador', name: 'Historiador de Combate', earned: hasHistoriador, exclusive: false },
-      { id: 'lider_equipe', name: 'Líder de Equipe', earned: hasLiderEquipe, exclusive: false },
-      { id: 'sprint', name: 'Sprint Tático', earned: hasSprint, exclusive: false },
-      { id: 'bizonho', name: 'Bizonho', earned: hasBizonho, exclusive: false },
-      { id: 'afoito', name: 'Gatilho Afoito', earned: hasAfoito, exclusive: false },
-      { id: 'dorminhoco', name: 'Dormiu na Guarita', earned: hasDorminhoco, exclusive: false },
-      { id: 'pepreto', name: 'Pé Preto', earned: hasPepreto, exclusive: false }
-    ];
-
-    const earnedBadgeIds = badges.filter(b => b.earned).map(b => b.id);
-    const previouslyUnlocked = student.unlockedBadges ? student.unlockedBadges.split(',').filter(Boolean) : [];
-
-    const newlyUnlocked = earnedBadgeIds.filter(id => !previouslyUnlocked.includes(id));
-
-    if (newlyUnlocked.length > 0) {
-      const newUnlockedBadges = [...previouslyUnlocked, ...newlyUnlocked].join(',');
-      await prisma.user.update({
-        where: { id: studentId },
-        data: { unlockedBadges: newUnlockedBadges }
+    if (simulado) {
+      await foldSimuladoCompletionIfNeeded(studentId, currentSimuladoId, {
+        tipo: simulado.tipo,
+        status: simulado.status,
+        difficulty: simulado.difficulty,
+        createdAt: simulado.createdAt,
+        codigoSala: simulado.codigoSala,
+        totalQuestions: simulado._count.questions
       });
     }
+
+    const { newlyUnlocked } = await evaluateAndUnlockBadges(studentId);
 
     return { success: true, newlyUnlockedCount: newlyUnlocked.length };
   } catch (err: any) {
