@@ -1,0 +1,2252 @@
+[
+  {
+    "number": 1,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "No contexto apresentado pela apostila, qual é a contribuição central da tecnologia da informação e comunicação para a segurança pública?",
+    "alternativas": [
+      "Substituir integralmente os profissionais de segurança por sistemas automatizados.",
+      "Permitir o emprego eficiente e eficaz dos recursos humanos e materiais disponíveis.",
+      "Restringir a atuação policial às áreas que possuam cobertura de telefonia celular.",
+      "Eliminar a necessidade de planejamento e coordenação entre os órgãos.",
+      "Concentrar todos os registros operacionais exclusivamente em documentos impressos."
+    ],
+    "correta": 1,
+    "justificativa": "A apostila destaca que a TIC operacionaliza os recursos humanos e materiais com maior eficiência e eficácia, apoiando o trabalho policial.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 2,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Os modernos sistemas de radiocomunicação ampliam sua abrangência por meio da integração de diferentes recursos. Qual conjunto corresponde ao indicado na apostila?",
+    "alternativas": [
+      "Somente antenas portáteis e cabos coaxiais locais.",
+      "Exclusivamente redes telefônicas analógicas e fax.",
+      "Apenas satélites militares e transmissores de ondas curtas.",
+      "Torres, fibra óptica, satélites e internet.",
+      "Redes sociais públicas, televisão aberta e correio eletrônico pessoal."
+    ],
+    "correta": 3,
+    "justificativa": "O rádio moderno forma grandes enlaces de rede usando torres, fibra óptica, satélites e internet, podendo transportar voz, dados, imagens e vídeos.",
+    "topico": "Tecnologias e Padrões de Radiocomunicação"
+  },
+  {
+    "number": 3,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Em uma operação integrada, Polícia Militar, Polícia Civil, Bombeiros e atendimento médico utilizam redes isoladas e incompatíveis. Segundo a apostila, a consequência mais provável é:",
+    "alternativas": [
+      "Perda de sinergia, redução da rapidez e da qualidade do atendimento e aumento do risco aos agentes.",
+      "Aumento automático da segurança da comunicação por haver mais redes.",
+      "Eliminação da necessidade de centros de comando e controle.",
+      "Maior interoperabilidade, mesmo sem interconexão entre os sistemas.",
+      "Redução da burocracia e do tempo de despacho em qualquer circunstância."
+    ],
+    "correta": 0,
+    "justificativa": "Sistemas separados dificultam a coordenação e a troca de informações, comprometendo rapidez, qualidade e segurança operacional.",
+    "topico": "Interoperabilidade"
+  },
+  {
+    "number": 4,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A defesa social é caracterizada, na apostila, como:",
+    "alternativas": [
+      "Uma resposta temporária empregada somente após desastres naturais de grande porte.",
+      "Uma atividade exclusiva das forças policiais, sem participação de outros serviços.",
+      "Um conjunto de medidas voltadas apenas ao controle de trânsito urbano.",
+      "Uma operação ocasional limitada à proteção patrimonial de prédios públicos.",
+      "Uma atividade permanente que reúne ações policiais, de socorro, assistenciais e recuperativas para prevenir ou minimizar eventos e restabelecer a normalidade."
+    ],
+    "correta": 4,
+    "justificativa": "A defesa social não se limita a momentos de crise; ela integra esforços permanentes de prevenção, resposta, assistência e recuperação.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 5,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Por que os sistemas analógicos convencionais em VHF podem representar risco para uma operação policial?",
+    "alternativas": [
+      "Porque não permitem qualquer transmissão de voz.",
+      "Porque funcionam apenas dentro de edifícios públicos.",
+      "Porque seus sinais podem ser captados por terceiros, permitindo o acompanhamento indevido das ações policiais.",
+      "Porque exigem obrigatoriamente conexão contínua com satélites.",
+      "Porque impedem o uso de antenas externas em viaturas."
+    ],
+    "correta": 2,
+    "justificativa": "A apostila alerta que criminosos podem captar transmissões analógicas convencionais e acompanhar o trabalho policial.",
+    "topico": "Comunicação Crítica"
+  },
+  {
+    "number": 6,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A principal diferença entre uma Rede Crítica de segurança pública e uma rede comercial de uso geral é que a Rede Crítica:",
+    "alternativas": [
+      "É voltada prioritariamente ao entretenimento e ao tráfego de mídias pessoais.",
+      "Funciona apenas quando as redes comerciais estão sem usuários.",
+      "É projetada para permanecer disponível em situações de emergência e atender às necessidades específicas dos órgãos públicos.",
+      "Dispensa planejamento, coordenação e redundância de infraestrutura.",
+      "Não permite comunicação de dados, apenas chamadas de voz individuais."
+    ],
+    "correta": 2,
+    "justificativa": "Redes críticas são concebidas para missão crítica, com disponibilidade e confiabilidade superiores em emergências.",
+    "topico": "Comunicação Crítica"
+  },
+  {
+    "number": 7,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Durante um desastre, a rede celular comercial fica congestionada, mas os rádios de segurança pública permanecem operando. Esse exemplo demonstra principalmente:",
+    "alternativas": [
+      "A importância da disponibilidade e da resiliência das redes críticas.",
+      "A impossibilidade de utilização de rádios fora de áreas urbanas.",
+      "A superioridade do modo simplex para todas as operações.",
+      "A desnecessidade de interoperabilidade entre os órgãos.",
+      "A conveniência de substituir todos os rádios por telefones particulares."
+    ],
+    "correta": 0,
+    "justificativa": "A continuidade dos rádios de segurança em black-outs e congestionamentos ilustra a característica de rede sempre disponível.",
+    "topico": "Comunicação Crítica"
+  },
+  {
+    "number": 8,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Interoperabilidade, conforme definida na apostila, significa:",
+    "alternativas": [
+      "Utilizar apenas equipamentos do mesmo fabricante em todos os órgãos.",
+      "Separar as bases de dados para impedir qualquer compartilhamento.",
+      "Operar exclusivamente em uma única frequência analógica nacional.",
+      "Permitir comunicação imediata entre múltiplos usuários de diferentes órgãos, independentemente da rede utilizada.",
+      "Restringir a comunicação aos integrantes de uma mesma instituição."
+    ],
+    "correta": 3,
+    "justificativa": "Interoperabilidade é a capacidade de órgãos e usuários distintos comunicarem-se e coordenarem-se apesar de diferenças de rede ou instituição.",
+    "topico": "Interoperabilidade"
+  },
+  {
+    "number": 9,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Após eventos marcantes, qual aspecto é apontado como indicador decisivo de sucesso ou fracasso da resposta dos agentes de segurança?",
+    "alternativas": [
+      "A quantidade de viaturas estacionadas no centro de comando.",
+      "A capacidade de comunicação efetiva entre os participantes da operação.",
+      "O uso exclusivo de formulários impressos durante o atendimento.",
+      "A adoção de frequências diferentes para cada profissional.",
+      "A duração total das entrevistas concedidas à imprensa."
+    ],
+    "correta": 1,
+    "justificativa": "A apostila relaciona diretamente o sucesso da resposta à habilidade dos agentes de se comunicarem de modo efetivo.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 10,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Uma característica comum aos sistemas digitais trunking citados na apostila é:",
+    "alternativas": [
+      "A transmissão obrigatória em canal aberto e sem autenticação.",
+      "A impossibilidade de enviar qualquer tipo de dado.",
+      "A operação exclusiva por uma única estação sem repetidoras.",
+      "A limitação a redes domésticas de pequeno alcance.",
+      "O uso de criptografia de voz e o compartilhamento de um canal físico por mais de um assinante, com voz e dados."
+    ],
+    "correta": 4,
+    "justificativa": "Os sistemas trunking digitais combinam voz e dados, criptografia e uso eficiente dos recursos de canal.",
+    "topico": "Tecnologias e Padrões de Radiocomunicação"
+  },
+  {
+    "number": 11,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "O padrão APCO-25 foi desenvolvido a partir da cooperação entre entidades de comunicação de segurança pública, usuários governamentais e:",
+    "alternativas": [
+      "A Guarda Nacional Francesa e a empresa Matra.",
+      "O Instituto Europeu de Normas de Telecomunicações, isoladamente.",
+      "A Organização das Nações Unidas e a Interpol.",
+      "A Associação das Indústrias de Telecomunicações dos Estados Unidos.",
+      "Apenas empresas privadas brasileiras do setor de energia."
+    ],
+    "correta": 3,
+    "justificativa": "A apostila cita APCO, NASTD, usuários federais norte-americanos e a TIA na origem do APCO-25.",
+    "topico": "Tecnologias e Padrões de Radiocomunicação"
+  },
+  {
+    "number": 12,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Sobre o padrão TETRA, assinale a alternativa correta.",
+    "alternativas": [
+      "Foi criado exclusivamente para redes domésticas de curto alcance.",
+      "Foi desenvolvido pelo ETSI e possui protocolo aberto, permitindo implementações próprias pelos fornecedores dentro das interfaces essenciais.",
+      "É um padrão fechado desenvolvido pela Gendarmerie francesa e pela Matra.",
+      "Não pode ser usado em segurança pública ou transportes.",
+      "Foi projetado somente para substituir teclados e monitores em modo simplex."
+    ],
+    "correta": 1,
+    "justificativa": "O TETRA é um padrão do ETSI, originalmente direcionado ao mercado europeu, com interfaces essenciais abertas.",
+    "topico": "Sistema de Rádio Digital TETRA"
+  },
+  {
+    "number": 13,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "O TETRAPOL surgiu:",
+    "alternativas": [
+      "No Brasil, por iniciativa conjunta das polícias militares estaduais.",
+      "Nos Estados Unidos, como evolução direta do APCO-25.",
+      "Na Alemanha, para controle exclusivo de redes ferroviárias.",
+      "No Japão, como protocolo restrito à telefonia celular comercial.",
+      "Na França, de parceria entre a Gendarmerie e a empresa Matra Comunicações."
+    ],
+    "correta": 4,
+    "justificativa": "A origem indicada é francesa, envolvendo a guarda nacional Gendarmerie e a Matra Comunicações.",
+    "topico": "Tecnologias e Padrões de Radiocomunicação"
+  },
+  {
+    "number": 14,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Qual afirmação descreve adequadamente o DMR conforme a apostila?",
+    "alternativas": [
+      "Foi desenvolvido pelo ETSI como substituto do PMR analógico, com foco em custo-benefício, embora não reúna todas as características de missão crítica.",
+      "Foi concebido com redundância ilimitada e alta escalabilidade obrigatória para qualquer rede crítica.",
+      "É incompatível com processos simples de atualização.",
+      "Opera exclusivamente em redes governamentais secretas.",
+      "Não oferece funcionalidades digitais nem possibilidade de interoperabilidade."
+    ],
+    "correta": 0,
+    "justificativa": "O DMR busca eficiência e praticidade, mas a apostila ressalta limitações de redundância e escalabilidade para missão crítica.",
+    "topico": "Tecnologias e Padrões de Radiocomunicação"
+  },
+  {
+    "number": 15,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A tecnologia NEXEDGE é associada ao protocolo:",
+    "alternativas": [
+      "APCO-X, incompatível com equipamentos de outros fabricantes.",
+      "PMR exclusivamente analógico e sem atualização.",
+      "NXDN, padrão aberto suportado por diversos fornecedores e capaz de operar com rádios analógicos e digitais.",
+      "TETRAPOL doméstico, limitado a uma única empresa.",
+      "GSM público, sem suporte a radiocomunicação profissional."
+    ],
+    "correta": 2,
+    "justificativa": "O NEXEDGE utiliza NXDN e oferece compatibilidade entre produtos, inclusive comunicação automática com rádios analógicos e digitais.",
+    "topico": "Tecnologias e Padrões de Radiocomunicação"
+  },
+  {
+    "number": 16,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Em uma situação de missão crítica, qual requisito deve receber prioridade no planejamento da comunicação?",
+    "alternativas": [
+      "Disponibilidade, segurança, cobertura e capacidade de coordenação entre os órgãos.",
+      "Uso de aplicativos pessoais sem controle institucional.",
+      "Redução do número de terminais, ainda que falte comunicação às equipes.",
+      "Dependência exclusiva de uma única rede comercial congestionável.",
+      "Eliminação dos procedimentos de autenticação para acelerar o acesso."
+    ],
+    "correta": 0,
+    "justificativa": "Missões críticas exigem comunicação confiável, segura, abrangente e integrada, não dependente apenas de redes comerciais.",
+    "topico": "Comunicação Crítica"
+  },
+  {
+    "number": 17,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A construção de uma base integrada de dados criminais contribui principalmente para:",
+    "alternativas": [
+      "A substituição de todas as atividades de patrulhamento ostensivo.",
+      "A divulgação pública irrestrita de informações pessoais.",
+      "A eliminação da necessidade de análise estatística.",
+      "O isolamento das informações de cada instituição.",
+      "O planejamento de políticas públicas de controle e redução da criminalidade."
+    ],
+    "correta": 4,
+    "justificativa": "Dados integrados permitem análise e planejamento de políticas públicas consistentes.",
+    "topico": "Consulta Integrada Civil e Criminal"
+  },
+  {
+    "number": 18,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Segundo a apostila, em plataformas modernas o agente de despacho pode controlar:",
+    "alternativas": [
+      "No máximo cinco terminais portáteis.",
+      "Somente um terminal por frequência.",
+      "Mais de 200 terminais.",
+      "Apenas terminais fixos sem mobilidade.",
+      "Exatamente cinquenta terminais, sem possibilidade de expansão."
+    ],
+    "correta": 2,
+    "justificativa": "O material informa que o despachante pode controlar mais de 200 terminais em sistemas modernos.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 19,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A integração de sistemas convencionais legados com sistemas modernos de comunicação sem fio é relevante porque:",
+    "alternativas": [
+      "Impede qualquer compartilhamento de dados entre redes diferentes.",
+      "Torna desnecessário o projeto de adequação e implantação.",
+      "Obriga todos os órgãos a suspenderem suas operações até a troca total dos equipamentos.",
+      "Permite preservar recursos existentes e ampliar a coordenação entre instituições durante a migração tecnológica.",
+      "Limita a comunicação às estações analógicas mais antigas."
+    ],
+    "correta": 3,
+    "justificativa": "A interoperabilidade real frequentemente depende da integração dos sistemas novos com os legados, especialmente em processos de migração.",
+    "topico": "Interoperabilidade"
+  },
+  {
+    "number": 20,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A expressão 'sempre disponível', aplicada às Redes Críticas, indica que elas devem:",
+    "alternativas": [
+      "Ser desligadas preventivamente durante emergências.",
+      "Manter o serviço de comunicação mesmo em condições adversas e de elevada demanda.",
+      "Atender apenas usuários administrativos em horário comercial.",
+      "Depender do funcionamento normal da telefonia pública.",
+      "Priorizar chamadas particulares sobre comunicações operacionais."
+    ],
+    "correta": 1,
+    "justificativa": "A disponibilidade contínua é um requisito essencial para redes usadas por polícia, bombeiros e outros órgãos de resposta.",
+    "topico": "Comunicação Crítica"
+  },
+  {
+    "number": 21,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Por que uma rede comercial pode falhar justamente quando ocorre uma emergência de grande repercussão?",
+    "alternativas": [
+      "Porque redes comerciais não possuem qualquer antena.",
+      "Porque todos os aparelhos passam automaticamente ao modo DMO.",
+      "Porque a transmissão de voz é proibida em situações críticas.",
+      "Porque satélites deixam de funcionar sempre que há chamadas ao 190.",
+      "Porque o aumento simultâneo de usuários pode causar sobrecarga e queda da rede."
+    ],
+    "correta": 4,
+    "justificativa": "Em emergências, muitas pessoas utilizam seus celulares ao mesmo tempo, podendo congestionar ou derrubar a rede comercial.",
+    "topico": "Comunicação Crítica"
+  },
+  {
+    "number": 22,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "As plataformas modernas de segurança pública podem integrar voz e dados com:",
+    "alternativas": [
+      "Somente impressoras locais e máquinas de escrever.",
+      "Apenas dispositivos domésticos sem criptografia.",
+      "Exclusivamente sinais televisivos de transmissão aberta.",
+      "Redes telefônicas e redes de computadores, por meio de terminais fixos, móveis e portáteis.",
+      "Redes isoladas sem qualquer terminal móvel."
+    ],
+    "correta": 3,
+    "justificativa": "A apostila descreve plataformas que tratam voz e dados com segurança e podem ser conectadas a redes telefônicas e de computadores.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 23,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Em uma concepção integrada de defesa social, qual arranjo é considerado ideal e factível?",
+    "alternativas": [
+      "Cada órgão manter sistemas totalmente isolados e sem comunicação.",
+      "Polícias, perícia, atendimento médico, bombeiros e outros agentes compartilharem infraestrutura de informação e bases de dados.",
+      "Somente a Polícia Militar possuir acesso às informações operacionais.",
+      "Os agentes utilizarem apenas telefones pessoais, sem centro de comando.",
+      "A perícia e o atendimento médico serem excluídos da coordenação de incidentes."
+    ],
+    "correta": 1,
+    "justificativa": "O compartilhamento de infraestrutura e dados favorece coordenação, rapidez e resposta conjunta.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 24,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "Em acidentes, crimes ou desastres, a comunicação sem fio é tratada como componente relevante porque:",
+    "alternativas": [
+      "Substitui todas as ações de socorro e recuperação.",
+      "Serve apenas para registro posterior, sem impacto na operação.",
+      "Favorece a coordenação das respostas e a mitigação dos efeitos do evento.",
+      "É útil somente em eventos planejados e sem risco.",
+      "Impede a atuação simultânea de órgãos diferentes."
+    ],
+    "correta": 2,
+    "justificativa": "A comunicação é apontada como um dos principais elementos para o sucesso operacional e a redução dos impactos de um desastre.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 25,
+    "heading": "Tópico 1 - Comunicação para Segurança Pública",
+    "enunciado": "A motivação principal para modernizar a comunicação da defesa social é:",
+    "alternativas": [
+      "Promover integração operacional, sistemas de informação e comunicação, organização e método.",
+      "Aumentar o número de redes incompatíveis entre as instituições.",
+      "Restringir o acesso dos centros de comando às equipes de campo.",
+      "Abandonar a comunicação sem fio e retornar aos registros manuais.",
+      "Priorizar recursos de entretenimento nos terminais operacionais."
+    ],
+    "correta": 0,
+    "justificativa": "O texto aponta a integração operacional e informacional como motivação central para superar a fragmentação dos sistemas.",
+    "topico": "Comunicação na Segurança Pública"
+  },
+  {
+    "number": 26,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Qual componente do sistema de rádio é responsável por irradiar e receber sinais de radiofrequência?",
+    "alternativas": [
+      "O alto-falante.",
+      "A fonte de alimentação.",
+      "O teclado numérico.",
+      "A antena.",
+      "O carregador de bateria."
+    ],
+    "correta": 3,
+    "justificativa": "A antena realiza a transmissão e a recepção dos sinais de radiofrequência.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 27,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "No microfone de um equipamento de radiocomunicação, a função do PTT é:",
+    "alternativas": [
+      "Alternar a operação entre falar e ouvir, acionando a transmissão enquanto pressionado.",
+      "Aumentar automaticamente a potência da repetidora.",
+      "Converter a tensão de 220 VAC em 12 VDC.",
+      "Selecionar o código de intensidade do sinal.",
+      "Bloquear permanentemente a recepção de mensagens."
+    ],
+    "correta": 0,
+    "justificativa": "O PTT é o comando usado para transmitir; ao liberá-lo, o operador volta a ouvir a rede.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 28,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Em um transceptor fixo, a fonte de alimentação normalmente transforma:",
+    "alternativas": [
+      "12 VDC em 380 VAC.",
+      "Sinal de voz em sinal luminoso.",
+      "Radiofrequência em corrente alternada comercial.",
+      "Dados digitais em ondas exclusivamente acústicas.",
+      "110/220 VAC em aproximadamente 12 VDC."
+    ],
+    "correta": 4,
+    "justificativa": "A fonte adapta a tensão da rede elétrica à tensão contínua exigida pelo equipamento, normalmente 12 VDC.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 29,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "O alto-falante do rádio tem a função de:",
+    "alternativas": [
+      "Irradiar diretamente a radiofrequência para outras estações.",
+      "Fornecer energia elétrica ao transceptor.",
+      "Transformar impulsos elétricos recebidos em sinais sonoros audíveis ao operador.",
+      "Armazenar a identificação dos usuários da rede.",
+      "Selecionar a frequência de repetição automaticamente."
+    ],
+    "correta": 2,
+    "justificativa": "O alto-falante converte o sinal elétrico do receptor em som, permitindo ouvir as mensagens.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 30,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Assinale a característica própria do rádio portátil.",
+    "alternativas": [
+      "É instalado permanentemente em imóvel e depende de fonte externa de 12 VDC.",
+      "É alimentado obrigatoriamente pelo sistema elétrico de um veículo.",
+      "É de porte individual, possui grande mobilidade e normalmente utiliza bateria recarregável.",
+      "É composto por dois ou mais rádios destinados a enlaces de frequência.",
+      "Não pode ser transportado pelo operador durante o serviço."
+    ],
+    "correta": 2,
+    "justificativa": "O rádio portátil é leve, individual e alimentado por bateria, embora possua limitações técnicas de alcance e uso.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 31,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Uma base de rádio instalada em um imóvel, composta por terminal, fonte de alimentação e antena, é classificada como:",
+    "alternativas": [
+      "Rádio fixo.",
+      "Rádio portátil.",
+      "Rádio móvel.",
+      "Estação repetidora obrigatoriamente embarcada.",
+      "Terminal de telefonia IP."
+    ],
+    "correta": 0,
+    "justificativa": "O rádio fixo é destinado ao uso em imóvel e utiliza terminal, fonte e antena direcional ou omnidirecional.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 32,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "O rádio instalado em automóvel, motocicleta, aeronave ou embarcação, alimentado pelo sistema elétrico do veículo, é denominado:",
+    "alternativas": [
+      "Rádio fixo.",
+      "Rádio portátil.",
+      "Fonte repetidora.",
+      "Rádio móvel.",
+      "Console de teleatendimento."
+    ],
+    "correta": 3,
+    "justificativa": "A principal característica do rádio móvel é sua instalação em veículo e alimentação pelo sistema elétrico embarcado.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 33,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Uma estação repetidora é formada por:",
+    "alternativas": [
+      "Um único microfone sem antena.",
+      "Dois ou mais rádios destinados a realizar enlaces de frequências.",
+      "Somente uma bateria e um alto-falante.",
+      "Um telefone IP conectado diretamente ao 190.",
+      "Um rádio portátil operando obrigatoriamente em simplex."
+    ],
+    "correta": 1,
+    "justificativa": "A repetidora recebe e retransmite sinais, realizando enlaces por meio de dois ou mais rádios.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 34,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Antes de iniciar uma transmissão, o operador deve prioritariamente:",
+    "alternativas": [
+      "Pressionar o PTT e improvisar a mensagem enquanto fala.",
+      "Mudar de canal sem observar a rede.",
+      "Transmitir em tom elevado para ocupar a frequência.",
+      "Usar abreviações pessoais desconhecidas pelos demais operadores.",
+      "Certificar-se do canal adequado e organizar previamente o conteúdo da mensagem."
+    ],
+    "correta": 4,
+    "justificativa": "A preparação evita mensagens confusas e o uso do canal incorreto, aumentando clareza e eficiência.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 35,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Quando uma mensagem precisa ser necessariamente longa, a técnica indicada é:",
+    "alternativas": [
+      "Transmiti-la de uma só vez, sem pausas ou confirmação.",
+      "Usar somente códigos numéricos, ainda que o conteúdo não comporte.",
+      "Solicitar QRT antes de cada palavra.",
+      "Dividi-la em trechos e intercalar confirmações por QSL.",
+      "Desligar a estação após o primeiro trecho."
+    ],
+    "correta": 3,
+    "justificativa": "O fracionamento com QSL permite confirmar o entendimento de cada parte e reduz a chance de perda de informação.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 36,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Durante a comunicação-rádio, a distância aproximada recomendada entre a boca do operador e o microfone é:",
+    "alternativas": [
+      "Menos de 1 centímetro, encostando os lábios no microfone.",
+      "Entre 5 e 10 centímetros.",
+      "Entre 30 e 50 centímetros.",
+      "Exatamente 1 metro.",
+      "A distância não interfere na qualidade da transmissão."
+    ],
+    "correta": 1,
+    "justificativa": "A apostila recomenda falar ao microfone a aproximadamente 5 a 10 cm, com tom moderado e cadenciado.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 37,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "O pedido de prioridade para interromper uma rede ocupada é justificável quando:",
+    "alternativas": [
+      "O operador deseja transmitir mensagem particular.",
+      "A informação pode aguardar até o fim do turno.",
+      "A rede está sendo usada por outra equipe em ocorrência relevante.",
+      "O objetivo é testar o volume do alto-falante.",
+      "Há imperiosa necessidade, especialmente perigo atual ou iminente à segurança de pessoas."
+    ],
+    "correta": 4,
+    "justificativa": "A prioridade é exceção operacional destinada a situações urgentes, sobretudo quando pessoas estão em risco.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 38,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Qual conduta viola os deveres éticos do operador de rádio?",
+    "alternativas": [
+      "Transmitir informações funcionais a pessoas estranhas ao serviço ou utilizar a rede para assuntos particulares.",
+      "Manter-se atento às chamadas dirigidas ao prefixo da estação.",
+      "Comunicar panes e interferências ao responsável.",
+      "Aguardar a rede ficar livre para iniciar transmissão rotineira.",
+      "Aperfeiçoar conhecimentos sobre o equipamento e os códigos."
+    ],
+    "correta": 0,
+    "justificativa": "Informações obtidas pela função devem ser protegidas, e a rede não pode ser usada para jocosidades, desabafos ou mensagens pessoais.",
+    "topico": "Deveres e Ética na Radiocomunicação"
+  },
+  {
+    "number": 39,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "No Alfabeto Fonético Internacional apresentado, a letra J corresponde a:",
+    "alternativas": [
+      "JAGUAR.",
+      "JERICO.",
+      "JULIET.",
+      "JÚPITER.",
+      "JOCKEY."
+    ],
+    "correta": 2,
+    "justificativa": "Na tabela da apostila, J é pronunciado JULIET.",
+    "topico": "Alfabeto Fonético Internacional"
+  },
+  {
+    "number": 40,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Como deve ser soletrada, pelo alfabeto fonético da apostila, a sigla PMCE?",
+    "alternativas": [
+      "PAPA - MIKE - CHARLE - ECHO.",
+      "PRIMO - MIKE - CÂMBIO - ECHO.",
+      "PAPA - METRO - CHARLIE - ECO.",
+      "PORTO - MIKE - CIENTE - ECHO.",
+      "PAPA - NOVEMBER - CHARLE - OSCAR."
+    ],
+    "correta": 0,
+    "justificativa": "As correspondências apresentadas são P-PAPA, M-MIKE, C-CHARLE e E-ECHO.",
+    "topico": "Alfabeto Fonético Internacional"
+  },
+  {
+    "number": 41,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "No código numérico indicado, o número 10 deve ser transmitido como:",
+    "alternativas": [
+      "DEZ, CÂMBIO.",
+      "PRIMEIRO, ZERO.",
+      "UNO, NULO.",
+      "PRIMO, DOBRADO.",
+      "PRIMO, NEGATIVO."
+    ],
+    "correta": 4,
+    "justificativa": "Os algarismos são pronunciados separadamente: 1 é PRIMO e 0 é NEGATIVO.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 42,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Quando um mesmo algarismo aparece três vezes consecutivas, a forma padronizada de informar a repetição é:",
+    "alternativas": [
+      "Dizer o número por extenso como uma centena.",
+      "Usar a expressão CÂMBIO antes de cada algarismo.",
+      "Usar a expressão TRIPLO seguida do algarismo correspondente.",
+      "Substituir toda a sequência por NEGATIVO.",
+      "Omitir duas repetições para reduzir o tempo de transmissão."
+    ],
+    "correta": 2,
+    "justificativa": "A apostila orienta usar DOBRADO para duas repetições e TRIPLO para três.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 43,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "No Código S, S-21 significa:",
+    "alternativas": [
+      "Missão cumprida.",
+      "Defeito na viatura.",
+      "Informe o quilômetro.",
+      "Socorro urgente.",
+      "Faça fiscalização."
+    ],
+    "correta": 3,
+    "justificativa": "A tabela associa S-21 a socorro urgente.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 44,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Uma equipe informa S-37. Qual situação está comunicando?",
+    "alternativas": [
+      "Tudo normal.",
+      "Defeito na viatura.",
+      "Retorno à base.",
+      "Rendição de serviço.",
+      "Necessidade de reboque confirmada."
+    ],
+    "correta": 1,
+    "justificativa": "S-37 corresponde a defeito na VTR; S-43, por sua vez, corresponde a reboque.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 45,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Pelo Código da Velocidade, uma viatura deslocando-se a 65 km/h está em:",
+    "alternativas": [
+      "Código 1.",
+      "Código 3.",
+      "Código 4.",
+      "Código 5.",
+      "Código 2."
+    ],
+    "correta": 4,
+    "justificativa": "Código 2 abrange velocidades de 40 a 80 km/h.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 46,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "No Código de Intensidade, o nível 5 indica sinal:",
+    "alternativas": [
+      "Apenas perceptível.",
+      "Débil.",
+      "Bastante bom.",
+      "Ótimo.",
+      "Muito bom."
+    ],
+    "correta": 3,
+    "justificativa": "A escala vai de 1, apenas perceptível, a 5, ótimo.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 47,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "No Código Q, QAP significa:",
+    "alternativas": [
+      "Mude de frequência.",
+      "Permaneça na escuta ou estou na escuta.",
+      "Pare de transmitir.",
+      "Informe a hora certa.",
+      "Repita o último câmbio."
+    ],
+    "correta": 1,
+    "justificativa": "QAP é a expressão usada para indicar permanência ou presença na escuta.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 48,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Durante a transmissão, o operador percebe sinais de outra estação sobrepondo-se à comunicação, sem relação com fenômenos atmosféricos. O código adequado é:",
+    "alternativas": [
+      "QRN.",
+      "QSB.",
+      "QRM.",
+      "QRO.",
+      "QTH."
+    ],
+    "correta": 2,
+    "justificativa": "QRM indica interferência de outra estação; QRN refere-se à estática ou a efeitos atmosféricos.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 49,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "Qual relação entre expressão e significado está correta?",
+    "alternativas": [
+      "QSL - tudo entendido; CONFIRME - repita a mensagem transmitida.",
+      "QSL - pare de transmitir; CONFIRME - aguarde em silêncio.",
+      "QSL - informe sua localização; CONFIRME - mensagem particular.",
+      "QSL - canal ocupado; CONFIRME - aumente a potência.",
+      "QSL - toalete; CONFIRME - missão cumprida."
+    ],
+    "correta": 0,
+    "justificativa": "QSL confirma o recebimento/entendimento; CONFIRME é pedido de repetição feito por quem recebe.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 50,
+    "heading": "Tópico 2 - Rádio Comunicação",
+    "enunciado": "A palavra convencional CÂMBIO é empregada para indicar:",
+    "alternativas": [
+      "Que a comunicação deve ser encerrada sem resposta.",
+      "Que o operador terminou sua fala e convida o interlocutor a responder.",
+      "Que o equipamento está com bateria fraca.",
+      "Que a estação deve mudar obrigatoriamente de frequência.",
+      "Que a mensagem foi cancelada por falta de prioridade."
+    ],
+    "correta": 1,
+    "justificativa": "CÂMBIO marca o fim daquele turno de fala e abre espaço para a resposta da outra estação.",
+    "topico": "Códigos Operacionais de Comunicação"
+  },
+  {
+    "number": 51,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Na Capital, qual associação entre sistema e finalidade está correta?",
+    "alternativas": [
+      "Callteker para registro de ocorrências e Dispatcher para despacho e gerenciamento.",
+      "Callteker para videomonitoramento e Dispatcher para telefonia IP.",
+      "Callteker para consultas criminais e Dispatcher para troca de senha.",
+      "Callteker para rádio DMO e Dispatcher para recarga de bateria.",
+      "Callteker para estatística e Dispatcher exclusivamente para cadastro de placas."
+    ],
+    "correta": 0,
+    "justificativa": "A apostila distingue o Callteker, usado no registro, do Dispatcher, empregado no despacho e gerenciamento das ocorrências.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 52,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Nos sistemas de atendimento e despacho do interior, as telas de viaturas conectadas e de ocorrências permitem principalmente:",
+    "alternativas": [
+      "Controlar somente ligações particulares dos servidores.",
+      "Substituir o rádio e impedir qualquer contato com a CIOPS.",
+      "Gerenciar exclusivamente a folha de pagamento das equipes.",
+      "Registrar apenas manutenção preventiva de computadores.",
+      "Acompanhar recursos disponíveis e o andamento dos eventos operacionais."
+    ],
+    "correta": 4,
+    "justificativa": "Essas telas apoiam o despacho ao mostrar viaturas conectadas e ocorrências em tratamento.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 53,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O sistema DÍGITRO é descrito como solução de telefonia integrada que utiliza:",
+    "alternativas": [
+      "Somente telefonia móvel comercial sem ramais.",
+      "Exclusivamente rádios portáteis em modo DMO.",
+      "Comunicação PABX no modelo de ramais, com rapidez e menor custo.",
+      "Rede de televisão por assinatura.",
+      "Correio eletrônico pessoal como canal de emergência."
+    ],
+    "correta": 2,
+    "justificativa": "O DÍGITRO integra telefonia IP/PABX por ramais, buscando comunicação rápida, simplificada e econômica.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 54,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O EASYCALL AGENT é utilizado como:",
+    "alternativas": [
+      "Sistema de reconhecimento de placas.",
+      "Aplicativo de georreferenciamento de patrulheiros.",
+      "Sistema de atendimento de chamadas.",
+      "Console exclusivo de rádio TETRA em modo DMO.",
+      "Base de dados de perícia forense."
+    ],
+    "correta": 2,
+    "justificativa": "A seção 3.5 identifica o EasyCall Agent como sistema de atendimento de chamadas.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 55,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Qual é a finalidade principal do SCI/S-Mobile para as equipes de campo?",
+    "alternativas": [
+      "Fornecer acesso móvel a informações de eventos e permitir troca de mensagens com os Centros de Comando e Controle.",
+      "Servir apenas como agenda pessoal do comandante da viatura.",
+      "Substituir o cadastro de ocorrências por anotações em papel.",
+      "Bloquear o recebimento de informações durante emergências.",
+      "Operar somente como câmera fotográfica sem conexão institucional."
+    ],
+    "correta": 0,
+    "justificativa": "O SCI/S-Mobile leva informações detalhadas às equipes e possibilita comunicação com o centro de comando.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 56,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "A compatibilidade operacional indicada para o S/Mobile inclui dispositivos móveis com sistema:",
+    "alternativas": [
+      "Exclusivamente DOS.",
+      "Somente sistemas de televisão digital.",
+      "Apenas terminais sem tela.",
+      "Android.",
+      "Máquinas de escrever eletrônicas."
+    ],
+    "correta": 3,
+    "justificativa": "A apostila informa que o S/Mobile é compatível com dispositivos Android e possui interface intuitiva.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 57,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O sistema de rádio digital TETRA adquirido pela SSPDS é caracterizado como:",
+    "alternativas": [
+      "Analógico, aberto e destinado a uso doméstico.",
+      "Trunking, codificado e seguro.",
+      "Simplex, sem infraestrutura e sem autenticação em qualquer situação.",
+      "Restrito a telefonia fixa e sem transmissão de voz.",
+      "Exclusivamente voltado ao armazenamento de imagens."
+    ],
+    "correta": 1,
+    "justificativa": "A seção 3.7 descreve o TETRA da SSPDS como sistema trunking de radiocomunicação codificada e segura.",
+    "topico": "Sistema de Rádio Digital TETRA"
+  },
+  {
+    "number": 58,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Na descrição dos equipamentos do sistema TETRA da SSPDS, aparecem rádios da empresa/modelo:",
+    "alternativas": [
+      "Apenas Apple, com terminais iPhone domésticos.",
+      "Somente Cisco, sem rádios portáteis.",
+      "Matra, restrita à telefonia convencional.",
+      "Nokia, exclusivamente para redes públicas comerciais.",
+      "Teltronic, com terminais Hytera apresentados no material."
+    ],
+    "correta": 4,
+    "justificativa": "A apostila cita a aquisição da empresa Teltronic e ilustra rádios Hytera móveis, fixos e portáteis.",
+    "topico": "Sistema de Rádio Digital TETRA"
+  },
+  {
+    "number": 59,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Quanto à cobertura do sistema TETRA, a apostila informa que ele atende:",
+    "alternativas": [
+      "Somente o centro de Fortaleza.",
+      "Apenas a Região Metropolitana, sem interior.",
+      "Exclusivamente unidades administrativas da SSPDS.",
+      "Fortaleza, Região Metropolitana e todo o Estado do Ceará.",
+      "Somente rodovias federais fora do Ceará."
+    ],
+    "correta": 3,
+    "justificativa": "O material afirma cobertura na Capital, Região Metropolitana e em todo o Estado.",
+    "topico": "Sistema de Rádio Digital TETRA"
+  },
+  {
+    "number": 60,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O videomonitoramento integrado contribui para a segurança pública porque:",
+    "alternativas": [
+      "Impede qualquer análise posterior das imagens.",
+      "Auxilia na identificação de veículos, no acompanhamento de trajetos e na elucidação de crimes.",
+      "Substitui automaticamente toda abordagem policial.",
+      "Funciona apenas para medir fluxo de pedestres em prédios privados.",
+      "Não permite compartilhamento entre órgãos parceiros."
+    ],
+    "correta": 1,
+    "justificativa": "Câmeras e sensores geram alertas e informações que apoiam monitoramento e abordagens policiais.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 61,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Quando sensores identificam uma placa com restrição de roubo ou furto, o procedimento descrito é:",
+    "alternativas": [
+      "Apagar o registro para evitar duplicidade.",
+      "Enviar somente uma mensagem ao proprietário sem acionar equipes.",
+      "Bloquear automaticamente todas as vias da cidade.",
+      "Transferir o caso exclusivamente para o sistema de telefonia IP.",
+      "Gerar alerta para a CIOPS, que acompanha o trajeto até a abordagem da PMCE."
+    ],
+    "correta": 4,
+    "justificativa": "A integração de sensores, CIOPS e equipes de rua permite monitorar o veículo e coordenar a abordagem.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 62,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "As 66 câmeras da AMC monitoradas pelo CTAFOR também são utilizadas pela CIOPS para:",
+    "alternativas": [
+      "Apoiar o combate ao crime.",
+      "Controlar apenas a iluminação de prédios públicos.",
+      "Gerenciar a folha de ponto dos servidores.",
+      "Substituir o sistema de rádio TETRA.",
+      "Realizar exclusivamente chamadas telefônicas ao cidadão."
+    ],
+    "correta": 0,
+    "justificativa": "O texto informa que as mesmas câmeras de trânsito da AMC são aproveitadas pela CIOPS em ações de segurança.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 63,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Além das câmeras próprias e da AMC, a polícia possui acesso em tempo real a imagens de órgãos como:",
+    "alternativas": [
+      "Apenas empresas de entretenimento e redes sociais.",
+      "Somente instituições financeiras privadas.",
+      "Guarda Municipal, Etufor, Polícia Rodoviária Federal e Detran.",
+      "Exclusivamente escolas sem convênio.",
+      "Apenas emissoras internacionais de televisão."
+    ],
+    "correta": 2,
+    "justificativa": "O compartilhamento com órgãos parceiros amplia a cobertura e o monitoramento de pontos estratégicos.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 64,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "De acordo com a tabela apresentada, o quantitativo total de câmeras da SSPDS é:",
+    "alternativas": [
+      "2.249.",
+      "1.811.",
+      "887.",
+      "600.",
+      "66."
+    ],
+    "correta": 0,
+    "justificativa": "A tabela 'Câmeras SSPDS' totaliza 2.249 equipamentos; 1.811 corresponde ao total de câmeras de órgãos parceiros.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 65,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O Sistema AGILIS foi concebido principalmente para:",
+    "alternativas": [
+      "Controlar apenas ramais telefônicos administrativos.",
+      "Registrar exclusivamente ocorrências sem dados de veículos.",
+      "Servir como editor de textos para relatórios.",
+      "Operar rádios portáteis sem conexão a bases de dados.",
+      "Integrar sistemas, armazenar dados de veículos suspeitos e rastrear passagens captadas por câmeras."
+    ],
+    "correta": 4,
+    "justificativa": "O AGILIS integra fontes e permite acompanhar onde veículos suspeitos ou com queixa foram detectados.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 66,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "A capacidade diária de processamento do AGILIS indicada na apostila supera:",
+    "alternativas": [
+      "7 mil chamadas telefônicas, sem placas.",
+      "70 capturas por semana.",
+      "7 milhões de capturas de placas em tempo real.",
+      "2 mil registros anuais.",
+      "100 imagens por mês."
+    ],
+    "correta": 2,
+    "justificativa": "O material registra processamento superior a sete milhões de capturas de placas por dia.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 67,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O número aproximado de alertas diários do AGILIS relacionados a veículos roubados, furtados ou vinculados a pessoas com mandado é:",
+    "alternativas": [
+      "66.",
+      "415.",
+      "2.249.",
+      "8.645.",
+      "27."
+    ],
+    "correta": 3,
+    "justificativa": "A apostila indica cerca de 8.645 alertas por dia nessas condições.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 68,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "A base do AGILIS para investigação e cruzamentos reúne, por ano, mais de:",
+    "alternativas": [
+      "2 mil ligações telefônicas.",
+      "2 bilhões de capturas de placas.",
+      "200 registros de ocorrências.",
+      "20 milhões de ramais.",
+      "22 imagens de videomonitoramento."
+    ],
+    "correta": 1,
+    "justificativa": "O material aponta mais de dois bilhões de capturas anuais disponíveis para investigação e cruzamento.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 69,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "Qual resultado operacional é citado como tempo recorde de recuperação de veículo roubado com apoio do AGILIS?",
+    "alternativas": [
+      "30 minutos.",
+      "3 horas.",
+      "24 horas.",
+      "7 dias.",
+      "3 minutos."
+    ],
+    "correta": 4,
+    "justificativa": "A apostila registra caso de recuperação em tempo recorde de três minutos.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 70,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O material associa o emprego do AGILIS a uma redução de aproximadamente:",
+    "alternativas": [
+      "2% no número de chamadas ao 190.",
+      "66% no uso de rádios portáteis.",
+      "100% das ocorrências pendentes.",
+      "27% nos indicadores de roubo e furto de veículos em comparação ao mesmo período anterior.",
+      "7% na cobertura do sistema TETRA."
+    ],
+    "correta": 3,
+    "justificativa": "A redução mencionada é de 27% nos indicadores de roubo e furto de veículos.",
+    "topico": "Videomonitoramento e Tecnologia AGILIS"
+  },
+  {
+    "number": 71,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "A Consulta Integrada permite consultar:",
+    "alternativas": [
+      "Apenas o volume de chamadas telefônicas.",
+      "Dados cíveis ou criminais de pessoas e veículos.",
+      "Somente o estado da bateria dos rádios.",
+      "Exclusivamente mapas meteorológicos.",
+      "Apenas escalas administrativas sem dados pessoais ou veiculares."
+    ],
+    "correta": 1,
+    "justificativa": "O sistema reúne consultas relacionadas a pessoas e veículos, tanto em âmbito cível quanto criminal.",
+    "topico": "Consulta Integrada Civil e Criminal"
+  },
+  {
+    "number": 72,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O NET I/NETDISPATCHER é descrito como:",
+    "alternativas": [
+      "Aplicativo público para qualquer cidadão alterar ocorrências.",
+      "Sistema exclusivo de controle de câmeras LPR.",
+      "Ferramenta de acesso remoto e restrito ao I/Dispatcher, com recursos, carga de trabalho e histórico de eventos e unidades.",
+      "Rádio portátil destinado ao modo DMO.",
+      "Programa de edição de imagens sem acesso ao despacho."
+    ],
+    "correta": 2,
+    "justificativa": "O NET I/NETDISPATCHER estende, de modo controlado, o acesso a informações do sistema de despacho da CIOPS.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 73,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O SPORTAL é usado principalmente para:",
+    "alternativas": [
+      "Produzir estatísticas de ocorrências com filtros por tipo, local, rua ou bairro.",
+      "Realizar chamadas de voz no sistema TETRA.",
+      "Cadastrar baterias e acessórios de rádios.",
+      "Trocar o modo de operação de TMO para DMO.",
+      "Substituir o atendimento telefônico do 190."
+    ],
+    "correta": 0,
+    "justificativa": "A ferramenta oferece consultas estatísticas de ocorrências por diferentes critérios geográficos e tipológicos.",
+    "topico": "Consulta Integrada Civil e Criminal"
+  },
+  {
+    "number": 74,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "O Portal de Comando Avançado integra informações gerenciais destinadas a servidores da:",
+    "alternativas": [
+      "Somente rede privada de telefonia comercial.",
+      "Polícia Militar, Polícia Civil, Corpo de Bombeiros e Perícia Forense.",
+      "Apenas Autarquia Municipal de Trânsito.",
+      "Exclusivamente escolas estaduais.",
+      "Somente empresas sem vínculo com a SSPDS."
+    ],
+    "correta": 1,
+    "justificativa": "O portal reúne serviços operacionais e administrativos para os principais órgãos estaduais de segurança e perícia.",
+    "topico": "Consulta Integrada Civil e Criminal"
+  },
+  {
+    "number": 75,
+    "heading": "Tópico 3 - Tecnologias Utilizadas pela SSPDS",
+    "enunciado": "A principal inovação do aplicativo 190 CEARÁ para o cidadão é:",
+    "alternativas": [
+      "Substituir todas as abordagens policiais por mensagens automáticas.",
+      "Permitir acesso irrestrito a bases criminais.",
+      "Operar como rádio portátil em modo TMO.",
+      "Permitir registrar e enviar a ocorrência por botões, sem necessidade de falar com atendente.",
+      "Controlar as câmeras da AMC diretamente pelo celular do usuário."
+    ],
+    "correta": 3,
+    "justificativa": "O aplicativo oferece uma forma digital e simplificada de acionar o 190 e transmitir os dados da ocorrência.",
+    "topico": "Sistemas de Atendimento e Despacho de Ocorrências"
+  },
+  {
+    "number": 76,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No modo de transmissão simplex, a comunicação ocorre de forma:",
+    "alternativas": [
+      "Bidirecional e simultânea.",
+      "Bidirecional, porém alternada.",
+      "Exclusivamente por infraestrutura TETRA.",
+      "Somente entre terminais registrados em rede trunking.",
+      "Unidirecional, permitindo ao remetente enviar dados, mas não recebê-los pelo mesmo fluxo."
+    ],
+    "correta": 4,
+    "justificativa": "Simplex possui apenas um sentido de transmissão; o material cita teclado e monitor como exemplos.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 77,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Em uma comunicação half-duplex:",
+    "alternativas": [
+      "Somente uma das partes pode enviar e a outra jamais pode responder.",
+      "As duas partes transmitem ao mesmo tempo, sem alternância.",
+      "As duas partes podem transmitir e receber, mas não simultaneamente.",
+      "A comunicação é obrigatoriamente realizada por telefone.",
+      "Não há possibilidade de retorno da mensagem."
+    ],
+    "correta": 2,
+    "justificativa": "Half-duplex é bidirecional alternado, como ocorre em walkie-talkies.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 78,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "O modo full duplex permite:",
+    "alternativas": [
+      "Somente o envio de dados pelo remetente.",
+      "Alternância obrigatória entre falar e ouvir.",
+      "Envio e recebimento simultâneos entre os participantes.",
+      "Comunicação direta sem qualquer recepção.",
+      "Uso exclusivo de rádio portátil em DMO."
+    ],
+    "correta": 2,
+    "justificativa": "Full duplex é comunicação bidirecional simultânea, tendo o telefone como exemplo na apostila.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 79,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Qual associação entre modo e exemplo está de acordo com a apostila?",
+    "alternativas": [
+      "Simplex - teclado e monitor; half-duplex - walkie-talkie; full duplex - telefone.",
+      "Simplex - telefone; half-duplex - monitor; full duplex - teclado.",
+      "Simplex - walkie-talkie; half-duplex - telefone; full duplex - monitor.",
+      "Simplex - rádio TMO; half-duplex - teclado; full duplex - antena.",
+      "Simplex - repetidora; half-duplex - fonte; full duplex - bateria."
+    ],
+    "correta": 0,
+    "justificativa": "A tabela comparativa usa exatamente esses exemplos para diferenciar os três modos.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 80,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Quanto ao desempenho relativo apresentado, é correto afirmar que:",
+    "alternativas": [
+      "O simplex sempre apresenta o melhor desempenho.",
+      "O half-duplex supera o full duplex em simultaneidade.",
+      "Os três modos possuem desempenho obrigatoriamente idêntico.",
+      "O full duplex oferece melhor desempenho que half-duplex e simplex.",
+      "O full duplex possui menor desempenho que o simplex."
+    ],
+    "correta": 3,
+    "justificativa": "A simultaneidade do full duplex lhe confere desempenho superior na comparação da apostila.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 81,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "O DMO do sistema TETRA caracteriza-se por:",
+    "alternativas": [
+      "Comunicação obrigatoriamente roteada pelo centro de rede.",
+      "Comunicação direta entre terminais, sem utilizar a infraestrutura da rede TETRA.",
+      "Uso exclusivo de telefonia IP.",
+      "Transmissão apenas por satélite comercial.",
+      "Operação somente com terminal fixo conectado ao PABX."
+    ],
+    "correta": 1,
+    "justificativa": "DMO significa Direct Mode Operation, ou modo direto, no qual os terminais comunicam-se entre si.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 82,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Ao operar em DMO, uma limitação esperada é:",
+    "alternativas": [
+      "Impossibilidade de qualquer comunicação entre os terminais.",
+      "Necessidade de registro prévio em todas as repetidoras do Estado.",
+      "Obrigatoriedade de comunicação full duplex.",
+      "Bloqueio permanente do PTT.",
+      "Indisponibilidade das funções que dependem de acesso à infraestrutura da rede."
+    ],
+    "correta": 4,
+    "justificativa": "Como o DMO dispensa a infraestrutura, recursos dependentes da rede não ficam disponíveis.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 83,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No TMO, os terminais comunicam-se:",
+    "alternativas": [
+      "Somente de forma direta e sem rede.",
+      "Exclusivamente por cabos físicos entre os rádios.",
+      "Apenas com aparelhos de telefonia comercial.",
+      "Por meio da infraestrutura da rede TETRA.",
+      "Sem possibilidade de acessar funções de rede."
+    ],
+    "correta": 3,
+    "justificativa": "TMO é o modo troncalizado, no qual a infraestrutura da rede intermedeia a comunicação.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 84,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Para um terminal operar em TMO, a apostila exige que ele:",
+    "alternativas": [
+      "Esteja desligado da rede e fora da área de cobertura.",
+      "Tenha autorização do fornecedor, esteja registrado e permaneça dentro da cobertura da rede.",
+      "Utilize exclusivamente bateria fraca para economizar energia.",
+      "Opere sem identificação e sem qualquer autorização.",
+      "Seja conectado diretamente a outro terminal por cabo."
+    ],
+    "correta": 1,
+    "justificativa": "Autorização, registro e cobertura são condições necessárias para o funcionamento em TMO.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 85,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "O TMO pode suportar:",
+    "alternativas": [
+      "Somente transmissão simplex sem retorno.",
+      "Apenas sinais luminosos, sem voz.",
+      "Exclusivamente comunicação analógica em VHF.",
+      "Somente DMO com canal livre.",
+      "Operação semi-duplex ou full duplex."
+    ],
+    "correta": 4,
+    "justificativa": "A infraestrutura TETRA permite ao TMO operar tanto em semi-duplex quanto em full duplex.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 86,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No terminal móvel MT 680, a ação indicada para ligar ou desligar o rádio é:",
+    "alternativas": [
+      "Pressionar e manter a tecla de liga/desliga por determinado tempo.",
+      "Retirar a antena enquanto o equipamento transmite.",
+      "Pressionar o PTT três vezes rapidamente.",
+      "Girar o seletor de grupo até o volume mínimo.",
+      "Desconectar o microfone de mão a cada utilização."
+    ],
+    "correta": 0,
+    "justificativa": "O manual ilustrado orienta pressionar e segurar a tecla de energia para ligar ou desligar o MT 680.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 87,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Para aumentar o volume de chamada no MT 680, deve-se:",
+    "alternativas": [
+      "Girá-lo no sentido anti-horário.",
+      "Pressionar a tecla de emergência.",
+      "Girar o botão de controle de volume/seletor de grupo no sentido horário.",
+      "Remover o conector BNC da antena.",
+      "Selecionar DMO e desligar o alto-falante."
+    ],
+    "correta": 2,
+    "justificativa": "O sentido horário aumenta o volume; o anti-horário o reduz.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 88,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Para alternar o modo de operação entre TMO e DMO no terminal apresentado, o operador deve:",
+    "alternativas": [
+      "Acessar MENU e selecionar a opção de modo desejada.",
+      "Trocar fisicamente a antena por outra de cor diferente.",
+      "Pressionar apenas a tecla PTT durante dez segundos.",
+      "Desligar a repetidora da rede.",
+      "Alterar a matrícula no sistema S/Mobile."
+    ],
+    "correta": 0,
+    "justificativa": "A navegação indicada é MENU e, em seguida, a seleção de TMO ou DMO.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 89,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Para verificar a lista de grupos disponíveis no rádio, a sequência indicada é:",
+    "alternativas": [
+      "PTT / Emergência.",
+      "Volume / Bateria.",
+      "QAP / QSL.",
+      "Liga-desliga / Antena.",
+      "MENU / Grupo."
+    ],
+    "correta": 4,
+    "justificativa": "A apostila ilustra o acesso aos grupos pela opção Grupo dentro do MENU.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 90,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No indicador LED do MT 680, a luz vermelha acesa continuamente indica:",
+    "alternativas": [
+      "Recepção de chamada.",
+      "Bateria fraca.",
+      "Transmissão em andamento.",
+      "Canal DMO livre.",
+      "Terminal fora de serviço em TMO."
+    ],
+    "correta": 2,
+    "justificativa": "Vermelho contínuo corresponde ao estado de transmissão.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 91,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No MT 680, o LED vermelho piscando vagarosamente sinaliza:",
+    "alternativas": [
+      "Recepção normal de chamada.",
+      "Canal DMO livre.",
+      "Mensagem não lida.",
+      "Tensão baixa de bateria, exigindo recarga ou substituição.",
+      "Registro bem-sucedido na rede com sinal máximo."
+    ],
+    "correta": 3,
+    "justificativa": "O piscar lento em vermelho é o alerta de bateria fraca.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 92,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No indicador do MT 680, a luz verde acesa continuamente corresponde a:",
+    "alternativas": [
+      "Transmissão de chamada.",
+      "Recebimento de comunicação.",
+      "Bateria descarregada.",
+      "Canal DMO ocupado.",
+      "Terminal proibido de transmitir."
+    ],
+    "correta": 1,
+    "justificativa": "Verde contínuo indica que o terminal está recebendo.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 93,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "O LED verde piscando vagarosamente no MT 680 indica:",
+    "alternativas": [
+      "Bateria fraca.",
+      "Transmissão em TMO.",
+      "Canal DMO ocupado.",
+      "Falha definitiva do alto-falante.",
+      "Canal de operação em DMO livre."
+    ],
+    "correta": 4,
+    "justificativa": "O piscar lento em verde informa disponibilidade do canal no modo direto.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 94,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No MT 680, a luz laranja acesa continuamente pode indicar:",
+    "alternativas": [
+      "Canal livre em DMO.",
+      "Recebimento normal de chamada.",
+      "Bateria totalmente carregada.",
+      "Canal ocupado em DMO ou terminal proibido de transmitir.",
+      "Terminal registrado com sinal máximo."
+    ],
+    "correta": 3,
+    "justificativa": "A tabela associa o laranja contínuo a canal DMO ocupado e também à proibição de transmissão.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 95,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "O LED laranja piscando vagarosamente no MT 680 indica que:",
+    "alternativas": [
+      "O rádio está transmitindo normalmente.",
+      "A estação-base com a qual o terminal está registrado encontra-se fora de serviço em TMO.",
+      "O canal DMO está livre.",
+      "A bateria está com carga máxima.",
+      "Uma chamada está sendo recebida sem falhas."
+    ],
+    "correta": 1,
+    "justificativa": "O piscar lento em laranja alerta para indisponibilidade da estação-base no modo TMO.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 96,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No terminal portátil PT580H, o LED vermelho aceso indica:",
+    "alternativas": [
+      "Que o rádio está recebendo uma chamada.",
+      "Que o canal DMO está livre.",
+      "Que o rádio está transmitindo uma chamada.",
+      "Que a bateria está totalmente carregada.",
+      "Que o equipamento foi desconectado do usuário."
+    ],
+    "correta": 2,
+    "justificativa": "A tabela do PT580H associa vermelho aceso à transmissão.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 97,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No PT580H, o LED verde aceso significa:",
+    "alternativas": [
+      "Recebimento de uma chamada.",
+      "Transmissão de emergência.",
+      "Bateria fraca.",
+      "Canal DMO ocupado.",
+      "Modo silencioso obrigatório."
+    ],
+    "correta": 0,
+    "justificativa": "Verde aceso é o estado de recepção de chamada.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 98,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "No PT580H, o LED vermelho piscando lentamente indica:",
+    "alternativas": [
+      "Canal DMO livre.",
+      "Bateria fraca.",
+      "Recepção de chamada.",
+      "Registro completo em TMO.",
+      "Aumento automático do volume."
+    ],
+    "correta": 1,
+    "justificativa": "O sinal luminoso de vermelho lento alerta para baixa carga da bateria.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 99,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Nos terminais de rádio apresentados, a tecla PTT é usada para:",
+    "alternativas": [
+      "Alterar a senha do sistema de despacho.",
+      "Consultar placas no AGILIS.",
+      "Ligar a iluminação da viatura.",
+      "Acionar a transmissão de voz.",
+      "Finalizar ocorrências no S/Mobile."
+    ],
+    "correta": 3,
+    "justificativa": "PTT significa Push-to-Talk e habilita a fala do operador na rede.",
+    "topico": "Composição dos Equipamentos de Rádio"
+  },
+  {
+    "number": 100,
+    "heading": "Tópico 4 - Operação do Sistema de Rádio",
+    "enunciado": "Uma equipe está fora da cobertura da rede, mas precisa comunicar-se diretamente com outra equipe próxima. O modo mais apropriado é:",
+    "alternativas": [
+      "DMO, pois possibilita comunicação direta entre terminais sem infraestrutura.",
+      "TMO, porque dispensa registro e cobertura.",
+      "Full duplex telefônico, obrigatoriamente pela rede comercial.",
+      "Simplex de monitor, sem possibilidade de voz.",
+      "PABX, pois conecta os rádios por ramais locais."
+    ],
+    "correta": 0,
+    "justificativa": "O cenário corresponde ao uso típico do modo direto, lembrando que funções dependentes da rede não estarão disponíveis.",
+    "topico": "Modos de Transmissão Radiofônica"
+  },
+  {
+    "number": 101,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Qual associação entre sistema e área de emprego está correta?",
+    "alternativas": [
+      "SPOC apenas na Capital e S/Mobile somente fora do Ceará.",
+      "Ambos restritos à telefonia administrativa da SSPDS.",
+      "S/Mobile-SCI na Capital e SPOC no interior do Estado.",
+      "S/Mobile exclusivo para cidadãos e SPOC exclusivo para câmeras.",
+      "Ambos usados apenas em terminais fixos sem smartphone."
+    ],
+    "correta": 2,
+    "justificativa": "A apostila apresenta o SCI/S-Mobile para a Capital e o SPOC como solução de pronto-atendimento no interior.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 102,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No login do S/Mobile, a matrícula do comandante deve ser informada:",
+    "alternativas": [
+      "Com letras e símbolos adicionados pelo operador.",
+      "Somente com o nome completo, sem números.",
+      "Sem os dígitos verificadores e sem o zero inicial, quando houver.",
+      "Com todos os dígitos e zeros obrigatoriamente duplicados.",
+      "Usando o CPF do motorista no lugar da matrícula."
+    ],
+    "correta": 2,
+    "justificativa": "O procedimento orienta retirar os dígitos verificadores e o zero inicial da matrícula.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 103,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No campo Patrulheiros do S/Mobile, quando houver mais de um integrante, as matrículas devem ser:",
+    "alternativas": [
+      "Separadas por ponto e vírgula.",
+      "Somadas e informadas como um único número.",
+      "Separadas por barras e espaços obrigatórios.",
+      "Substituídas apenas pelos primeiros nomes.",
+      "Omitidas, pois somente o motorista é cadastrado."
+    ],
+    "correta": 0,
+    "justificativa": "O exemplo fornecido usa matrículas separadas por ';', como 13452;14895;12856.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 104,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Sobre o campo Unidade no S/Mobile, assinale a alternativa correta.",
+    "alternativas": [
+      "Deve ser alterado livremente pela equipe em qualquer plantão.",
+      "É preenchido somente após a finalização da primeira ocorrência.",
+      "Pode ser ignorado, pois não há vínculo entre aparelho e viatura.",
+      "Ele já vem preenchido e não é possível conectar uma viatura usando o celular destinado a outra unidade/viatura.",
+      "Serve apenas para informar o telefone particular do comandante."
+    ],
+    "correta": 3,
+    "justificativa": "O aparelho possui vínculo com a viatura/unidade; divergências devem ser tratadas pelo batalhão.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 105,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No S/Mobile, o indicador CM na parte superior da tela significa:",
+    "alternativas": [
+      "Código de Missão, indicando ocorrência finalizada.",
+      "Connect Mobile, indicando que o terminal está conectado e disponível para receber ocorrências.",
+      "Comando Manual, indicando modo sem rede.",
+      "Canal Monitorado, indicando rádio em DMO.",
+      "Consulta Móvel, indicando somente acesso a placas."
+    ],
+    "correta": 1,
+    "justificativa": "CM é a indicação de terminal móvel conectado e pronto para o despacho.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 106,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Após a equipe abrir e confirmar uma ocorrência recebida, qual sequência de status representa, em regra, comunicação, deslocamento e chegada?",
+    "alternativas": [
+      "TR - TC - CM.",
+      "CH - CO - ER.",
+      "CM - TC - QSL.",
+      "ER - CM - TR.",
+      "CO - ER - CH."
+    ],
+    "correta": 4,
+    "justificativa": "CO indica Comunicada, ER significa Em Rota e CH corresponde à chegada ao local.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 107,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Se a equipe selecionar a opção DEVOLVER uma ocorrência no S/Mobile:",
+    "alternativas": [
+      "A ocorrência será automaticamente finalizada sem registro.",
+      "O sistema mudará diretamente para TR.",
+      "A equipe ficará impedida de receber novas ocorrências por 24 horas.",
+      "Será obrigatório apresentar uma justificativa.",
+      "A ocorrência será apagada do centro de despacho."
+    ],
+    "correta": 3,
+    "justificativa": "O material informa que a devolução exige justificativa, permitindo controle do despacho.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 108,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Ao colocar o status em ER e selecionar Iniciar Navegação, o sistema:",
+    "alternativas": [
+      "Desliga a comunicação com a CIOPS.",
+      "Utiliza o GPS para traçar o percurso até o local da ocorrência.",
+      "Finaliza automaticamente o evento.",
+      "Substitui o motorista cadastrado.",
+      "Altera a ocorrência para devolvida."
+    ],
+    "correta": 1,
+    "justificativa": "A função de navegação apoia o deslocamento da viatura até o endereço do evento.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 109,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Quando há necessidade de conduzir envolvidos a um órgão de segurança, os status utilizados são:",
+    "alternativas": [
+      "CO para transporte e ER para chegada.",
+      "CM para saída e CH para consulta.",
+      "QAP para transporte e QSL para chegada.",
+      "S-39 para saída e S-45 para chegada.",
+      "TR para Em Transporte e TC para Chegada de Transporte."
+    ],
+    "correta": 4,
+    "justificativa": "O fluxo operacional mostrado altera o status para TR durante o transporte e TC ao chegar ao destino.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 110,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Para encerrar corretamente uma ocorrência no S/Mobile, a equipe deve:",
+    "alternativas": [
+      "Selecionar Finalizar, escolher o código de finalização adequado e inserir os comentários.",
+      "Apenas fechar o aplicativo, sem registrar resultado.",
+      "Desligar o smartphone e retirar o chip.",
+      "Alterar o status para CO e apagar os comentários.",
+      "Enviar mensagem particular ao despachante sem usar o sistema."
+    ],
+    "correta": 0,
+    "justificativa": "A finalização exige classificação correta e registro de informações sobre o atendimento.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 111,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "A opção de ocorrências próximas no S/Mobile apresenta:",
+    "alternativas": [
+      "Somente ocorrências concluídas há mais de um ano.",
+      "Apenas viaturas desconectadas de outras regiões.",
+      "Eventos abertos no mapa, nas proximidades da área de serviço/AIS.",
+      "Exclusivamente chamadas telefônicas particulares.",
+      "Somente dados de manutenção do aparelho."
+    ],
+    "correta": 2,
+    "justificativa": "O mapa permite visualizar eventos abertos na área de atuação da composição.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 112,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "A função 'Minhas Ocorrências 12hs' exibe:",
+    "alternativas": [
+      "As ocorrências atendidas pela viatura nas últimas doze horas.",
+      "Todas as ocorrências estaduais desde a criação da CIOPS.",
+      "Somente as ocorrências devolvidas por outras equipes.",
+      "A escala de serviço dos próximos doze dias.",
+      "Apenas consultas de veículos realizadas pelo comandante."
+    ],
+    "correta": 0,
+    "justificativa": "A consulta reúne o histórico recente de atendimentos da viatura no período de 12 horas.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 113,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Para criar uma ocorrência de campo no S/Mobile, o operador deve informar, entre outros dados:",
+    "alternativas": [
+      "Somente o nível da bateria do smartphone.",
+      "A frequência de rádio e a senha do PABX.",
+      "A marca da antena e o número do carregador.",
+      "A cor do uniforme e o código de intensidade do rádio.",
+      "Tipo, subtipo e comentários iniciais da ocorrência."
+    ],
+    "correta": 4,
+    "justificativa": "O fluxo de criação exige classificação do evento e informações iniciais que contextualizem o atendimento.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 114,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No menu do S/Mobile, a opção Consulta disponibiliza pesquisas de:",
+    "alternativas": [
+      "Somente mensagens do teleatendimento.",
+      "Apenas rotas de GPS sem dados operacionais.",
+      "Veículos, pessoas e dados criminais.",
+      "Exclusivamente códigos Q e S.",
+      "Somente volume e carga da bateria."
+    ],
+    "correta": 2,
+    "justificativa": "O aplicativo oferece consultas operacionais relacionadas a pessoas, veículos e registros criminais.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 115,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Durante o atendimento pelo S/Mobile, a equipe pode complementar o registro usando:",
+    "alternativas": [
+      "Somente chamadas de voz particulares.",
+      "Apenas exclusão dos dados recebidos.",
+      "Desativação obrigatória do GPS.",
+      "Anexo de mídia e adição de comentários.",
+      "Alteração livre do número da ocorrência."
+    ],
+    "correta": 3,
+    "justificativa": "Mídias e comentários enriquecem o registro e mantêm o centro de comando atualizado.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 116,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No SPOC, o login do comandante é realizado, conforme a apostila, com:",
+    "alternativas": [
+      "Matrícula sem dígito como login e nome da viatura como senha.",
+      "CPF como login e a matrícula completa, apenas com números, como senha.",
+      "Telefone particular como login e código Q como senha.",
+      "Placa da viatura como login e CPF do motorista como senha.",
+      "E-mail pessoal como login e bairro de atuação como senha."
+    ],
+    "correta": 1,
+    "justificativa": "O material do SPOC orienta usar o CPF do comandante e sua matrícula completa numérica.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 117,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No cadastro da composição do SPOC, são informados dados como:",
+    "alternativas": [
+      "Somente a cor e o modelo do smartphone.",
+      "Apenas códigos de rádio e nível de sinal.",
+      "Exclusivamente dados bancários da equipe.",
+      "Somente os nomes dos bairros, sem identificação dos agentes.",
+      "Telefone do comandante, KM da viatura, área de atuação e CPFs de motorista e patrulheiros."
+    ],
+    "correta": 4,
+    "justificativa": "A composição deve ser identificada e vinculada à viatura e à área de cobertura.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 118,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Na tela inicial do SPOC, a indicação de disponibilidade do smartphone significa que ele está apto a:",
+    "alternativas": [
+      "Somente realizar chamadas particulares.",
+      "Apenas reproduzir vídeos de treinamento.",
+      "Operar sem vínculo com a CIOPS.",
+      "Receber e criar ocorrências.",
+      "Substituir o rádio TETRA em todas as funções."
+    ],
+    "correta": 3,
+    "justificativa": "A tela inicial informa que o dispositivo está conectado para receber despachos e registrar eventos de campo.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 119,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Quando a CIOPS envia uma ocorrência ao SPOC, o procedimento inicial da equipe é:",
+    "alternativas": [
+      "Desinstalar o aplicativo e reiniciar o aparelho.",
+      "Selecionar a ocorrência exibida para visualizar seus dados.",
+      "Apagar a notificação sem leitura.",
+      "Alterar primeiro o CPF do comandante.",
+      "Finalizar o evento antes de abrir os detalhes."
+    ],
+    "correta": 1,
+    "justificativa": "A ocorrência aparece na tela e deve ser aberta para leitura e prosseguimento do atendimento.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 120,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "No SPOC, os status da ocorrência devem ser alterados:",
+    "alternativas": [
+      "Somente ao final do turno, independentemente do andamento.",
+      "Aleatoriamente para testar o sistema.",
+      "Conforme o avanço real do atendimento operacional.",
+      "Apenas pelo cidadão que acionou o serviço.",
+      "Nunca, pois são fixos após o recebimento."
+    ],
+    "correta": 2,
+    "justificativa": "A atualização de status mantém a CIOPS informada sobre cada etapa do atendimento.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 121,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Para criar uma ocorrência no SPOC, a equipe deve:",
+    "alternativas": [
+      "Selecionar Criar Ocorrência, escolher o tipo e inserir comentário.",
+      "Acessar apenas o histórico e apagar um evento anterior.",
+      "Desligar o GPS e selecionar Desconectar.",
+      "Informar somente a carga da bateria.",
+      "Trocar o CPF do motorista pelo número da viatura."
+    ],
+    "correta": 0,
+    "justificativa": "O fluxo ilustrado exige classificação do tipo e registro de comentário sobre a ocorrência criada.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 122,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "A opção Histórico de Ocorrência do SPOC serve para:",
+    "alternativas": [
+      "Mostrar somente ocorrências ainda não recebidas.",
+      "Visualizar ocorrências concluídas.",
+      "Alterar o cadastro de todos os dispositivos do Estado.",
+      "Consultar exclusivamente baterias de rádios.",
+      "Bloquear as abordagens realizadas pela equipe."
+    ],
+    "correta": 1,
+    "justificativa": "O histórico reúne os eventos finalizados, permitindo consulta posterior.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 123,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "Na função Abordagem do SPOC, a equipe pode selecionar abordagem de:",
+    "alternativas": [
+      "Somente edifício público.",
+      "Apenas equipamento de rádio.",
+      "Exclusivamente chamada telefônica.",
+      "Pessoa ou veículo.",
+      "Somente ocorrência ambiental sem pessoa ou veículo."
+    ],
+    "correta": 3,
+    "justificativa": "O material mostra telas específicas para abordagem de pessoa e de veículo.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 124,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "A Consulta Unificada do SPOC permite busca por:",
+    "alternativas": [
+      "Nome ou placa.",
+      "Somente número do rádio.",
+      "Apenas código de velocidade.",
+      "Exclusivamente endereço de e-mail.",
+      "Somente nível de intensidade do sinal."
+    ],
+    "correta": 0,
+    "justificativa": "A tela de consulta unificada oferece pesquisa por identificação nominal ou placa veicular.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 125,
+    "heading": "Tópico 5 - Operação dos Sistemas em Smartphone",
+    "enunciado": "A tela de informações da composição e desconexão do SPOC é usada para:",
+    "alternativas": [
+      "Criar automaticamente mandados de prisão.",
+      "Alterar a cobertura física do sistema TETRA.",
+      "Controlar todas as câmeras da SSPDS.",
+      "Apagar ocorrências da base da CIOPS.",
+      "Consultar os dados da equipe cadastrada e encerrar a conexão do dispositivo quando necessário."
+    ],
+    "correta": 4,
+    "justificativa": "Essa tela reúne as informações operacionais da composição e o comando de desconexão.",
+    "topico": "Operação de Sistemas de Segurança em Smartphones"
+  },
+  {
+    "number": 126,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A criação da CIOPS teve como finalidade central:",
+    "alternativas": [
+      "Separar totalmente as comunicações de cada órgão.",
+      "Atender apenas demandas administrativas internas.",
+      "Integrar órgãos de atendimento emergencial e melhorar o serviço ao cidadão por meio do número único 190.",
+      "Substituir todos os serviços de emergência por atendimento presencial.",
+      "Restringir o 190 exclusivamente à fiscalização de trânsito."
+    ],
+    "correta": 2,
+    "justificativa": "A CIOPS nasceu da proposta de integração para oferecer atendimento mais coordenado e seguro à população.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 127,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A CIOPS foi criada em 12 de agosto de 1998 por meio do:",
+    "alternativas": [
+      "Decreto nº 25.133.",
+      "Decreto nº 28.794.",
+      "Decreto nº 32.738.",
+      "Decreto nº 33.959.",
+      "Decreto nº 4.432."
+    ],
+    "correta": 0,
+    "justificativa": "O Decreto nº 25.133 inseriu o centro na estrutura da SSPDS em 1998.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 128,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A inauguração oficial ocorreu em 22 de janeiro de 1999 com a denominação:",
+    "alternativas": [
+      "Coordenadoria Estadual de Telefonia e Informática.",
+      "Central Autônoma de Polícia Militar.",
+      "Sistema Integrado de Videomonitoramento Municipal.",
+      "Centro Integrado de Operações de Segurança - CIOPS.",
+      "Companhia de Operações Penitenciárias."
+    ],
+    "correta": 3,
+    "justificativa": "A denominação original na inauguração foi Centro Integrado de Operações de Segurança.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 129,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A mudança para Coordenadoria Integrada de Operações de Segurança ocorreu por meio do:",
+    "alternativas": [
+      "Decreto nº 25.133, de 12 de agosto de 1998.",
+      "Decreto nº 28.794, de 11 de julho de 2007.",
+      "Decreto nº 32.738, de 3 de junho de 2015.",
+      "Decreto nº 33.959, de 1º de março de 2021.",
+      "Decreto nº 42, de 24 de dezembro de 1937."
+    ],
+    "correta": 1,
+    "justificativa": "O Decreto nº 28.794 alterou a condição organizacional e a denominação da CIOPS em 2007.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 130,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Após a alteração de 2007, a CIOPS passou a ser qualificada como:",
+    "alternativas": [
+      "Empresa privada de telecomunicações.",
+      "Unidade independente sem vínculo com a SSPDS.",
+      "Órgão exclusivo da Polícia Militar.",
+      "Autarquia municipal de trânsito.",
+      "Órgão de execução programática da SSPDS."
+    ],
+    "correta": 4,
+    "justificativa": "A nova estrutura enquadrou a CIOPS como órgão de execução programática da Secretaria.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 131,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "No Decreto nº 28.794/2007, a missão e as competências da CIOPS foram definidas no:",
+    "alternativas": [
+      "Artigo 1º, sem seção específica.",
+      "Artigo 190, Seção I.",
+      "Artigo 8º, Seção Penal.",
+      "Artigo 43, Seção IV.",
+      "Artigo 60, Seção de Trânsito."
+    ],
+    "correta": 3,
+    "justificativa": "A apostila localiza a definição de missão e competências no artigo 43 da seção IV.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 132,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Em 2015, a estrutura organizacional da CIOPS recebeu alterações pelo:",
+    "alternativas": [
+      "Decreto nº 25.133, de 1998.",
+      "Decreto nº 32.738, de 3 de junho de 2015.",
+      "Decreto nº 28.794, de 2007.",
+      "Decreto nº 33.959, de 2021.",
+      "Lei nº 13, de 1835."
+    ],
+    "correta": 1,
+    "justificativa": "O Decreto nº 32.738 promoveu alterações organizacionais em 2015.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 133,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A alteração organizacional mais recente citada na apostila ocorreu em 2021 pelo:",
+    "alternativas": [
+      "Decreto nº 25.133, de 1998.",
+      "Decreto nº 28.794, de 2007.",
+      "Decreto nº 32.738, de 2015.",
+      "Decreto nº 1.971, de 1922.",
+      "Decreto nº 33.959, de 1º de março de 2021."
+    ],
+    "correta": 4,
+    "justificativa": "O material registra nova modificação estrutural pelo Decreto nº 33.959/2021.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 134,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A unidade da CIOPS em Sobral foi inaugurada em:",
+    "alternativas": [
+      "11 de dezembro de 2010.",
+      "22 de janeiro de 1999.",
+      "26 de agosto de 2014.",
+      "12 de agosto de 1998.",
+      "11 de julho de 2007."
+    ],
+    "correta": 0,
+    "justificativa": "A interiorização em Sobral ocorreu em 11 de dezembro de 2010.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 135,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A CIOPS de Juazeiro do Norte foi inaugurada em:",
+    "alternativas": [
+      "11 de dezembro de 2010.",
+      "22 de janeiro de 1999.",
+      "26 de agosto de 2014.",
+      "3 de junho de 2015.",
+      "1º de março de 2021."
+    ],
+    "correta": 2,
+    "justificativa": "A unidade de Juazeiro do Norte iniciou suas atividades em 26 de agosto de 2014.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 136,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Qual órgão integrado à CIOPS é responsável pelo policiamento ostensivo e preservação da ordem pública estadual?",
+    "alternativas": [
+      "PMCE - Polícia Militar do Ceará.",
+      "SVO - Serviço de Verificação de Óbito.",
+      "ETUFOR - Empresa de Transporte Urbano de Fortaleza.",
+      "PEFOCE - Perícia Forense do Ceará.",
+      "SAMU - Serviço de Atendimento Móvel de Urgência."
+    ],
+    "correta": 0,
+    "justificativa": "A PMCE integra a CIOPS como órgão policial militar estadual.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 137,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Em ocorrências de incêndio, salvamento e resgate, o órgão integrado diretamente relacionado é:",
+    "alternativas": [
+      "AMC.",
+      "SAP.",
+      "SVO.",
+      "ETUFOR.",
+      "CBMCE - Corpo de Bombeiros Militar do Ceará."
+    ],
+    "correta": 4,
+    "justificativa": "O Corpo de Bombeiros integra o centro e responde às atividades próprias de prevenção e socorro.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 138,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Qual órgão integrado representa a atividade de polícia judiciária?",
+    "alternativas": [
+      "PMCE.",
+      "GMF.",
+      "PC - Polícia Civil.",
+      "AMC.",
+      "Defesa Civil Brasil."
+    ],
+    "correta": 2,
+    "justificativa": "A Polícia Civil participa da integração com suas atribuições investigativas e de polícia judiciária.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 139,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A sigla SAP, na lista de órgãos integrados, corresponde à:",
+    "alternativas": [
+      "Secretaria de Atendimento Pré-hospitalar.",
+      "Superintendência de Apoio Policial.",
+      "Seção de Análise de Placas.",
+      "Secretaria da Administração Penitenciária.",
+      "Sociedade de Assistência Pública."
+    ],
+    "correta": 3,
+    "justificativa": "A SAP é o órgão estadual responsável pela administração penitenciária.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 140,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Qual órgão integrado é responsável pelas atividades de perícia forense?",
+    "alternativas": [
+      "ETUFOR.",
+      "PEFOCE - Perícia Forense do Ceará.",
+      "AMC.",
+      "GMF.",
+      "SAMU."
+    ],
+    "correta": 1,
+    "justificativa": "A PEFOCE representa a perícia oficial no arranjo integrado da CIOPS.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 141,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "O Serviço de Verificação de Óbito aparece na lista de órgãos integrados com a sigla:",
+    "alternativas": [
+      "SPOC.",
+      "SCI.",
+      "SAP.",
+      "S/Mobile.",
+      "SVO."
+    ],
+    "correta": 4,
+    "justificativa": "SVO é a sigla usada para Serviço de Verificação de Óbito.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 142,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A AMC integrada à CIOPS é a:",
+    "alternativas": [
+      "Agência Militar de Comunicações.",
+      "Autoridade Metropolitana de Câmeras.",
+      "Academia Municipal de Criminalística.",
+      "Autarquia Municipal de Trânsito e Cidadania.",
+      "Administração Móvel de Chamadas."
+    ],
+    "correta": 3,
+    "justificativa": "A AMC atua no trânsito e cidadania e compartilha recursos como câmeras e informações operacionais.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 143,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Em uma emergência médica pré-hospitalar, o órgão integrado mais diretamente relacionado é:",
+    "alternativas": [
+      "SVO.",
+      "SAMU - Serviço de Atendimento Móvel de Urgência.",
+      "ETUFOR.",
+      "SAP.",
+      "PEFOCE."
+    ],
+    "correta": 1,
+    "justificativa": "O SAMU presta atendimento móvel de urgência e compõe o conjunto de instituições integradas.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 144,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A GMF mencionada na apostila corresponde à:",
+    "alternativas": [
+      "Gerência Militar Federal.",
+      "Guarnição Móvel Forense.",
+      "Guarda Municipal de Fortaleza.",
+      "Gestão Metropolitana de Frequências.",
+      "Guarda Marítima Federal."
+    ],
+    "correta": 2,
+    "justificativa": "A Guarda Municipal de Fortaleza está incluída entre os órgãos integrados à CIOPS.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 145,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Qual instituição integrada atua especialmente em prevenção, preparação e resposta a desastres?",
+    "alternativas": [
+      "Defesa Civil Brasil.",
+      "ETUFOR.",
+      "SVO.",
+      "SAP.",
+      "Consulta Integrada."
+    ],
+    "correta": 0,
+    "justificativa": "A Defesa Civil participa da coordenação em situações de desastre e proteção da população.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 146,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "A ETUFOR, órgão listado como integrado, é a:",
+    "alternativas": [
+      "Empresa de Telecomunicações de Urgência e Força Operacional.",
+      "Empresa de Transporte Urbano de Fortaleza.",
+      "Estação Tática Unificada de Frequência Operacional.",
+      "Equipe Técnica de Unidades Forenses.",
+      "Escola de Trânsito Urbano e Formação Operacional."
+    ],
+    "correta": 1,
+    "justificativa": "ETUFOR é a empresa municipal ligada ao transporte urbano de Fortaleza.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 147,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Além dos órgãos estaduais e municipais da Capital, a lista de integração inclui as prefeituras de:",
+    "alternativas": [
+      "Fortaleza, Caucaia e Maracanaú apenas.",
+      "Crato, Iguatu e Quixadá apenas.",
+      "Recife, Natal e João Pessoa.",
+      "Eusébio, Sobral e Juazeiro do Norte.",
+      "Brasília, Goiânia e Salvador."
+    ],
+    "correta": 3,
+    "justificativa": "A apostila menciona expressamente as prefeituras de Eusébio, Sobral e Juazeiro do Norte.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 148,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Qual alternativa apresenta uma instituição que NÃO aparece na lista de órgãos integrados da apostila?",
+    "alternativas": [
+      "Banco Central do Brasil.",
+      "Polícia Militar do Ceará.",
+      "Perícia Forense do Ceará.",
+      "Guarda Municipal de Fortaleza.",
+      "Serviço de Atendimento Móvel de Urgência."
+    ],
+    "correta": 0,
+    "justificativa": "O Banco Central não integra a relação apresentada; os demais órgãos estão expressamente listados.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 149,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "Em uma ocorrência complexa com crime, vítimas feridas e risco de incêndio, a lógica de integração da CIOPS permite:",
+    "alternativas": [
+      "Enviar a demanda a apenas um órgão, proibindo apoio dos demais.",
+      "Aguardar cada instituição tomar conhecimento por meios independentes.",
+      "Eliminar o registro do evento para reduzir o fluxo de chamadas.",
+      "Usar o 190 somente depois de encerrada a emergência.",
+      "Coordenar simultaneamente Polícia, SAMU e Bombeiros a partir de informações compartilhadas."
+    ],
+    "correta": 4,
+    "justificativa": "A integração favorece despacho coordenado e resposta multidisciplinar, que é a razão de existência da CIOPS.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  },
+  {
+    "number": 150,
+    "heading": "Tópico 6 - CIOPS - Coordenadoria Integrada de Operações",
+    "enunciado": "O acompanhamento e as tratativas dos eventos, no contexto da CIOPS, devem ser compreendidos como:",
+    "alternativas": [
+      "Atividade exclusivamente financeira e sem relação com ocorrências.",
+      "Divulgação pública irrestrita de todos os dados pessoais.",
+      "Monitoramento do andamento das ocorrências e coordenação das providências entre os órgãos integrados.",
+      "Substituição do despacho por registros apenas ao fim do mês.",
+      "Procedimento limitado à manutenção física dos smartphones."
+    ],
+    "correta": 2,
+    "justificativa": "O acompanhamento operacional permite atualizar status, articular recursos e dar tratamento adequado aos eventos recebidos.",
+    "topico": "Coordenadoria Integrada de Operações de Segurança (CIOPS)"
+  }
+]
