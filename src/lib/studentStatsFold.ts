@@ -99,16 +99,25 @@ function computeNewCompletedDayUpdates(
 
   const updates: Record<string, any> = {};
 
-  const isConsecutive = current.lastCompletedDay !== null && isNextDayString(current.lastCompletedDay, day);
-  updates.currentStreakLength = isConsecutive ? current.currentStreakLength + 1 : 1;
-  updates.lastCompletedDay = day;
+  // Comparação lexicográfica funciona pra strings YYYY-MM-DD. Só avança a sequência
+  // se `day` for realmente mais recente que o já registrado — sem essa checagem, um
+  // fold processado fora de ordem cronológica (ex.: dois folds concorrentes pra
+  // simulados diferentes do mesmo aluno) poderia "voltar no tempo" a sequência.
+  const isNewer = current.lastCompletedDay === null || day > current.lastCompletedDay;
+  if (isNewer) {
+    const isConsecutive = current.lastCompletedDay !== null && isNextDayString(current.lastCompletedDay, day);
+    updates.currentStreakLength = isConsecutive ? current.currentStreakLength + 1 : 1;
+    updates.lastCompletedDay = day;
+  }
 
-  // Par de fim de semana é independente da continuidade da sequência — só
-  // depende de sábado+domingo terem completado, mesmo que dias no meio tenham
-  // ficado sem resposta.
+  // Par de fim de semana é independente da continuidade da sequência — só depende
+  // de sábado+domingo terem completado, mesmo que dias no meio tenham ficado sem
+  // resposta, e mesmo que `day` seja anterior ao lastCompletedDay mais recente.
   const weekday = dayStringToWeekday(day);
   if (weekday === 6) {
-    updates.pendingWeekendSaturday = day;
+    if (!current.pendingWeekendSaturday || day >= current.pendingWeekendSaturday) {
+      updates.pendingWeekendSaturday = day;
+    }
   } else if (weekday === 0) {
     const saturdayStr = addDaysToDayString(day, -1);
     if (current.pendingWeekendSaturday === saturdayStr) {
@@ -166,8 +175,15 @@ export async function foldSimuladoCompletionIfNeeded(
     update: {}
   });
 
-  // --- Metade "brevê": qCount === total(bruto) || qCount >= 10 ---
-  const isBadgeCompleteEnough = qCount === totalQuestionsRaw || qCount >= 10;
+  // --- Metade "brevê": exige 100% de verdade (qCount === total bruto) ---
+  // O sistema antigo aceitava qCount>=10 como "completo o bastante", mas ele
+  // recalculava do zero toda vez, então sempre via o estado mais atual. Aqui o fold
+  // só roda UMA vez (trava de idempotência) — se disparasse em qCount>=10 pra um
+  // simulado com mais questões, travaria pra sempre a precisão/tempo médio de só
+  // uma fração das respostas, mesmo que o aluno termine o resto depois. Exigir 100%
+  // evita esse congelamento incorreto; o único efeito colateral é o brevê demorar
+  // até o aluno terminar o simulado inteiro, nunca conceder com dado errado.
+  const isBadgeCompleteEnough = qCount === totalQuestionsRaw;
   if (isBadgeCompleteEnough) {
     const won = await prisma.studentSimuladoCompletion.updateMany({
       where: { studentId, simuladoId, badgeFoldedAt: null },
