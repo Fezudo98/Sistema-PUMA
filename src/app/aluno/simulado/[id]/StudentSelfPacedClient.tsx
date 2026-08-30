@@ -10,6 +10,7 @@ import { Clock, CheckCircle2, XCircle, ArrowRight, BookOpen, HelpCircle, Loader2
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveSelfPacedAnswer, completeSelfPacedSimulado } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
+import { isStaleServerActionError, reloadForFreshBuild } from "@/lib/staleBuildRecovery";
 import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
 
 const NO_TOPIC_FILTER_VALUE = "__todos__";
@@ -202,6 +203,13 @@ export default function StudentSelfPacedClient({
               remaining.push(item);
             }
           } catch (err) {
+            // Se o motivo for bundle desatualizado, tentar de novo daqui a 5s nunca vai
+            // funcionar (o bundle continua o mesmo até recarregar) — recarrega direto em
+            // vez de ficar reenfileirando pra sempre.
+            if (isStaleServerActionError(err)) {
+              reloadForFreshBuild();
+              return;
+            }
             remaining.push(item);
           }
         }
@@ -289,8 +297,15 @@ export default function StudentSelfPacedClient({
       setSubmitting(false);
       setAnsweredIds((prev) => new Set(prev).add(currentQuestion.id));
     } catch (err: any) {
-      console.warn("Servidor temporariamente indisponível (VPS reiniciando ou em manutenção). Salvando resposta na fila local...", err);
-      // Salva na fila offline para sincronizar quando o VPS voltar
+      const staleBuild = isStaleServerActionError(err);
+      console.warn(
+        staleBuild
+          ? "Bundle desatualizado (deploy aconteceu com esta aba já aberta) — recarregando para buscar a versão atual..."
+          : "Servidor temporariamente indisponível (VPS reiniciando ou em manutenção). Salvando resposta na fila local...",
+        err
+      );
+      // Salva na fila offline para sincronizar quando o VPS voltar (ou quando o
+      // reload abaixo trouxer um bundle com Server Actions válidas de novo)
       try {
         const queueKey = `${storageKeyBase}_queue`;
         const rawQueue = localStorage.getItem(queueKey);
@@ -303,13 +318,22 @@ export default function StudentSelfPacedClient({
         console.warn("Erro ao enfileirar no localStorage:", qErr);
       }
 
-      // Simula feedback local imediato para não travar o progresso do aluno durante reinício do VPS
+      // Simula feedback local imediato para não travar o progresso do aluno
       setIsCorrect(altIndex !== -1);
       setCorrectAltIndex(altIndex !== -1 ? altIndex : 0);
-      setJustificativa("⏳ Resposta salva com segurança no seu dispositivo! Ela será sincronizada automaticamente em background assim que o servidor/VPS retornar.");
+      // Recarregar é seguro nos dois casos (bundle desatualizado OU VPS instável):
+      // o progresso já está salvo no localStorage acima e na "blindagem" por questão,
+      // então a página volta exatamente de onde parou — mas só o reload de fato
+      // corrige o caso de bundle desatualizado, que "sair e entrar" dentro do app não resolve.
+      setJustificativa(
+        staleBuild
+          ? "🔄 Uma nova versão do sistema foi publicada enquanto você estava com esta página aberta. Recarregando automaticamente pra continuar de onde parou..."
+          : "⏳ Não foi possível confirmar com o servidor agora. Sua resposta foi salva no aparelho e a página vai recarregar sozinha em instantes pra tentar de novo."
+      );
       setIsAnswered(true);
       setSubmitting(false);
       setAnsweredIds((prev) => new Set(prev).add(currentQuestion.id));
+      reloadForFreshBuild();
     }
   };
 
