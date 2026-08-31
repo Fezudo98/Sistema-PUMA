@@ -2,18 +2,26 @@ import { prisma } from "./prisma";
 import { getFortalezaHour, isSyntheticBackfilledTimestamp } from "./badges";
 import { getLocalDayString } from "./stats";
 import { deriveEffectiveStats } from "./studentStatsRead";
-import { revalidateTag } from "next/cache";
 
 // Estas funções de fold são chamadas tanto de dentro de Server Actions
 // (src/app/actions/dailySimulado.ts, contexto onde revalidateTag funciona) quanto de
 // handlers de Socket.io em server.ts (sala Ao Vivo/Duelo, fora do ciclo de requisição
 // do Next.js — lá revalidateTag lança "Invariant: static generation store missing").
-// Por isso fica isolado num try/catch: no caminho de Server Action invalida o cache
-// do ranking na hora; no caminho de socket.io simplesmente não consegue (a sala já
-// tem placar em tempo real via socket, e o ranking geral cai de volta pro limite de
-// 5min do cache nesse caso específico — não trava nem perde a escrita já commitada).
-function invalidateRankingCache() {
+//
+// IMPORTANTE: o import de "next/cache" precisa ser DINÂMICO (dentro da função), não
+// no topo do arquivo. server.ts (`tsx server.ts`) carrega este módulo antes de o
+// Next.js terminar de preparar seu próprio runtime (app.prepare()) — um import
+// estático de "next/cache" no topo do arquivo derruba o processo inteiro na
+// inicialização com "Invariant: AsyncLocalStorage accessed in runtime where it is
+// not available", muito antes de qualquer requisição/resposta acontecer. Um import
+// dinâmico só carrega o módulo quando a função é realmente chamada — nesse ponto o
+// servidor já está de pé — e o try/catch abaixo cobre o segundo problema, separado:
+// mesmo com o servidor de pé, chamar a partir de um handler de socket.io (fora do
+// ciclo de requisição do Next) ainda lança a invariante de "static generation
+// store missing", que aí sim é esperada e tratada.
+async function invalidateRankingCache() {
   try {
+    const { revalidateTag } = await import("next/cache");
     // { expire: 0 } = expiração imediata, próxima leitura já recalcula (bloqueante).
     // "max" (stale-while-revalidate) ainda serviria uma leitura obsoleta antes de
     // atualizar — insuficiente pro caso que motivou isso (aluno atualiza a página
@@ -333,7 +341,7 @@ async function applyStatsFold(
   // tempo do cache expirar sozinho. Antes da migração pra StudentStats recalcular o
   // ranking era caro (histórico completo); agora é O(nº de alunos), então invalidar
   // a cada conclusão de simulado é barato.
-  invalidateRankingCache();
+  await invalidateRankingCache();
 }
 
 // Chamada UMA vez, nas 3 transições de sala Ao Vivo/Duelo pra FINISHED (fim normal
@@ -433,7 +441,7 @@ export async function foldBlocoProvaDailyProgress(studentId: string, answerCreat
     // Igual ao comentário em applyStatsFold: cruzar o limiar de 25 questões do dia
     // fecha a sequência daquele dia — o ranking precisa saber na hora, não só quando
     // o cache expirar. Chamado só depois da transação confirmar, não de dentro dela.
-    invalidateRankingCache();
+    await invalidateRankingCache();
   }
 }
 
