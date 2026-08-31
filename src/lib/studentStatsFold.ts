@@ -2,6 +2,27 @@ import { prisma } from "./prisma";
 import { getFortalezaHour, isSyntheticBackfilledTimestamp } from "./badges";
 import { getLocalDayString } from "./stats";
 import { deriveEffectiveStats } from "./studentStatsRead";
+import { revalidateTag } from "next/cache";
+
+// Estas funções de fold são chamadas tanto de dentro de Server Actions
+// (src/app/actions/dailySimulado.ts, contexto onde revalidateTag funciona) quanto de
+// handlers de Socket.io em server.ts (sala Ao Vivo/Duelo, fora do ciclo de requisição
+// do Next.js — lá revalidateTag lança "Invariant: static generation store missing").
+// Por isso fica isolado num try/catch: no caminho de Server Action invalida o cache
+// do ranking na hora; no caminho de socket.io simplesmente não consegue (a sala já
+// tem placar em tempo real via socket, e o ranking geral cai de volta pro limite de
+// 5min do cache nesse caso específico — não trava nem perde a escrita já commitada).
+function invalidateRankingCache() {
+  try {
+    // { expire: 0 } = expiração imediata, próxima leitura já recalcula (bloqueante).
+    // "max" (stale-while-revalidate) ainda serviria uma leitura obsoleta antes de
+    // atualizar — insuficiente pro caso que motivou isso (aluno atualiza a página
+    // logo depois de completar e ainda vê o número antigo).
+    revalidateTag('ranking', { expire: 0 });
+  } catch (err) {
+    console.warn('[RANKING CACHE] Não foi possível invalidar sob demanda (fora de Server Action):', err);
+  }
+}
 
 // Migração pra estatísticas pré-agregadas (ver plano em
 // C:\Users\Sergio\.claude\plans\eager-pondering-puddle.md): mantém StudentStats
@@ -306,6 +327,13 @@ async function applyStatsFold(
       }
     });
   });
+
+  // simuladosCount/streak/pontuação acabaram de mudar — o ranking (cacheado por até
+  // 5min, ver src/lib/ranking.ts) precisa refletir isso na hora, não só quando o
+  // tempo do cache expirar sozinho. Antes da migração pra StudentStats recalcular o
+  // ranking era caro (histórico completo); agora é O(nº de alunos), então invalidar
+  // a cada conclusão de simulado é barato.
+  invalidateRankingCache();
 }
 
 // Chamada UMA vez, nas 3 transições de sala Ao Vivo/Duelo pra FINISHED (fim normal
@@ -379,15 +407,15 @@ const BLOCO_PROVA_DAILY_THRESHOLD = 25;
 export async function foldBlocoProvaDailyProgress(studentId: string, answerCreatedAt: Date): Promise<void> {
   const day = getLocalDayString(answerCreatedAt);
 
-  await prisma.$transaction(async (tx) => {
+  const justCrossed = await prisma.$transaction(async (tx) => {
     const current = await tx.studentStats.upsert({ where: { studentId }, create: { studentId }, update: {} });
 
     const isSameDay = current.blocoAnswersTodayDay === day;
     const previousCount = isSameDay ? current.blocoAnswersToday : 0;
     const newCount = previousCount + 1;
-    const justCrossed = newCount >= BLOCO_PROVA_DAILY_THRESHOLD && previousCount < BLOCO_PROVA_DAILY_THRESHOLD;
+    const crossed = newCount >= BLOCO_PROVA_DAILY_THRESHOLD && previousCount < BLOCO_PROVA_DAILY_THRESHOLD;
 
-    const dayUpdates = justCrossed ? computeNewCompletedDayUpdates(current, day) : {};
+    const dayUpdates = crossed ? computeNewCompletedDayUpdates(current, day) : {};
 
     await tx.studentStats.update({
       where: { studentId },
@@ -397,7 +425,16 @@ export async function foldBlocoProvaDailyProgress(studentId: string, answerCreat
         ...dayUpdates
       }
     });
+
+    return crossed;
   });
+
+  if (justCrossed) {
+    // Igual ao comentário em applyStatsFold: cruzar o limiar de 25 questões do dia
+    // fecha a sequência daquele dia — o ranking precisa saber na hora, não só quando
+    // o cache expirar. Chamado só depois da transação confirmar, não de dentro dela.
+    invalidateRankingCache();
+  }
 }
 
 // --- Avaliação de brevês (Fase 5) --------------------------------------------
