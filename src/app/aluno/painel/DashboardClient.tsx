@@ -19,10 +19,11 @@ import { MAX_DISPLAYED_BADGES } from "@/lib/badges";
 import { getMorePastDailySimulados } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
-import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon } from "@/components/PatentIcons";
+import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon, BopeIcon } from "@/components/PatentIcons";
 import { BepiUnlockToast } from "@/components/BepiUnlockToast";
 import { ChoqueUnlockToast } from "@/components/ChoqueUnlockToast";
 import { RaioUnlockToast } from "@/components/RaioUnlockToast";
+import { BopeUnlockToast } from "@/components/BopeUnlockToast";
 import PushNotificationManager from "@/components/PushNotificationManager";
 
 const LEIS_DA_SELVA = [
@@ -478,6 +479,7 @@ export default function StudentDashboardClient({
   const hasRaioUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 25;
   const hasBepiUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 35;
   const hasChoqueUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 50;
+  const hasBopeUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 75;
 
   const streakDaysAtual = stats?.streakDays || 0;
   const proximaMeta =
@@ -487,13 +489,16 @@ export default function StudentDashboardClient({
       ? { label: "TEMA BEPI 🦅", dias: 35, corBarra: "from-emerald-600 to-emerald-400" }
       : streakDaysAtual < 50
       ? { label: "TEMA CHOQUE 💀", dias: 50, corBarra: "from-red-700 to-red-500" }
-      : { label: "TRILHA COMPLETA 🏆", dias: null as number | null, corBarra: "from-red-700 to-red-500" };
+      : streakDaysAtual < 75
+      ? { label: "TEMA BOPE ☠️", dias: 75, corBarra: "from-zinc-500 to-zinc-300" }
+      : { label: "TRILHA COMPLETA 🏆", dias: null as number | null, corBarra: "from-zinc-500 to-zinc-300" };
 
   return (
     <div className="min-h-screen bg-background text-foreground lg:flex">
       <RaioUnlockToast unlocked={hasRaioUnlocked} />
       <BepiUnlockToast unlocked={hasBepiUnlocked} />
       <ChoqueUnlockToast unlocked={hasChoqueUnlocked} />
+      <BopeUnlockToast unlocked={hasBopeUnlocked} />
       <PushNotificationManager />
       <AlunoSidebar
         mobileOpen={sidebarMobileOpen}
@@ -555,14 +560,16 @@ export default function StudentDashboardClient({
             <button onClick={() => setIsArmariaOpen(true)} className="hover:scale-105 transition-transform" title="Abrir Armaria de Ícones">
               {(() => {
                 const patent = getPatentByScore(stats?.totalScore || 0);
-                const fardamentoRing = hasChoqueUnlocked
+                const fardamentoRing = hasBopeUnlocked
+                  ? 'ring-2 ring-[#e5e5e5] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(229,229,229,0.5)]'
+                  : hasChoqueUnlocked
                   ? 'ring-2 ring-[#b91c1c] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(185,28,28,0.5)]'
                   : hasBepiUnlocked
                   ? 'ring-2 ring-[#c9a227] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(201,162,39,0.5)]'
                   : hasRaioUnlocked
                   ? 'ring-2 ring-[#eab308] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(234,179,8,0.5)]'
                   : '';
-                const fardamentoTitle = hasChoqueUnlocked ? "Fardamento CHOQUE" : hasBepiUnlocked ? "Fardamento BEPI" : hasRaioUnlocked ? "Fardamento RAIO" : undefined;
+                const fardamentoTitle = hasBopeUnlocked ? "Fardamento BOPE" : hasChoqueUnlocked ? "Fardamento CHOQUE" : hasBepiUnlocked ? "Fardamento BEPI" : hasRaioUnlocked ? "Fardamento RAIO" : undefined;
                 return (
                   <div className={`rounded-full ${fardamentoRing}`} title={fardamentoTitle}>
                     <div className={`rounded-full ${patent.avatarRing || ''}`}>
@@ -1228,14 +1235,17 @@ export default function StudentDashboardClient({
                               const alunoHasRaio = (aluno.streakDays || 0) >= 25;
                               const alunoHasBepi = (aluno.streakDays || 0) >= 35;
                               const alunoHasChoque = (aluno.streakDays || 0) >= 50;
-                              const alunoRing = alunoHasChoque
+                              const alunoHasBope = (aluno.streakDays || 0) >= 75;
+                              const alunoRing = alunoHasBope
+                                ? 'ring-2 ring-[#e5e5e5] ring-offset-1 ring-offset-background'
+                                : alunoHasChoque
                                 ? 'ring-2 ring-[#b91c1c] ring-offset-1 ring-offset-background'
                                 : alunoHasBepi
                                 ? 'ring-2 ring-[#c9a227] ring-offset-1 ring-offset-background'
                                 : alunoHasRaio
                                 ? 'ring-2 ring-[#eab308] ring-offset-1 ring-offset-background'
                                 : '';
-                              const alunoRingTitle = alunoHasChoque ? "Fardamento CHOQUE" : alunoHasBepi ? "Fardamento BEPI" : alunoHasRaio ? "Fardamento RAIO" : undefined;
+                              const alunoRingTitle = alunoHasBope ? "Fardamento BOPE" : alunoHasChoque ? "Fardamento CHOQUE" : alunoHasBepi ? "Fardamento BEPI" : alunoHasRaio ? "Fardamento RAIO" : undefined;
                               return (
                                 <div className={`shrink-0 rounded-full ${alunoRing}`} title={alunoRingTitle}>
                                   <div className={`rounded-full ${p.avatarRing || ''}`}>
@@ -1305,6 +1315,12 @@ export default function StudentDashboardClient({
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/80 border border-[#b91c1c]/60 text-[#e05252] font-black text-xs shadow-[0_0_8px_rgba(185,28,28,0.3)]" title="Fardamento CHOQUE Desbloqueado">
                                   <ChoqueSkullIcon className="w-3.5 h-3.5" />
                                   CHOQUE
+                                </span>
+                              )}
+                              {(aluno.streakDays || 0) >= 75 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/90 border border-[#e5e5e5]/60 text-[#e5e5e5] font-black text-xs shadow-[0_0_8px_rgba(229,229,229,0.3)]" title="Fardamento BOPE Desbloqueado">
+                                  <BopeIcon className="w-3.5 h-3.5" />
+                                  BOPE
                                 </span>
                               )}
                               {typeof aluno.todayPoints === 'number' && (

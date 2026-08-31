@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber, updateStudentBonusStreak } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
-import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon } from "@/components/PatentIcons";
+import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon, BopeIcon } from "@/components/PatentIcons";
 
 type StudentPerformance = {
   id: string;
@@ -324,6 +324,12 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/80 border border-[#b91c1c]/60 text-[#e05252] font-black text-[10px] shadow-[0_0_8px_rgba(185,28,28,0.3)]" title="Fardamento CHOQUE Desbloqueado">
                                     <ChoqueSkullIcon className="w-3 h-3" />
                                     CHOQUE
+                                  </span>
+                                )}
+                                {(student.streakDays || 0) >= 75 && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/90 border border-[#e5e5e5]/60 text-[#e5e5e5] font-black text-[10px] shadow-[0_0_8px_rgba(229,229,229,0.3)]" title="Fardamento BOPE Desbloqueado">
+                                    <BopeIcon className="w-3 h-3" />
+                                    BOPE
                                   </span>
                                 )}
                                 {typeof student.todayPoints === 'number' && (
