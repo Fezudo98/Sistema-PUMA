@@ -24,6 +24,7 @@ import { BepiUnlockToast } from "@/components/BepiUnlockToast";
 import { ChoqueUnlockToast } from "@/components/ChoqueUnlockToast";
 import { RaioUnlockToast } from "@/components/RaioUnlockToast";
 import { BopeUnlockToast } from "@/components/BopeUnlockToast";
+import { InstallAppCard } from "@/components/InstallAppCard";
 import PushNotificationManager from "@/components/PushNotificationManager";
 
 const LEIS_DA_SELVA = [
@@ -673,6 +674,8 @@ export default function StudentDashboardClient({
             </div>
           </div>
         </div>
+
+        <InstallAppCard />
 
         {/* Gamification: Recompensas de Ofensiva */}
         <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-5 sm:p-6 shadow-lg flex flex-col gap-3">

@@ -16,6 +16,21 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon-192.png",
     apple: "/icon-192.png"
+  },
+  // Sem isso, "Adicionar à Tela de Início" no iOS abre o site dentro do Safari (com
+  // barra de endereço visível) em vez de tela cheia como um app de verdade — mesmo
+  // já tendo manifest.json com display:standalone (o iOS ignora isso e exige suas
+  // próprias tags apple-mobile-web-app-*).
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PUMA"
+  },
+  other: {
+    // Versão não prefixada, mais nova, do mesmo mecanismo — Safari recente e outros
+    // navegadores no iOS já reconhecem essa também, mas a apple-mobile-web-app-*
+    // acima continua necessária pro Safari mais antigo.
+    "mobile-web-app-capable": "yes"
   }
 };
 
