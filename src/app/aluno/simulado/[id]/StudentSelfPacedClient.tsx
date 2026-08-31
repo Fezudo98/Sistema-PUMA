@@ -117,7 +117,9 @@ export default function StudentSelfPacedClient({
   useEffect(() => {
     try {
       localStorage.setItem(`${storageKeyBase}_filter`, topicFilter);
-    } catch (e) {}
+    } catch (e) {
+      // localStorage indisponível (modo privado, etc.) — o filtro só não persiste entre sessões
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicFilter]);
 
@@ -393,7 +395,9 @@ export default function StudentSelfPacedClient({
       }
       try {
         localStorage.removeItem(`${storageKeyBase}_filter`);
-      } catch (e) {}
+      } catch (e) {
+        // localStorage indisponível — sem problema, é só um resíduo que não vai ser lido de novo
+      }
       router.push(`/aluno/simulado/${simulado.id}/review`);
       return;
     }

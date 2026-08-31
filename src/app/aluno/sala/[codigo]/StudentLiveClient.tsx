@@ -339,7 +339,10 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         };
         try {
           localStorage.setItem(`live_pending_answer_${simulado.codigoSala}`, JSON.stringify(payload));
-        } catch (e) {}
+        } catch (e) {
+          // localStorage indisponível — a resposta ainda é enviada por socket normalmente,
+          // só perde o backup local usado pra restaurar em caso de reconexão
+        }
         s.emit("submit_answer", payload);
       }
     });
@@ -349,7 +352,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setIsTimeUp(false);
       try {
         localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
-      } catch (e) {}
+      } catch (e) {
+        // localStorage indisponível — sem problema, o backup local não é essencial aqui
+      }
     });
 
     s.on("question_cancelled", () => {
@@ -367,7 +372,9 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
       setMyTeamLocked(false);
       try {
         localStorage.removeItem(`live_pending_answer_${simulado.codigoSala}`);
-      } catch (e) {}
+      } catch (e) {
+        // localStorage indisponível — sem problema, o backup local não é essencial aqui
+      }
       alert("⚠️ A questão atual foi anulada pelo instrutor.");
     });
 
@@ -408,7 +415,10 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
     };
     try {
       localStorage.setItem(`live_pending_answer_${simulado.codigoSala}`, JSON.stringify(payload));
-    } catch (e) {}
+    } catch (e) {
+      // localStorage indisponível — a resposta ainda é enviada por socket normalmente,
+      // só perde o backup local usado pra restaurar em caso de reconexão
+    }
     socket?.emit("submit_answer", payload);
   };
 

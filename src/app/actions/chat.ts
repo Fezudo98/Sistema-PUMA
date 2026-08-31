@@ -120,6 +120,7 @@ export async function getChatHistoryAction(apostilaId: string) {
 
     return { success: true, messages, isSuspended: false, isApostilaActive };
   } catch (error: any) {
+    console.error("[CHAT HISTORY ERROR]:", error);
     return { error: error.message || "Falha ao buscar histórico." };
   }
 }
@@ -319,6 +320,7 @@ export async function clearChatHistoryAction(apostilaId: string) {
     revalidatePath("/aluno/chat");
     return { success: true };
   } catch (error: any) {
+    console.error("[CHAT CLEAR HISTORY ERROR]:", error);
     return { error: error.message || "Falha ao limpar histórico." };
   }
 }
@@ -340,6 +342,7 @@ export async function toggleChatEnabledAction(enabled: boolean) {
     revalidatePath("/instructor");
     return { success: true, enabled };
   } catch (error: any) {
+    console.error("[CHAT TOGGLE ERROR]:", error);
     return { error: error.message || "Erro ao atualizar configuração." };
   }
 }
@@ -350,7 +353,11 @@ export async function getChatEnabledAction() {
       where: { key: "chatEnabled" }
     });
     return setting?.value !== "false";
-  } catch {
+  } catch (error) {
+    // Falha ao ler a configuração: assume chat habilitado (fail-open) pra não
+    // derrubar o recurso pra todo mundo por causa de uma falha pontual do banco —
+    // mas registra, porque uma falha persistente aqui fica invisível sem isso.
+    console.error("[CHAT ENABLED CHECK ERROR]:", error);
     return true;
   }
 }

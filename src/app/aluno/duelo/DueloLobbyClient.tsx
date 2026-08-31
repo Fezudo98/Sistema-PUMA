@@ -57,7 +57,9 @@ export default function DueloLobbyClient({ user, students, apostilas }: { user: 
   useEffect(() => {
     try {
       seenResultRef.current = localStorage.getItem("duelo_last_seen_result");
-    } catch {}
+    } catch {
+      // localStorage indisponível (modo privado, etc.) — segue sem lembrar o último resultado visto
+    }
     refreshStatus();
     refreshDebts();
     const interval = setInterval(refreshStatus, 5000);
@@ -70,7 +72,9 @@ export default function DueloLobbyClient({ user, students, apostilas }: { user: 
       seenResultRef.current = status.recentResult.id;
       try {
         localStorage.setItem("duelo_last_seen_result", status.recentResult.id);
-      } catch {}
+      } catch {
+        // localStorage indisponível — o resultado pode reaparecer, mas não trava nada
+      }
       refreshDebts();
     }
   }, [status?.recentResult?.id]);

@@ -273,6 +273,7 @@ export async function createInstructorAction(formData: FormData) {
     });
     return { success: true };
   } catch (err: any) {
+    console.error("[CREATE INSTRUCTOR ERROR]:", err);
     return { error: err.message || "Erro ao salvar instrutor no banco de dados." };
   }
 }
