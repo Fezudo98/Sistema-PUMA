@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber, updateStudentBonusStreak } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
-import { BepiEagleIcon, ChoqueSkullIcon } from "@/components/PatentIcons";
+import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon } from "@/components/PatentIcons";
 
 type StudentPerformance = {
   id: string;
@@ -306,6 +306,12 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-950/80 border border-orange-500/40 text-orange-400 font-bold text-[10px]" title="Sequência Diária">
                                     <Flame className="w-3 h-3 fill-orange-500 text-orange-500" />
                                     {student.streakDays}d ({student.streakDays * 100} pts)
+                                  </span>
+                                )}
+                                {(student.streakDays || 0) >= 25 && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#2e2205]/90 border border-[#eab308]/50 text-[#eab308] font-black text-[10px] shadow-[0_0_8px_rgba(234,179,8,0.25)]" title="Fardamento RAIO Desbloqueado">
+                                    <RaioIcon className="w-3 h-3" />
+                                    RAIO
                                   </span>
                                 )}
                                 {(student.streakDays || 0) >= 35 && (

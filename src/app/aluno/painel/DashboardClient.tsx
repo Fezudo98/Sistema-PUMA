@@ -19,9 +19,10 @@ import { MAX_DISPLAYED_BADGES } from "@/lib/badges";
 import { getMorePastDailySimulados } from "@/app/actions/dailySimulado";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
-import { BepiEagleIcon, ChoqueSkullIcon } from "@/components/PatentIcons";
+import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon } from "@/components/PatentIcons";
 import { BepiUnlockToast } from "@/components/BepiUnlockToast";
 import { ChoqueUnlockToast } from "@/components/ChoqueUnlockToast";
+import { RaioUnlockToast } from "@/components/RaioUnlockToast";
 import PushNotificationManager from "@/components/PushNotificationManager";
 
 const LEIS_DA_SELVA = [
@@ -474,6 +475,7 @@ export default function StudentDashboardClient({
     }
   };
 
+  const hasRaioUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 25;
   const hasBepiUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 35;
   const hasChoqueUnlocked = Boolean(user?.isTestUser) || (stats?.streakDays || 0) >= 50;
 
@@ -489,6 +491,7 @@ export default function StudentDashboardClient({
 
   return (
     <div className="min-h-screen bg-background text-foreground lg:flex">
+      <RaioUnlockToast unlocked={hasRaioUnlocked} />
       <BepiUnlockToast unlocked={hasBepiUnlocked} />
       <ChoqueUnlockToast unlocked={hasChoqueUnlocked} />
       <PushNotificationManager />
@@ -556,8 +559,10 @@ export default function StudentDashboardClient({
                   ? 'ring-2 ring-[#b91c1c] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(185,28,28,0.5)]'
                   : hasBepiUnlocked
                   ? 'ring-2 ring-[#c9a227] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(201,162,39,0.5)]'
+                  : hasRaioUnlocked
+                  ? 'ring-2 ring-[#eab308] ring-offset-2 ring-offset-background shadow-[0_0_15px_rgba(234,179,8,0.5)]'
                   : '';
-                const fardamentoTitle = hasChoqueUnlocked ? "Fardamento CHOQUE" : hasBepiUnlocked ? "Fardamento BEPI" : undefined;
+                const fardamentoTitle = hasChoqueUnlocked ? "Fardamento CHOQUE" : hasBepiUnlocked ? "Fardamento BEPI" : hasRaioUnlocked ? "Fardamento RAIO" : undefined;
                 return (
                   <div className={`rounded-full ${fardamentoRing}`} title={fardamentoTitle}>
                     <div className={`rounded-full ${patent.avatarRing || ''}`}>
@@ -1220,14 +1225,17 @@ export default function StudentDashboardClient({
                             </span>
                             {(() => {
                               const p = getPatentByScore(aluno.totalScore || 0);
+                              const alunoHasRaio = (aluno.streakDays || 0) >= 25;
                               const alunoHasBepi = (aluno.streakDays || 0) >= 35;
                               const alunoHasChoque = (aluno.streakDays || 0) >= 50;
                               const alunoRing = alunoHasChoque
                                 ? 'ring-2 ring-[#b91c1c] ring-offset-1 ring-offset-background'
                                 : alunoHasBepi
                                 ? 'ring-2 ring-[#c9a227] ring-offset-1 ring-offset-background'
+                                : alunoHasRaio
+                                ? 'ring-2 ring-[#eab308] ring-offset-1 ring-offset-background'
                                 : '';
-                              const alunoRingTitle = alunoHasChoque ? "Fardamento CHOQUE" : alunoHasBepi ? "Fardamento BEPI" : undefined;
+                              const alunoRingTitle = alunoHasChoque ? "Fardamento CHOQUE" : alunoHasBepi ? "Fardamento BEPI" : alunoHasRaio ? "Fardamento RAIO" : undefined;
                               return (
                                 <div className={`shrink-0 rounded-full ${alunoRing}`} title={alunoRingTitle}>
                                   <div className={`rounded-full ${p.avatarRing || ''}`}>
@@ -1279,6 +1287,12 @@ export default function StudentDashboardClient({
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-950/80 border border-orange-500/40 text-orange-400 font-black text-xs shadow-[0_0_8px_rgba(249,115,22,0.2)]" title="Sequência Diária">
                                   <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
                                   {aluno.streakDays}d
+                                </span>
+                              )}
+                              {(aluno.streakDays || 0) >= 25 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2e2205]/90 border border-[#eab308]/50 text-[#eab308] font-black text-xs shadow-[0_0_8px_rgba(234,179,8,0.25)]" title="Fardamento RAIO Desbloqueado">
+                                  <RaioIcon className="w-3.5 h-3.5" />
+                                  RAIO
                                 </span>
                               )}
                               {(aluno.streakDays || 0) >= 35 && (
