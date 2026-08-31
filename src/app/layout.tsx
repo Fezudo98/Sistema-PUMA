@@ -21,16 +21,19 @@ export const metadata: Metadata = {
   // barra de endereço visível) em vez de tela cheia como um app de verdade — mesmo
   // já tendo manifest.json com display:standalone (o iOS ignora isso e exige suas
   // próprias tags apple-mobile-web-app-*).
+  //
+  // appleWebApp.capable já gera sozinho a tag genérica "mobile-web-app-capable"
+  // (confirmado direto no HTML renderizado) — mas NÃO gera mais a
+  // "apple-mobile-web-app-capable" prefixada nesta versão do Next.js, mesmo essa
+  // continuando necessária pra versões mais antigas de iOS/Safari reconhecerem o
+  // modo tela cheia. Por isso ela precisa ser adicionada manualmente aqui.
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "PUMA"
   },
   other: {
-    // Versão não prefixada, mais nova, do mesmo mecanismo — Safari recente e outros
-    // navegadores no iOS já reconhecem essa também, mas a apple-mobile-web-app-*
-    // acima continua necessária pro Safari mais antigo.
-    "mobile-web-app-capable": "yes"
+    "apple-mobile-web-app-capable": "yes"
   }
 };
 
