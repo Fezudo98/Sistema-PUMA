@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { logout } from "@/app/actions/auth";
-import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal, Crown, Sunrise, MoonStar, CalendarCheck, Landmark, Users, Rocket, Swords } from "lucide-react";
+import { LogOut, Play, Target, ShieldAlert, Award, TrendingUp, Clock, Loader2, Shield, ShieldCheck, Crosshair, Skull, Zap, Medal, Lock, Frown, Timer, Moon, TrendingDown, Trophy, Edit, BookOpen, MessageSquare, Bot, Check, Flame, Menu, GraduationCap, SlidersHorizontal, Crown, Sunrise, MoonStar, CalendarCheck, Landmark, Users, Rocket, Swords, BarChart3 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import HeaderAvatar from "@/components/HeaderAvatar";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -266,9 +266,10 @@ const getBadges = (stats: any) => {
 };
 
 export default function StudentDashboardClient({ 
-  user, 
-  stats, 
-  generalRanking = [], 
+  user,
+  stats,
+  subjectPerformance = [],
+  generalRanking = [],
   activeRooms = [],
   dailySimulados = [],
   pastDailySimulados = [],
@@ -279,6 +280,7 @@ export default function StudentDashboardClient({
 }: {
   user: any;
   stats?: any;
+  subjectPerformance?: any[];
   generalRanking?: any[];
   activeRooms?: any[];
   dailySimulados?: any[];
@@ -1440,6 +1442,104 @@ export default function StudentDashboardClient({
                 <span className="text-[9px] text-muted-foreground mt-0.5">Ao Dia</span>
               </Card>
             </div>
+
+            {/* Desempenho por Disciplina */}
+            {(() => {
+              const totalQuestions = subjectPerformance.reduce((acc: number, s: any) => acc + s.total, 0);
+              const totalCorrect = subjectPerformance.reduce((acc: number, s: any) => acc + s.correct, 0);
+              const totalWrong = totalQuestions - totalCorrect;
+              const globalAccuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+              if (totalQuestions === 0) return null;
+
+              const radius = 80;
+              const strokeWidth = 24;
+              const circumference = 2 * Math.PI * radius;
+              const correctFrac = totalQuestions > 0 ? totalCorrect / totalQuestions : 0;
+              const wrongFrac = 1 - correctFrac;
+
+              const barColor = (accuracy: number) =>
+                accuracy >= 70 ? "bg-emerald-500" : accuracy >= 50 ? "bg-amber-500" : "bg-red-500";
+              const textColor = (accuracy: number) =>
+                accuracy >= 70 ? "text-emerald-400" : accuracy >= 50 ? "text-amber-400" : "text-red-400";
+
+              return (
+                <Card className="border-border bg-card/40">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-heading flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-500" />
+                      Desempenho por Disciplina
+                    </CardTitle>
+                    <CardDescription>Quantas questões você já resolveu e sua taxa de acerto em cada matéria.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 items-center">
+                      {/* Rosca geral: total resolvidas x acertos/erros */}
+                      <div className="flex flex-col items-center gap-4 mx-auto">
+                        <div className="relative w-52 h-52 shrink-0">
+                          <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
+                            <circle cx="100" cy="100" r={radius} fill="none" stroke="var(--muted)" strokeWidth={strokeWidth} />
+                            {totalCorrect > 0 && (
+                              <circle
+                                cx="100" cy="100" r={radius} fill="none"
+                                stroke="#10b981" strokeWidth={strokeWidth} strokeLinecap="round"
+                                strokeDasharray={`${correctFrac * circumference} ${circumference}`}
+                              />
+                            )}
+                            {totalWrong > 0 && (
+                              <circle
+                                cx="100" cy="100" r={radius} fill="none"
+                                stroke="#ef4444" strokeWidth={strokeWidth} strokeLinecap="round"
+                                strokeDasharray={`${wrongFrac * circumference} ${circumference}`}
+                                strokeDashoffset={-(correctFrac * circumference)}
+                              />
+                            )}
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                            <span className="text-3xl font-black text-heading leading-tight">{totalQuestions}</span>
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide leading-tight mt-1">Questões<br />Resolvidas</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1.5 font-bold text-emerald-400">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> {totalCorrect} acertos
+                          </span>
+                          <span className="flex items-center gap-1.5 font-bold text-red-400">
+                            <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> {totalWrong} erros
+                          </span>
+                        </div>
+                        <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-muted ${textColor(globalAccuracy)}`}>
+                          {globalAccuracy}% de desempenho
+                        </span>
+                      </div>
+
+                      {/* Barras por disciplina, ordenadas do menor pro maior desempenho */}
+                      <div className="space-y-4 w-full">
+                        {subjectPerformance.map((s: any) => (
+                          <div key={s.name}>
+                            <div className="flex items-center justify-between mb-1.5 gap-2">
+                              <span className="text-sm font-bold text-heading truncate">{formatApostilaTitle(s.name)}</span>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                <span className={`font-bold ${textColor(s.accuracy)}`}>{s.correct}</span>
+                                {" "}/ {s.total} questões
+                                {" · "}
+                                <span className={`font-black ${textColor(s.accuracy)}`}>{s.accuracy}%</span>
+                              </span>
+                            </div>
+                            <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${barColor(s.accuracy)} transition-all`}
+                                style={{ width: `${s.accuracy}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* History Table */}
             <Card className="border-border bg-card/40">

@@ -118,6 +118,30 @@ export default async function AlunoPainel() {
   // completo de respostas do aluno.
   const perfStats = await getStudentEffectiveStats(user.userId);
 
+  // Desempenho por disciplina (apostila): agregação feita direto no SQLite via SQL
+  // bruto, retornando só 1 linha por apostila (não o histórico completo de respostas
+  // do aluno) — bem mais leve que buscar cada Answer e agrupar em JS.
+  const subjectPerformanceRaw = await prisma.$queryRaw<Array<{ apostilaName: string | null; total: bigint | number; correct: bigint | number }>>`
+    SELECT s.apostilaName as apostilaName, COUNT(*) as total, SUM(CASE WHEN a.isCorrect THEN 1 ELSE 0 END) as correct
+    FROM "Answer" a
+    JOIN "Question" q ON a.questionId = q.id
+    JOIN "Simulado" s ON q.simuladoId = s.id
+    WHERE a.studentId = ${user.userId}
+    GROUP BY s.apostilaName
+  `;
+  const subjectPerformance = subjectPerformanceRaw
+    .map((row) => {
+      const total = Number(row.total);
+      const correct = Number(row.correct);
+      return {
+        name: row.apostilaName || "Outras",
+        total,
+        correct,
+        accuracy: total > 0 ? Math.round((correct / total) * 100) : 0
+      };
+    })
+    .sort((a, b) => a.accuracy - b.accuracy || b.total - a.total);
+
   // Histórico de simulados completos: cada linha já foi calculada uma vez no
   // momento da conclusão (ver src/lib/studentStatsFold.ts) — não precisa
   // reagrupar nada aqui.
@@ -257,6 +281,7 @@ export default async function AlunoPainel() {
     <StudentDashboardClient
       user={clientUser}
       stats={stats}
+      subjectPerformance={subjectPerformance}
       generalRanking={generalRanking}
       activeRooms={activeRooms}
       dailySimulados={dailySimuladosWithStatus}
