@@ -400,3 +400,42 @@ export async function updateStudentBonusStreak(studentId: string, bonusDays: num
     return { success: false, error: "Erro interno ao atualizar a sequência do combatente." };
   }
 }
+
+// Corrige/reatribui o pelotão de um aluno já cadastrado (ex.: typo na criação, ou
+// um aluno de pelotão convidado que precisa voltar ao pelotão padrão). Passar string
+// vazia volta o aluno para o pelotão padrão (null — mesmo ranking de todo mundo).
+export async function updateStudentPelotao(studentId: string, pelotao: string) {
+  const user = await getUser();
+  if (!user || user.role !== "INSTRUCTOR") {
+    return { success: false, error: "Acesso negado. Apenas instrutores autorizados." };
+  }
+
+  const trimmed = pelotao.trim();
+  if (trimmed.length > 60) {
+    return { success: false, error: "O nome do pelotão deve ter no máximo 60 caracteres." };
+  }
+
+  try {
+    const student = await prisma.user.findFirst({
+      where: { id: studentId, role: "STUDENT" }
+    });
+
+    if (!student) {
+      return { success: false, error: "Combatente não encontrado." };
+    }
+
+    await prisma.user.update({
+      where: { id: studentId },
+      data: { pelotao: trimmed || null }
+    });
+
+    updateTag("ranking");
+    revalidatePath("/instructor");
+    revalidatePath("/aluno/painel");
+
+    return { success: true, pelotao: trimmed || null };
+  } catch (error: any) {
+    console.error("Error updating student pelotao:", error);
+    return { success: false, error: "Erro interno ao atualizar o pelotão do combatente." };
+  }
+}

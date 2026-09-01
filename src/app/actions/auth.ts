@@ -277,3 +277,51 @@ export async function createInstructorAction(formData: FormData) {
     return { error: err.message || "Erro ao salvar instrutor no banco de dados." };
   }
 }
+
+// Cria um aluno de um pelotão convidado (fora do pelotão dono do sistema): não
+// entra na numeração 1-35 do contingente principal, e seu Ranking Geral fica
+// separado — só compete contra alunos do mesmo pelotão. O resto do sistema
+// (simulados, brevês, chat, salas ao vivo) funciona normalmente pra ele.
+export async function createGuestStudentAction(formData: FormData) {
+  const currentUser = await getUser();
+  if (!currentUser || currentUser.role !== "INSTRUCTOR") {
+    return { error: "Não autorizado." };
+  }
+
+  const name = sanitizeString(formData.get("name") as string);
+  const username = sanitizeString(formData.get("username") as string);
+  const password = formData.get("password") as string;
+  const pelotao = sanitizeString(formData.get("pelotao") as string);
+
+  if (!name || !username || !password || !pelotao) {
+    return { error: "Todos os campos são obrigatórios, incluindo o nome do pelotão." };
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { username }
+  });
+
+  if (existingUser) {
+    return { error: "O QRA já está em uso." };
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  try {
+    const student = await prisma.user.create({
+      data: {
+        name,
+        username,
+        senha: hashedPassword,
+        role: "STUDENT",
+        numero: null,
+        pelotao
+      }
+    });
+    return { success: true, studentId: student.id };
+  } catch (err: any) {
+    console.error("[CREATE GUEST STUDENT ERROR]:", err);
+    return { error: err.message || "Erro ao salvar o aluno no banco de dados." };
+  }
+}

@@ -24,6 +24,7 @@ model User {
   suspendedUntil DateTime?
   isTestUser Boolean  @default(false)
   bonusStreakDays Int @default(0) // Correção administrativa manual da sequência diária (ex.: falha do sistema fez o aluno perder a sequência)
+  pelotao String? // null = pelotão padrão (dono do sistema); preenchido = aluno de pelotão convidado — aparece separado no Ranking Geral, só entre os do mesmo pelotão
   hasSeenDueloIntro Boolean @default(false) // Já viu o modal de apresentação do modo Duelo
   lastStreakWarningDay String? // YYYY-MM-DD do último aviso "vai perder a sequência" já enviado, pra não repetir no mesmo dia
   pushSubscriptions PushSubscription[]

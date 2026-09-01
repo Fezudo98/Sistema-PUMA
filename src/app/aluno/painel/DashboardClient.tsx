@@ -270,6 +270,7 @@ export default function StudentDashboardClient({
   stats,
   subjectPerformance = [],
   generalRanking = [],
+  rankingTitle = "Ranking Geral da Sala",
   activeRooms = [],
   dailySimulados = [],
   pastDailySimulados = [],
@@ -282,6 +283,7 @@ export default function StudentDashboardClient({
   stats?: any;
   subjectPerformance?: any[];
   generalRanking?: any[];
+  rankingTitle?: string;
   activeRooms?: any[];
   dailySimulados?: any[];
   pastDailySimulados?: any[];
@@ -1127,7 +1129,7 @@ export default function StudentDashboardClient({
           <CardHeader className="pb-3">
             <CardTitle className="text-lg text-heading flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-500" />
-              Ranking Geral da Sala
+              {rankingTitle}
             </CardTitle>
             <CardDescription className="text-xs">Classificação geral de todos os combatentes ativos.</CardDescription>
           </CardHeader>

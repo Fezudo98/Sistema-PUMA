@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toggleChatEnabledAction } from "@/app/actions/chat";
-import { createInstructorAction } from "@/app/actions/auth";
+import { createInstructorAction, createGuestStudentAction } from "@/app/actions/auth";
 import { toggleMaintenanceAction, toggleMaintenanceWarningAction } from "@/app/actions/maintenance";
 import { publishAnnouncementAction, clearAnnouncementAction } from "@/app/actions/announcement";
-import { MessageSquare, ShieldAlert, Check, Loader2, UserPlus, Wrench, Megaphone, Send } from "lucide-react";
+import { MessageSquare, ShieldAlert, Check, Loader2, UserPlus, Wrench, Megaphone, Send, Users2 } from "lucide-react";
 
 export default function SettingsClient({
   initialChatEnabled,
@@ -47,6 +47,13 @@ export default function SettingsClient({
   const [newInstPassword, setNewInstPassword] = useState("");
   const [instCreating, setInstCreating] = useState(false);
   const [instMessage, setInstMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // States for creating a guest-platoon student
+  const [newGuestQra, setNewGuestQra] = useState("");
+  const [newGuestPelotao, setNewGuestPelotao] = useState("");
+  const [newGuestPassword, setNewGuestPassword] = useState("");
+  const [guestCreating, setGuestCreating] = useState(false);
+  const [guestMessage, setGuestMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const handleToggle = async () => {
     setUpdating(true);
@@ -206,6 +213,34 @@ export default function SettingsClient({
       setInstMessage({ type: "error", text: err.message || "Erro de conexão." });
     } finally {
       setInstCreating(false);
+    }
+  };
+
+  const handleCreateGuestStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGuestCreating(true);
+    setGuestMessage(null);
+
+    const formData = new FormData();
+    formData.append("name", newGuestQra);
+    formData.append("username", newGuestQra);
+    formData.append("pelotao", newGuestPelotao);
+    formData.append("password", newGuestPassword);
+
+    try {
+      const res = await createGuestStudentAction(formData);
+      if (res.error) {
+        setGuestMessage({ type: "error", text: res.error });
+      } else {
+        setGuestMessage({ type: "success", text: `Aluno cadastrado no pelotão "${newGuestPelotao}" com sucesso! Ele já pode entrar em /aluno com o QRA e senha informados.` });
+        setNewGuestQra("");
+        setNewGuestPelotao("");
+        setNewGuestPassword("");
+      }
+    } catch (err: any) {
+      setGuestMessage({ type: "error", text: err.message || "Erro de conexão." });
+    } finally {
+      setGuestCreating(false);
     }
   };
 
@@ -646,6 +681,100 @@ export default function SettingsClient({
                   </>
                 ) : (
                   "Cadastrar Instrutor"
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Cadastrar Aluno de Pelotão Convidado */}
+      <Card className="border-border bg-card/40 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+        <CardHeader className="border-b border-border pb-4">
+          <div className="flex items-center gap-3">
+            <Users2 className="w-6 h-6 text-purple-500" />
+            <div>
+              <CardTitle className="text-xl font-black uppercase tracking-wider text-heading">
+                Cadastrar Aluno de Pelotão Convidado
+              </CardTitle>
+              <CardDescription className="text-muted-foreground mt-1 text-xs font-bold uppercase tracking-wider">
+                Aluno de fora do 32º Pelotão: usa o sistema normalmente, mas o Ranking Geral dele fica separado, só entre colegas do mesmo pelotão
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-6">
+          <form onSubmit={handleCreateGuestStudent} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">QRA (Nome de Guerra)</label>
+                <input
+                  type="text"
+                  value={newGuestQra}
+                  onChange={(e) => setNewGuestQra(e.target.value)}
+                  placeholder="QRA do aluno"
+                  required
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-600 font-medium uppercase"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Nome do Pelotão</label>
+                <input
+                  type="text"
+                  value={newGuestPelotao}
+                  onChange={(e) => setNewGuestPelotao(e.target.value)}
+                  placeholder="Ex: 15º Pelotão"
+                  required
+                  maxLength={60}
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-600 font-medium"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Senha Provisória</label>
+                <input
+                  type="password"
+                  value={newGuestPassword}
+                  onChange={(e) => setNewGuestPassword(e.target.value)}
+                  placeholder="Senha de acesso"
+                  required
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-xs text-heading placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-600 font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2 gap-4">
+              <div className="flex-1">
+                {guestMessage && (
+                  <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-2.5 animate-fadeIn ${
+                    guestMessage.type === "success"
+                      ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-300"
+                      : "bg-red-950/20 border-red-500/30 text-red-300"
+                  }`}>
+                    {guestMessage.type === "success" ? (
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                    ) : (
+                      <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
+                    )}
+                    <span>{guestMessage.text}</span>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={guestCreating}
+                className="h-11 px-8 bg-purple-600 hover:bg-purple-500 text-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+              >
+                {guestCreating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                    Salvando
+                  </>
+                ) : (
+                  "Cadastrar Aluno"
                 )}
               </Button>
             </div>

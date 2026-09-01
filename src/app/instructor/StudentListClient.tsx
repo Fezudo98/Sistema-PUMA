@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { renderHighlightedText } from "@/lib/highlightText";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  Users, Target, Clock, Trophy, Search, User as UserIcon, KeyRound, Eye, EyeOff, Check, 
-  AlertTriangle, Loader2, MessageSquare, ShieldAlert, ShieldCheck, Lock, Unlock, Bot, Hash, Flame, Zap
+  Users, Target, Clock, Trophy, Search, User as UserIcon, KeyRound, Eye, EyeOff, Check,
+  AlertTriangle, Loader2, MessageSquare, ShieldAlert, ShieldCheck, Lock, Unlock, Bot, Hash, Flame, Zap, Users2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber, updateStudentBonusStreak } from "@/app/actions/user";
+import { resetStudentPassword, getStudentChatAuditAction, toggleStudentChatSuspensionAction, getStudentSimuladosAction, updateStudentNumber, updateStudentBonusStreak, updateStudentPelotao } from "@/app/actions/user";
 import { formatApostilaTitle } from "@/lib/utils";
 import { getPatentByScore } from "@/lib/patents";
 import { BepiEagleIcon, ChoqueSkullIcon, RaioIcon, BopeIcon } from "@/components/PatentIcons";
@@ -28,6 +28,7 @@ type StudentPerformance = {
   bonusStreakDays?: number;
   todayPoints?: number;
   suspendedUntil?: string | null;
+  pelotao?: string | null;
 };
 
 interface StudentListClientProps {
@@ -61,6 +62,11 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
   const [isUpdatingNumber, setIsUpdatingNumber] = useState(false);
   const [numberUpdateMessage, setNumberUpdateMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Pelotão edit state
+  const [newStudentPelotao, setNewStudentPelotao] = useState<string>("");
+  const [isUpdatingPelotao, setIsUpdatingPelotao] = useState(false);
+  const [pelotaoUpdateMessage, setPelotaoUpdateMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   // Streak bonus correction state
   const [newBonusStreak, setNewBonusStreak] = useState<string>("");
   const [isUpdatingBonusStreak, setIsUpdatingBonusStreak] = useState(false);
@@ -74,6 +80,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setResetMessage(null);
       setNewStudentNumber("");
       setNumberUpdateMessage(null);
+      setNewStudentPelotao("");
+      setPelotaoUpdateMessage(null);
       setNewBonusStreak("");
       setBonusStreakMessage(null);
       setActiveModalTab("dossier");
@@ -88,6 +96,8 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setCurrentSuspendedUntil(selectedStudent.suspendedUntil || null);
       setNewStudentNumber(selectedStudent.numero ? String(selectedStudent.numero) : "");
       setNumberUpdateMessage(null);
+      setNewStudentPelotao(selectedStudent.pelotao || "");
+      setPelotaoUpdateMessage(null);
       setNewBonusStreak(String(selectedStudent.bonusStreakDays || 0));
       setBonusStreakMessage(null);
       
@@ -139,6 +149,23 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
       setSelectedStudent((prev) => prev ? { ...prev, numero: num } : null);
     } else {
       setNumberUpdateMessage({ type: "error", text: res.error || "Erro ao atualizar número." });
+    }
+  };
+
+  const handleUpdatePelotao = async () => {
+    if (!selectedStudent) return;
+
+    setIsUpdatingPelotao(true);
+    setPelotaoUpdateMessage(null);
+
+    const res = await updateStudentPelotao(selectedStudent.id, newStudentPelotao);
+    setIsUpdatingPelotao(false);
+
+    if (res.success) {
+      setPelotaoUpdateMessage({ type: "success", text: res.pelotao ? `Pelotão atualizado para "${res.pelotao}".` : "Aluno voltou para o pelotão padrão." });
+      setSelectedStudent((prev) => prev ? { ...prev, pelotao: res.pelotao ?? null } : null);
+    } else {
+      setPelotaoUpdateMessage({ type: "error", text: res.error || "Erro ao atualizar o pelotão." });
     }
   };
 
@@ -301,7 +328,13 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                                   );
                                 })()}
                               </span>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {student.pelotao && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-950/60 border border-purple-500/40 text-purple-300 font-bold text-[10px]" title="Pelotão convidado — ranking geral separado">
+                                    <Users2 className="w-3 h-3" />
+                                    {student.pelotao}
+                                  </span>
+                                )}
                                 {typeof student.streakDays === 'number' && student.streakDays > 0 && (
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-950/80 border border-orange-500/40 text-orange-400 font-bold text-[10px]" title="Sequência Diária">
                                     <Flame className="w-3 h-3 fill-orange-500 text-orange-500" />
@@ -591,6 +624,56 @@ export default function StudentListClient({ studentsPerformance }: StudentListCl
                       >
                         {numberUpdateMessage.type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                         {numberUpdateMessage.text}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Alterar Pelotão (Ranking Separado) */}
+                <div className="bg-card/30 border border-border rounded-xl p-4 space-y-4">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2 flex items-center gap-2">
+                    <Users2 className="w-4 h-4 text-purple-500" />
+                    Pelotão (Ranking Separado)
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Em branco = pelotão padrão (32º Pelotão), competindo no ranking geral normal. Preenchido = aluno de pelotão convidado, cujo ranking geral fica separado, só entre colegas do mesmo pelotão.
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          type="text"
+                          maxLength={60}
+                          placeholder="Deixe em branco para o pelotão padrão"
+                          value={newStudentPelotao}
+                          onChange={(e) => {
+                            setNewStudentPelotao(e.target.value);
+                            setPelotaoUpdateMessage(null);
+                          }}
+                          className="bg-background border-border text-heading placeholder:text-muted-foreground focus-visible:ring-purple-500"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={handleUpdatePelotao}
+                        disabled={isUpdatingPelotao || (selectedStudent?.pelotao || "") === newStudentPelotao}
+                        className="bg-purple-600 hover:bg-purple-500 text-heading font-bold text-xs shrink-0 cursor-pointer h-10 px-4"
+                      >
+                        {isUpdatingPelotao ? <Loader2 className="w-4 h-4 animate-spin" /> : "Atualizar Pelotão"}
+                      </Button>
+                    </div>
+
+                    {pelotaoUpdateMessage && (
+                      <div
+                        className={`p-3 rounded-lg border text-xs font-bold flex items-center gap-2 ${
+                          pelotaoUpdateMessage.type === "success"
+                            ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                            : "bg-red-950/40 border-red-500/30 text-red-400"
+                        }`}
+                      >
+                        {pelotaoUpdateMessage.type === "success" ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                        {pelotaoUpdateMessage.text}
                       </div>
                     )}
                   </div>

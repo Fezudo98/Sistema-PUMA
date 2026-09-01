@@ -42,7 +42,7 @@ export default async function AlunoPainel() {
 
   // Consultas independentes entre si rodam em paralelo em vez de uma atrás da outra.
   const [
-    generalRanking,
+    fullRanking,
     dailySimulados,
     activeApostilasCount,
     apostilasAtivas,
@@ -113,6 +113,13 @@ export default async function AlunoPainel() {
         orderBy: { createdAt: "desc" }
       })
     : [];
+
+  // Ranking Geral fica separado por pelotão: um aluno de pelotão convidado
+  // (dbUser.pelotao preenchido) só compete contra colegas do mesmo pelotão — nunca
+  // aparece misturado com o pelotão dono do sistema, nem vice-versa.
+  const myPelotao = (dbUser as any)?.pelotao || null;
+  const generalRanking = fullRanking.filter((r: any) => (r.pelotao || null) === myPelotao);
+  const rankingTitle = myPelotao ? `Ranking Geral — ${myPelotao}` : "Ranking Geral da Sala";
 
   // Estatísticas pré-agregadas (StudentStats) — O(1), não recarrega o histórico
   // completo de respostas do aluno.
@@ -283,6 +290,7 @@ export default async function AlunoPainel() {
       stats={stats}
       subjectPerformance={subjectPerformance}
       generalRanking={generalRanking}
+      rankingTitle={rankingTitle}
       activeRooms={activeRooms}
       dailySimulados={dailySimuladosWithStatus}
       pastDailySimulados={pastDailySimuladosWithStatus}

@@ -24,7 +24,8 @@ const calculateRankingDataFromStats = async () => {
       suspendedUntil: true,
       bonusStreakDays: true,
       unlockedBadges: true,
-      displayedBadges: true
+      displayedBadges: true,
+      pelotao: true
     }
   });
 
@@ -61,7 +62,8 @@ const calculateRankingDataFromStats = async () => {
         streakDays: sPerf.streakDays,
         bonusStreakDays: student.bonusStreakDays || 0,
         todayPoints: sPerf.todayPoints,
-        suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null
+        suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null,
+        pelotao: student.pelotao || null
       };
     })
     .sort((a, b) => b.totalScore - a.totalScore);
@@ -106,6 +108,7 @@ const calculateRankingDataLegacy = async () => {
       bonusStreakDays: true,
       unlockedBadges: true,
       displayedBadges: true,
+      pelotao: true,
       answers: {
         select: {
           createdAt: true,
@@ -163,7 +166,8 @@ const calculateRankingDataLegacy = async () => {
         streakDays: sPerf.streakDays,
         bonusStreakDays: (student as any).bonusStreakDays || 0,
         todayPoints: sPerf.todayPoints,
-        suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null
+        suspendedUntil: student.suspendedUntil ? student.suspendedUntil.toISOString() : null,
+        pelotao: (student as any).pelotao || null
       };
     })
     .sort((a, b) => b.totalScore - a.totalScore);
