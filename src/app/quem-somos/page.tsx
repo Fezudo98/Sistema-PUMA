@@ -135,7 +135,9 @@ export default function QuemSomosPage() {
     <div className="min-h-screen bg-background text-heading relative pb-16 selection:bg-amber-500 selection:text-foreground">
       {/* Background radial visual */}
       <div className="fixed inset-0 opacity-15 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-amber-500/15 via-yellow-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed inset-x-0 top-0 overflow-hidden pointer-events-none">
+        <div className="w-[800px] max-w-none h-[400px] mx-auto bg-gradient-to-b from-amber-500/15 via-yellow-500/5 to-transparent rounded-full blur-3xl" />
+      </div>
 
       {/* Top Navbar com botões de Retornar */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/80 px-4 md:px-8 py-4">

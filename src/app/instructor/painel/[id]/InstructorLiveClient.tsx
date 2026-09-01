@@ -281,21 +281,21 @@ export default function InstructorLiveClient({ user, simulado }: { user: any, si
           </div>
         ))}
       </div>
-      <header className="border-b border-border bg-card px-6 py-4 flex justify-between items-center">
+      <header className="border-b border-border bg-card px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-heading tracking-widest uppercase">
             Sala <span className="text-blue-500">{simulado.codigoSala}</span>
           </h1>
           <p className="text-xs text-muted-foreground">Controle Remoto do Instrutor</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap w-full sm:w-auto">
           <div className="flex items-center gap-2 text-emerald-400 bg-emerald-400/10 px-4 py-2 rounded-full border border-emerald-400/20">
             <Users className="w-5 h-5" />
             <span className="font-bold">{students.length} Alunos</span>
           </div>
           {status !== "FINISHED" && (
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               className="font-bold bg-red-600 hover:bg-red-500 text-heading"
               onClick={async () => {
                 if (confirm("Tem certeza que deseja encerrar definitivamente este simulado agora?")) {

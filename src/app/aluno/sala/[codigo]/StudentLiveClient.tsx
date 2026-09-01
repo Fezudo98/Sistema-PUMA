@@ -494,12 +494,12 @@ export default function StudentLiveClient({ user, simulado }: { user: any, simul
         ))}
       </div>
       {/* Top Bar */}
-      <header className="h-16 border-b border-border flex justify-between items-center px-4 bg-card shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="min-h-16 border-b border-border flex flex-wrap justify-between items-center gap-x-3 gap-y-2 px-4 py-2 bg-card shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
           <Link href="/aluno/painel">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-heading px-2">Sair</Button>
           </Link>
-          <span className="font-bold text-muted-foreground">SALA {simulado.codigoSala}</span>
+          <span className="font-bold text-muted-foreground whitespace-nowrap">SALA {simulado.codigoSala}</span>
           
           {(() => {
             const myRankIndex = ranking.findIndex(r => r.id === user.userId);

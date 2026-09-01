@@ -172,7 +172,7 @@ export default async function InstructorDashboard() {
 
         <Tabs defaultValue="relatorios" className="w-full">
           <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:flex sm:!h-14 bg-card border border-border p-1 !h-auto gap-1 rounded-xl">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:flex sm:!h-14 bg-card border border-border p-1 !h-auto gap-1 rounded-xl">
               <TabsTrigger value="relatorios" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-purple-600 data-[state=active]:text-heading font-bold text-muted-foreground">Relatórios</TabsTrigger>
               <TabsTrigger value="simulados" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Ao Vivo</TabsTrigger>
               <TabsTrigger value="especiais" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-purple-600 data-[state=active]:text-heading font-bold text-muted-foreground">Especiais</TabsTrigger>

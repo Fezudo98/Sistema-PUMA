@@ -117,12 +117,12 @@ export default function RelatorioPrintPage() {
       `}} />
 
       {/* Floating Action Bar (Hidden on Print) */}
-      <div className="no-print max-w-4xl mx-auto flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-lg border border-slate-200">
+      <div className="no-print max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-6 bg-white p-4 rounded-xl shadow-lg border border-slate-200">
         <Button onClick={() => router.push("/instructor")} variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-100 font-bold uppercase text-xs tracking-wider">
           <ArrowLeft className="w-4 h-4 mr-2" /> Centro de Comando
         </Button>
         <div className="flex gap-3">
-          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs tracking-wider shadow-md">
+          <Button onClick={handlePrint} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs tracking-wider shadow-md">
             <Printer className="w-4 h-4 mr-2" /> Imprimir Relatório (PDF)
           </Button>
         </div>
