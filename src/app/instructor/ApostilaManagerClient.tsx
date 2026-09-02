@@ -443,7 +443,7 @@ export default function ApostilaManagerClient({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                    <div className="flex items-center flex-wrap gap-3 w-full sm:w-auto sm:shrink-0 justify-start sm:justify-end">
                       {/* Gerar Simulado Diário da Apostila */}
                       {apo.isActive && (
                         <Button
