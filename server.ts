@@ -676,6 +676,36 @@ async function handleDuelDisconnect(io: any, roomCode: string, room: RoomState, 
   rooms.delete(roomCode);
 }
 
+// Recuperação de duelos órfãos: se o processo cair/reiniciar (deploy, crash) enquanto
+// um duelo está em andamento, o estado da sala vive só em memória (o Map `rooms`) e se
+// perde — sem isso, o Duelo fica travado em MATCHED/ACTIVE pra sempre, e a checagem de
+// "já tem um duelo ativo" (ACTIVE_DUEL_STATUSES em actions/duelo.ts) bloqueia os dois
+// alunos de desafiarem qualquer pessoa de novo, indefinidamente. Roda uma vez a cada
+// boot do servidor, antes de aceitar conexões — cancela sem prejuízo pra nenhum lado
+// (mesma semântica de "ninguém respondeu ainda" usada na desconexão normal), já que a
+// sala não tem como ser retomada depois de um restart.
+async function recoverOrphanedDuels() {
+  try {
+    const orphaned = await prisma.duelo.findMany({
+      where: { status: { in: ['MATCHED', 'ACTIVE'] } }
+    });
+
+    for (const d of orphaned) {
+      await prisma.duelo.update({ where: { id: d.id }, data: { status: 'CANCELLED' } });
+      if (d.simuladoId) {
+        await prisma.simulado.update({ where: { id: d.simuladoId }, data: { status: 'FINISHED' } }).catch(() => {});
+      }
+      console.log(`[DUELO RECOVERY] Duelo ${d.id} estava travado em '${d.status}' (processo anterior) — cancelado na inicialização.`);
+    }
+
+    if (orphaned.length > 0) {
+      console.log(`[DUELO RECOVERY] ${orphaned.length} duelo(s) travado(s) recuperado(s) no boot.`);
+    }
+  } catch (err) {
+    console.error('[DUELO RECOVERY] Falha ao recuperar duelos travados na inicialização:', err);
+  }
+}
+
 app.prepare().then(() => {
   const server = createServer(async (req, res) => {
     try {
@@ -1740,7 +1770,8 @@ app.prepare().then(() => {
     process.exit(1);
   });
 
-  server.listen(port, hostname, () => {
+  server.listen(port, hostname, async () => {
+    await recoverOrphanedDuels();
     console.log(`> Ready on Rede Local (0.0.0.0) na porta ${port}`);
   });
 });
