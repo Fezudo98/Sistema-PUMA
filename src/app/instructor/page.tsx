@@ -183,29 +183,29 @@ export default async function InstructorDashboard() {
               <TabsTrigger value="config" className="text-xs sm:text-base px-3 sm:px-4 !h-10 data-[state=active]:bg-blue-600 data-[state=active]:text-heading font-bold text-muted-foreground">Config</TabsTrigger>
             </TabsList>
             
-            <div className="flex gap-2 w-full lg:w-auto">
-              <Link href="/instructor/duelos" className="flex-1 lg:flex-none">
-                <Button variant="outline" className="w-full h-12 lg:h-14 font-black text-xs uppercase tracking-wider border-red-800/50 text-red-400 hover:bg-red-950/30">
-                  <Swords className="w-5 h-5 mr-1 sm:mr-2" />
-                  Duelos
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:flex gap-2 w-full lg:w-auto">
+              <Link href="/instructor/duelos" className="min-w-0 lg:flex-none">
+                <Button variant="outline" className="w-full h-12 lg:h-14 font-black text-xs uppercase tracking-wider border-red-800/50 text-red-400 hover:bg-red-950/30 px-2">
+                  <Swords className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
+                  <span className="truncate">Duelos</span>
                 </Button>
               </Link>
-              <Link href="/instructor/simulado/presentation/new" className="flex-1 lg:flex-none">
-                <Button className="w-full bg-amber-600 hover:bg-amber-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-                  <Presentation className="w-5 h-5 mr-1 sm:mr-2" />
-                  Apresentação
+              <Link href="/instructor/simulado/presentation/new" className="min-w-0 lg:flex-none">
+                <Button className="w-full bg-amber-600 hover:bg-amber-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)] px-2">
+                  <Presentation className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
+                  <span className="truncate">Apresentação</span>
                 </Button>
               </Link>
-              <Link href="/instructor/simulado/special/new" className="flex-1 lg:flex-none">
-                <Button className="w-full bg-purple-600 hover:bg-purple-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                  <Target className="w-5 h-5 mr-1 sm:mr-2" />
-                  Missão Especial
+              <Link href="/instructor/simulado/special/new" className="min-w-0 lg:flex-none">
+                <Button className="w-full bg-purple-600 hover:bg-purple-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.4)] px-2">
+                  <Target className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
+                  <span className="truncate">Missão Especial</span>
                 </Button>
               </Link>
-              <Link href="/instructor/simulado/new" className="flex-1 lg:flex-none">
-                <Button className="w-full bg-blue-600 hover:bg-blue-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(37,99,235,0.4)]">
-                  <PlusCircle className="w-5 h-5 mr-1 sm:mr-2" />
-                  Simulado IA
+              <Link href="/instructor/simulado/new" className="min-w-0 lg:flex-none">
+                <Button className="w-full bg-blue-600 hover:bg-blue-500 h-12 lg:h-14 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(37,99,235,0.4)] px-2">
+                  <PlusCircle className="w-5 h-5 mr-1 sm:mr-2 shrink-0" />
+                  <span className="truncate">Simulado IA</span>
                 </Button>
               </Link>
             </div>
