@@ -269,8 +269,8 @@ export default function StudentDashboardClient({
   user,
   stats,
   subjectPerformance = [],
-  generalRanking = [],
-  rankingTitle = "Ranking Geral da Sala",
+  rankingGroups = [],
+  myPelotaoLabel = "32º Pelotão",
   activeRooms = [],
   dailySimulados = [],
   pastDailySimulados = [],
@@ -282,8 +282,8 @@ export default function StudentDashboardClient({
   user: any;
   stats?: any;
   subjectPerformance?: any[];
-  generalRanking?: any[];
-  rankingTitle?: string;
+  rankingGroups?: { label: string; ranking: any[] }[];
+  myPelotaoLabel?: string;
   activeRooms?: any[];
   dailySimulados?: any[];
   pastDailySimulados?: any[];
@@ -329,6 +329,7 @@ export default function StudentDashboardClient({
   const [generatedToday, setGeneratedToday] = useState<boolean>(false);
   const router = useRouter();
   const [currentLeiIndex, setCurrentLeiIndex] = useState(0);
+  const [selectedPelotaoLabel, setSelectedPelotaoLabel] = useState(myPelotaoLabel);
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -497,6 +498,10 @@ export default function StudentDashboardClient({
       : streakDaysAtual < 75
       ? { label: "TEMA BOPE ☠️", dias: 75, corBarra: "from-zinc-500 to-zinc-300" }
       : { label: "TRILHA COMPLETA 🏆", dias: null as number | null, corBarra: "from-zinc-500 to-zinc-300" };
+
+  const activeRankingGroup = rankingGroups.find((g) => g.label === selectedPelotaoLabel) || rankingGroups[0];
+  const generalRanking = activeRankingGroup?.ranking || [];
+  const isViewingOwnPelotao = selectedPelotaoLabel === myPelotaoLabel;
 
   return (
     <div className="min-h-screen bg-background text-foreground lg:flex">
@@ -1126,12 +1131,32 @@ export default function StudentDashboardClient({
         {/* Ranking Geral da Sala */}
         <Card className="border-border bg-card/40 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-heading flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              {rankingTitle}
-            </CardTitle>
-            <CardDescription className="text-xs">Classificação geral de todos os combatentes ativos.</CardDescription>
+          <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <CardTitle className="text-lg text-heading flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                Ranking Geral{!isViewingOwnPelotao ? ` — ${selectedPelotaoLabel}` : ""}
+              </CardTitle>
+              <CardDescription className="text-xs mt-1">
+                {isViewingOwnPelotao
+                  ? `Classificação geral do ${myPelotaoLabel}.`
+                  : `Você está vendo o ranking de outro pelotão (${selectedPelotaoLabel}).`}
+              </CardDescription>
+            </div>
+            {rankingGroups.length > 1 && (
+              <select
+                value={selectedPelotaoLabel}
+                onChange={(e) => setSelectedPelotaoLabel(e.target.value)}
+                className="h-10 rounded-lg bg-background border border-border px-3 text-xs font-bold text-heading uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-600 shrink-0 cursor-pointer"
+                title="Ver ranking de outro pelotão"
+              >
+                {rankingGroups.map((g) => (
+                  <option key={g.label} value={g.label}>
+                    {g.label === myPelotaoLabel ? `${g.label} (Seu Pelotão)` : g.label} · {g.ranking.length}
+                  </option>
+                ))}
+              </select>
+            )}
           </CardHeader>
           <CardContent className="p-0 max-h-[480px] overflow-y-auto custom-scrollbar">
             {generalRanking.length === 0 ? (
@@ -1258,7 +1283,7 @@ export default function StudentDashboardClient({
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          {!isMe && (
+                          {!isMe && isViewingOwnPelotao && (
                             <Link href={`/aluno/duelo?challenge=${aluno.id}`}>
                               <Button size="sm" variant="outline" className="h-6 px-2 text-[10px] font-black uppercase tracking-wider border-red-800/50 text-red-400 hover:bg-red-950/30" title="Desafiar para um duelo">
                                 <Swords className="w-3 h-3 mr-1" /> Desafiar

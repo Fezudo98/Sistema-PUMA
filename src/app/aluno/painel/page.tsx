@@ -114,12 +114,28 @@ export default async function AlunoPainel() {
       })
     : [];
 
-  // Ranking Geral fica separado por pelotão: um aluno de pelotão convidado
-  // (dbUser.pelotao preenchido) só compete contra colegas do mesmo pelotão — nunca
-  // aparece misturado com o pelotão dono do sistema, nem vice-versa.
+  // Ranking Geral fica separado por pelotão: por padrão o aluno vê a classificação
+  // do seu próprio pelotão (nunca misturado com os demais), mas pode alternar e
+  // consultar o ranking de qualquer outro pelotão cadastrado no sistema.
+  const HOME_PELOTAO_LABEL = "32º Pelotão";
   const myPelotao = (dbUser as any)?.pelotao || null;
-  const generalRanking = fullRanking.filter((r: any) => (r.pelotao || null) === myPelotao);
-  const rankingTitle = myPelotao ? `Ranking Geral — ${myPelotao}` : "Ranking Geral da Sala";
+  const myPelotaoLabel = myPelotao || HOME_PELOTAO_LABEL;
+
+  const rankingGroupsMap = new Map<string, any[]>();
+  for (const r of fullRanking) {
+    const label = (r as any).pelotao || HOME_PELOTAO_LABEL;
+    if (!rankingGroupsMap.has(label)) rankingGroupsMap.set(label, []);
+    rankingGroupsMap.get(label)!.push(r);
+  }
+  const rankingGroups = Array.from(rankingGroupsMap.entries())
+    .map(([label, ranking]) => ({ label, ranking }))
+    .sort((a, b) => {
+      if (a.label === myPelotaoLabel) return -1;
+      if (b.label === myPelotaoLabel) return 1;
+      if (a.label === HOME_PELOTAO_LABEL) return -1;
+      if (b.label === HOME_PELOTAO_LABEL) return 1;
+      return a.label.localeCompare(b.label);
+    });
 
   // Estatísticas pré-agregadas (StudentStats) — O(1), não recarrega o histórico
   // completo de respostas do aluno.
@@ -289,8 +305,8 @@ export default async function AlunoPainel() {
       user={clientUser}
       stats={stats}
       subjectPerformance={subjectPerformance}
-      generalRanking={generalRanking}
-      rankingTitle={rankingTitle}
+      rankingGroups={rankingGroups}
+      myPelotaoLabel={myPelotaoLabel}
       activeRooms={activeRooms}
       dailySimulados={dailySimuladosWithStatus}
       pastDailySimulados={pastDailySimuladosWithStatus}
