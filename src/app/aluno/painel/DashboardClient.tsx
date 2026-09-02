@@ -936,6 +936,66 @@ export default function StudentDashboardClient({
           </Card>
         )}
 
+        {/* Blocos de Provas */}
+        {blocosDeProva && blocosDeProva.length > 0 && (
+          <Card className="border-border bg-card/40 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-red-500"></div>
+            <CardHeader className="pb-3 border-b border-border/50">
+              <CardTitle className="text-lg text-heading flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-amber-500" />
+                Blocos de Provas
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Todas as questões já geradas das matérias com prova em breve, reunidas para revisão sem cronômetro.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="pt-4 space-y-3">
+              <div className="space-y-3">
+                {blocosDeProva.map((bloco, i) => (
+                  <div key={i} className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
+                    bloco.isCompleted
+                      ? "bg-emerald-950/10 border-emerald-900/30 grayscale-[50%]"
+                      : "bg-background border-amber-500/30 hover:border-amber-500/50"
+                  }`}>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="min-w-0 flex-1">
+                        <h4 className={`text-sm font-bold line-clamp-2 leading-snug ${bloco.isCompleted ? 'text-emerald-400/80' : 'text-amber-400'}`} title={bloco.apostilaName}>
+                          {formatApostilaTitle(bloco.apostilaName)}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                          <GraduationCap className="w-3 h-3" />
+                          {bloco.answeredCount}/{bloco.questionsCount} Questões
+                        </p>
+                      </div>
+
+                      {bloco.isCompleted ? (
+                        <div className="shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-950/30 px-2 py-1 rounded border border-emerald-900/50">
+                          <Check className="w-3.5 h-3.5" />
+                          Concluído
+                        </div>
+                      ) : (
+                        <Link href={`/aluno/simulado/${bloco.id}?timer=false`} className="shrink-0">
+                          <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-[10px] font-black uppercase tracking-widest h-8 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                            {bloco.answeredCount > 0 ? "Continuar" : "Iniciar Revisão"} <Play className="w-3 h-3 ml-1.5" />
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                    {bloco.isCompleted && (
+                      <Link href={`/aluno/simulado/${bloco.id}/review`}>
+                        <Button variant="ghost" size="sm" className="h-8 px-3 bg-blue-950/30 border border-blue-900/40 text-blue-400 hover:bg-blue-950/50 hover:text-blue-300 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
+                          Revisar
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Simulados Diários / Estudo Individual */}
         <Card className="border-border bg-card/40 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-500"></div>
@@ -1127,66 +1187,6 @@ export default function StudentDashboardClient({
             )}
           </CardContent>
         </Card>
-
-        {/* Blocos de Provas */}
-        {blocosDeProva && blocosDeProva.length > 0 && (
-          <Card className="border-border bg-card/40 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-red-500"></div>
-            <CardHeader className="pb-3 border-b border-border/50">
-              <CardTitle className="text-lg text-heading flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-amber-500" />
-                Blocos de Provas
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Todas as questões já geradas das matérias com prova em breve, reunidas para revisão sem cronômetro.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="pt-4 space-y-3">
-              <div className="space-y-3">
-                {blocosDeProva.map((bloco, i) => (
-                  <div key={i} className={`p-4 rounded-xl border flex flex-col gap-3 transition-colors ${
-                    bloco.isCompleted
-                      ? "bg-emerald-950/10 border-emerald-900/30 grayscale-[50%]"
-                      : "bg-background border-amber-500/30 hover:border-amber-500/50"
-                  }`}>
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h4 className={`text-sm font-bold line-clamp-2 leading-snug ${bloco.isCompleted ? 'text-emerald-400/80' : 'text-amber-400'}`} title={bloco.apostilaName}>
-                          {formatApostilaTitle(bloco.apostilaName)}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
-                          <GraduationCap className="w-3 h-3" />
-                          {bloco.answeredCount}/{bloco.questionsCount} Questões
-                        </p>
-                      </div>
-
-                      {bloco.isCompleted ? (
-                        <div className="shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-950/30 px-2 py-1 rounded border border-emerald-900/50">
-                          <Check className="w-3.5 h-3.5" />
-                          Concluído
-                        </div>
-                      ) : (
-                        <Link href={`/aluno/simulado/${bloco.id}?timer=false`} className="shrink-0">
-                          <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-[10px] font-black uppercase tracking-widest h-8 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                            {bloco.answeredCount > 0 ? "Continuar" : "Iniciar Revisão"} <Play className="w-3 h-3 ml-1.5" />
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
-                    {bloco.isCompleted && (
-                      <Link href={`/aluno/simulado/${bloco.id}/review`}>
-                        <Button variant="ghost" size="sm" className="h-8 px-3 bg-blue-950/30 border border-blue-900/40 text-blue-400 hover:bg-blue-950/50 hover:text-blue-300 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
-                          Revisar
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Ranking Geral da Sala */}
         <Card className="border-border bg-card/40 relative overflow-hidden">
