@@ -130,6 +130,14 @@ export function BopeEffect() {
   useEffect(() => {
     if (!isFlashing) {
       setShowSkip(false);
+      // O <video> fica sempre montado (preload="auto"), então esconder o overlay
+      // sozinho (isFlashing=false) só o deixa invisível — sem isso, pular a cena ou
+      // fechar pelo timeout de segurança deixa o áudio tocando escondido até o vídeo
+      // terminar de verdade.
+      const video = videoRef.current;
+      if (video && !video.paused) {
+        video.pause();
+      }
       return;
     }
 
