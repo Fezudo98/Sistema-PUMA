@@ -48,6 +48,7 @@ import { SertaoBackdrop } from "@/components/SertaoBackdrop";
 import { ChoqueEffect } from "@/components/ChoqueEffect";
 import { ChoqueBackdrop } from "@/components/ChoqueBackdrop";
 import { ChoqueCamoBar } from "@/components/ChoqueCamoBar";
+import { BopeEffect } from "@/components/BopeEffect";
 
 export default function RootLayout({
   children,
@@ -65,7 +66,7 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          themes={["light", "dark", "raio", "bepi", "choque"]}
+          themes={["light", "dark", "raio", "bepi", "choque", "bope"]}
           disableTransitionOnChange
         >
           <SertaoBackdrop />
@@ -75,6 +76,7 @@ export default function RootLayout({
           <LightningEffect />
           <BepiEffect />
           <ChoqueEffect />
+          <BopeEffect />
         </ThemeProvider>
       </body>
     </html>

@@ -116,12 +116,15 @@ function LightningCanvas() {
 export function LightningEffect() {
   const { theme, resolvedTheme } = useTheme();
   const [isFlashing, setIsFlashing] = useState(false);
-  const prevTheme = useRef<string | undefined>("light");
+  // undefined = ainda não observamos o tema real desta sessão de página — nunca um
+  // valor chutado tipo "light" (senão um F5 com o tema RAIO já ativo dispararia o
+  // efeito de novo sozinho, achando que acabou de MUDAR pra RAIO).
+  const prevTheme = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const currentTheme = theme === "system" ? resolvedTheme : theme;
-    
-    if (currentTheme === "raio" && prevTheme.current && prevTheme.current !== "raio") {
+
+    if (currentTheme === "raio" && prevTheme.current !== undefined && prevTheme.current !== "raio") {
       setIsFlashing(true);
       
       const timer = setTimeout(() => {

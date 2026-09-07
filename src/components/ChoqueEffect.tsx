@@ -100,7 +100,10 @@ export function ChoqueEffect() {
   const { theme, resolvedTheme } = useTheme();
   const [isFlashing, setIsFlashing] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
-  const prevTheme = useRef<string | undefined>("light");
+  // undefined = ainda não observamos o tema real desta sessão de página — nunca um
+  // valor chutado tipo "light" (senão um F5 com o tema CHOQUE já ativo dispararia o
+  // vídeo de novo sozinho, achando que acabou de MUDAR pra CHOQUE).
+  const prevTheme = useRef<string | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Só detecta a troca pro tema Choque e liga a flag — não decide nada sobre vídeo aqui,
@@ -108,7 +111,7 @@ export function ChoqueEffect() {
   useEffect(() => {
     const currentTheme = theme === "system" ? resolvedTheme : theme;
 
-    if (currentTheme === "choque" && prevTheme.current && prevTheme.current !== "choque") {
+    if (currentTheme === "choque" && prevTheme.current !== undefined && prevTheme.current !== "choque") {
       setIsFlashing(true);
     }
 

@@ -597,6 +597,7 @@ export default function StudentDashboardClient({
               hasRaioUnlocked={user?.isTestUser || (stats?.streakDays || 0) >= 25}
               hasBepiUnlocked={hasBepiUnlocked}
               hasChoqueUnlocked={hasChoqueUnlocked}
+              hasBopeUnlocked={hasBopeUnlocked}
             />
             <Button variant="ghost" onClick={handleSair} className="text-muted-foreground hover:text-red-400">
               <LogOut className="w-5 h-5" />

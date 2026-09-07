@@ -305,6 +305,83 @@
   background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
 }
 
+/* ===== BOPE THEME (Batalhão de Operações Policiais Especiais) =====
+   O tema mais raro (75 dias de sequência) — identidade preto/prata da caveira do
+   BOPE, sem o vermelho como cor de base (esse é o "sangue", reservado só pro
+   destaque pontual). Prata/branco (#e5e5e5, o mesmo tom já usado no anel de avatar
+   e no selo BOPE do ranking) é a cor primária de interação em vez do vermelho do
+   Choque, pra manter as duas identidades distintas mesmo as duas sendo "pretas". */
+.bope {
+  --background: #030303;
+  --foreground: #e5e5e5;
+  --heading: #ffffff;
+  --surface: #0a0a0a;
+  --surface-elevated: #141414;
+  --card: #0a0a0a;
+  --card-foreground: #e5e5e5;
+  --popover: #0a0a0a;
+  --popover-foreground: #e5e5e5;
+
+  --primary: #e5e5e5;
+  --primary-foreground: #000000;
+
+  --secondary: #3a3a3a;
+  --secondary-foreground: #e5e5e5;
+
+  --muted: #171717;
+  --muted-foreground: #9a9a9a;
+
+  --accent: #b91c1c;
+  --accent-foreground: #ffffff;
+
+  --destructive: #7f1d1d;
+
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+
+  --ring: #e5e5e5;
+
+  --chart-1: #e5e5e5;
+  --chart-2: #b91c1c;
+  --chart-3: #6b6b6b;
+  --chart-4: #3a3a3a;
+  --chart-5: #7f1d1d;
+
+  --sidebar: #000000;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #e5e5e5;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #171717;
+  --sidebar-accent-foreground: #e5e5e5;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #e5e5e5;
+}
+
+/* Wallpaper real (foto), não gerado como os outros temas — cobre a tela inteira,
+   fixo mesmo com scroll, com um degradê escuro por cima só o suficiente pra manter
+   o texto legível nas bordas/vãos entre os cards (o conteúdo em si já fica sobre
+   superfícies opacas de --card, então a foto aparece principalmente ao redor). */
+.bope body {
+  background-color: var(--background);
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.72) 45%, rgba(0, 0, 0, 0.9) 100%),
+    url("/bope-wallpaper.jpg");
+  background-size: cover, cover;
+  background-position: center top, center;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+}
+
+/* Sem isso, o wallpaper acima só apareceria numa fresta mínima: toda página do
+   sistema envolve seu conteúdo num container raiz com `bg-background` opaco
+   (`min-h-screen bg-background ...`), que cobriria o body inteiro por cima do
+   wallpaper. Torna esse fundo raiz (e só ele — cards continuam com sua própria
+   opacidade normal) parcialmente transparente SÓ no tema BOPE, deixando a foto
+   passar por igual em todas as telas, atrás de todo o conteúdo. */
+.bope .bg-background {
+  background-color: rgba(3, 3, 3, 0.78);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -116,12 +116,15 @@ function playTacticalRadioChirp() {
 export function BepiEffect() {
   const { theme, resolvedTheme } = useTheme();
   const [isFlashing, setIsFlashing] = useState(false);
-  const prevTheme = useRef<string | undefined>("light");
+  // undefined = ainda não observamos o tema real desta sessão de página — nunca um
+  // valor chutado tipo "light" (senão um F5 com o tema BEPI já ativo dispararia o
+  // efeito de novo sozinho, achando que acabou de MUDAR pra BEPI).
+  const prevTheme = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const currentTheme = theme === "system" ? resolvedTheme : theme;
 
-    if (currentTheme === "bepi" && prevTheme.current && prevTheme.current !== "bepi") {
+    if (currentTheme === "bepi" && prevTheme.current !== undefined && prevTheme.current !== "bepi") {
       setIsFlashing(true);
       playTacticalRadioChirp();
 
