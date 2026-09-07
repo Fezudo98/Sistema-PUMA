@@ -364,7 +364,7 @@
 .bope body {
   background-color: var(--background);
   background-image:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.72) 45%, rgba(0, 0, 0, 0.9) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.42) 45%, rgba(0, 0, 0, 0.65) 100%),
     url("/bope-wallpaper.jpg");
   background-size: cover, cover;
   background-position: center top, center;
@@ -379,7 +379,7 @@
    opacidade normal) parcialmente transparente SÓ no tema BOPE, deixando a foto
    passar por igual em todas as telas, atrás de todo o conteúdo. */
 .bope .bg-background {
-  background-color: rgba(3, 3, 3, 0.78);
+  background-color: rgba(3, 3, 3, 0.5);
 }
 
 @layer base {
