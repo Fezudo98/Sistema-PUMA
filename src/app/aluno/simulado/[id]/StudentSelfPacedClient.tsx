@@ -52,21 +52,23 @@ export default function StudentSelfPacedClient({
   // diário de uma matéria de prova) — só nesse caso a barra de filtro aparece.
   const hasAnyTopics = useMemo(() => simulado.questions.some((q) => !!q.topico), [simulado.questions]);
 
+  const [answeredIds, setAnsweredIds] = useState<Set<string>>(() => new Set(answeredQuestionIds));
+
+  // Depende de answeredIds (o estado vivo, atualizado a cada resposta), não do prop
+  // answeredQuestionIds (só a "foto" de quando a página carregou) — senão a contagem
+  // por tópico no filtro fica congelada na abertura da página, mesmo o aluno
+  // continuando a responder e o contador geral (totalAnswered) avançando normalmente.
   const topicSummary = useMemo(() => {
     const map = new Map<string, { total: number; answered: number }>();
-    const answeredSet = new Set(answeredQuestionIds);
     simulado.questions.forEach((q) => {
       const key = q.topico || NO_TOPIC_LABEL_VALUE;
       if (!map.has(key)) map.set(key, { total: 0, answered: 0 });
       const entry = map.get(key)!;
       entry.total += 1;
-      if (answeredSet.has(q.id)) entry.answered += 1;
+      if (answeredIds.has(q.id)) entry.answered += 1;
     });
     return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [simulado.questions]);
-
-  const [answeredIds, setAnsweredIds] = useState<Set<string>>(() => new Set(answeredQuestionIds));
+  }, [simulado.questions, answeredIds]);
   const [topicFilter, setTopicFilter] = useState<string>(NO_TOPIC_FILTER_VALUE);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
