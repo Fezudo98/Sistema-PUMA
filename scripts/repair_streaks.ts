@@ -21,6 +21,27 @@ function getArg(name: string): string | null {
   return index >= 0 ? process.argv[index + 1] || null : null;
 }
 
+function previousDay(day: string): string {
+  const [year, month, date] = day.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, date - 1, 12)).toISOString().slice(0, 10);
+}
+
+// StudentStats conserva a última sequência histórica mesmo depois que ela expira;
+// deriveEffectiveStats é que a exibe como zero quando o último dia deixa de ser
+// hoje/ontem. Portanto, a auditoria precisa reconstruir a cadeia terminando no
+// último dia completo, não comparar com o streak efetivo (que legitimamente vira 0).
+function trailingHistoricalStreak(completedDays: string[]): number {
+  if (completedDays.length === 0) return 0;
+  const days = new Set(completedDays);
+  let cursor = [...days].sort().at(-1)!;
+  let count = 0;
+  while (days.has(cursor)) {
+    count++;
+    cursor = previousDay(cursor);
+  }
+  return count;
+}
+
 async function main() {
   const apply = process.argv.includes("--apply");
   const studentQuery = getArg("--student");
@@ -75,7 +96,7 @@ async function main() {
       studentRaffleBySimulado,
       student.bonusStreakDays || 0
     );
-    const expectedRawStreak = Math.max(0, historical.streakDays - (student.bonusStreakDays || 0));
+    const expectedRawStreak = trailingHistoricalStreak(historical.completedDaysSet);
     const expectedLastDay = historical.completedDaysSet.length > 0
       ? [...historical.completedDaysSet].sort().at(-1) || null
       : null;
