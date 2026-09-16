@@ -10,6 +10,7 @@
     "start": "next start",
     "start:prod": "node server.js",
     "backfill:streak": "tsx scripts/backfill_answers_createdAt.ts",
+    "repair:streaks": "tsx scripts/repair_streaks.ts",
     "backfill:badges": "tsx scripts/backfill_badges.ts",
     "fix:questions": "tsx scripts/cleanup_bad_questions.ts",
     "postinstall": "prisma generate && node scripts/copy_pdf_worker.js",

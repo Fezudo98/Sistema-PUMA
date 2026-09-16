@@ -32,6 +32,31 @@ async function invalidateRankingCache() {
   }
 }
 
+function isRetryableSqliteWriteError(error: unknown): boolean {
+  const code = typeof error === "object" && error !== null && "code" in error
+    ? String((error as { code?: unknown }).code || "")
+    : "";
+  const message = error instanceof Error ? error.message : String(error);
+  return ["P1008", "P2028", "P2034"].includes(code) || /SQLITE_BUSY|database is locked|socket timeout/i.test(message);
+}
+
+async function withSqliteWriteRetry<T>(operation: () => Promise<T>): Promise<T> {
+  const delaysMs = [50, 150, 350];
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= delaysMs.length; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableSqliteWriteError(error) || attempt === delaysMs.length) throw error;
+      await new Promise(resolve => setTimeout(resolve, delaysMs[attempt]));
+    }
+  }
+
+  throw lastError;
+}
+
 // Migração pra estatísticas pré-agregadas (ver plano em
 // C:\Users\Sergio\.claude\plans\eager-pondering-puddle.md): mantém StudentStats
 // atualizado por incrementos O(1) a cada resposta nova, em vez de recalculado do
@@ -301,28 +326,33 @@ async function applyStatsFold(
     expectedQ: number;
   }
 ): Promise<void> {
-  await prisma.studentSimuladoCompletion.upsert({
-    where: { studentId_simuladoId: { studentId, simuladoId } },
-    create: { studentId, simuladoId },
-    update: {}
-  });
-
-  const won = await prisma.studentSimuladoCompletion.updateMany({
-    where: { studentId, simuladoId, statsFoldedAt: null },
-    data: {
-      statsFoldedAt: info.completionDate,
-      totalQuestions: info.totalQuestionsRaw,
-      correctAnswers: info.corrects,
-      score: info.scoreSim,
-      avgTime: info.avgTimeSim,
-      simuladoTipo: info.tipo,
-      codigoSala: info.codigoSala
-    }
-  });
-  if (won.count !== 1) return;
-
   const day = getLocalDayString(info.completionDate);
-  await prisma.$transaction(async (tx) => {
+
+  // O marcador de idempotência e os agregados precisam confirmar juntos. Antes,
+  // statsFoldedAt era gravado fora desta transação; se a atualização de StudentStats
+  // falhasse depois (ex.: SQLITE_BUSY), o simulado ficava marcado como processado e
+  // nenhuma tentativa futura conseguia reparar a sequência perdida.
+  const applied = await withSqliteWriteRetry(() => prisma.$transaction(async (tx) => {
+    await tx.studentSimuladoCompletion.upsert({
+      where: { studentId_simuladoId: { studentId, simuladoId } },
+      create: { studentId, simuladoId },
+      update: {}
+    });
+
+    const won = await tx.studentSimuladoCompletion.updateMany({
+      where: { studentId, simuladoId, statsFoldedAt: null },
+      data: {
+        statsFoldedAt: info.completionDate,
+        totalQuestions: info.totalQuestionsRaw,
+        correctAnswers: info.corrects,
+        score: info.scoreSim,
+        avgTime: info.avgTimeSim,
+        simuladoTipo: info.tipo,
+        codigoSala: info.codigoSala
+      }
+    });
+    if (won.count !== 1) return false;
+
     const current = await tx.studentStats.upsert({ where: { studentId }, create: { studentId }, update: {} });
     const dayUpdates = computeNewCompletedDayUpdates(current, day);
     await tx.studentStats.update({
@@ -334,7 +364,10 @@ async function applyStatsFold(
         ...dayUpdates
       }
     });
-  });
+    return true;
+  }));
+
+  if (!applied) return;
 
   // simuladosCount/streak/pontuação acabaram de mudar — o ranking (cacheado por até
   // 5min, ver src/lib/ranking.ts) precisa refletir isso na hora, não só quando o
@@ -415,27 +448,38 @@ const BLOCO_PROVA_DAILY_THRESHOLD = 25;
 export async function foldBlocoProvaDailyProgress(studentId: string, answerCreatedAt: Date): Promise<void> {
   const day = getLocalDayString(answerCreatedAt);
 
-  const justCrossed = await prisma.$transaction(async (tx) => {
+  // America/Fortaleza é UTC-3 e não adota horário de verão. Recontar diretamente
+  // das respostas torna este fold idempotente: chamadas simultâneas, retries e uma
+  // falha anterior nunca fazem o limiar de 25 ficar permanentemente abaixo do real.
+  const startUtc = new Date(`${day}T03:00:00.000Z`);
+  const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000);
+
+  const actualCount = await prisma.answer.count({
+    where: {
+      studentId,
+      createdAt: { gte: startUtc, lt: endUtc },
+      question: { simulado: { tipo: "BLOCO_PROVA" } }
+    }
+  });
+
+  const justCrossed = await withSqliteWriteRetry(() => prisma.$transaction(async (tx) => {
     const current = await tx.studentStats.upsert({ where: { studentId }, create: { studentId }, update: {} });
 
-    const isSameDay = current.blocoAnswersTodayDay === day;
-    const previousCount = isSameDay ? current.blocoAnswersToday : 0;
-    const newCount = previousCount + 1;
-    const crossed = newCount >= BLOCO_PROVA_DAILY_THRESHOLD && previousCount < BLOCO_PROVA_DAILY_THRESHOLD;
-
+    const dayWasAlreadyCompleted = current.lastCompletedDay === day;
+    const crossed = actualCount >= BLOCO_PROVA_DAILY_THRESHOLD && !dayWasAlreadyCompleted;
     const dayUpdates = crossed ? computeNewCompletedDayUpdates(current, day) : {};
 
     await tx.studentStats.update({
       where: { studentId },
       data: {
-        blocoAnswersToday: newCount,
+        blocoAnswersToday: actualCount,
         blocoAnswersTodayDay: day,
         ...dayUpdates
       }
     });
 
     return crossed;
-  });
+  }));
 
   if (justCrossed) {
     // Igual ao comentário em applyStatsFold: cruzar o limiar de 25 questões do dia

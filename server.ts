@@ -62,14 +62,13 @@ import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
 import { Server } from 'socket.io';
-import { PrismaClient } from '@prisma/client';
 import { jwtVerify } from 'jose';
 import { getJwtSecret } from './src/lib/env';
+import { prisma } from './src/lib/prisma';
 import { setIoInstance } from './src/lib/socketBridge';
 import { recordAnswerDelta, foldSimuladoCompletionIfNeeded, foldLiveSimuladoFinish, evaluateAndUnlockBadges } from './src/lib/studentStatsFold';
 import { deriveEffectiveStats } from './src/lib/studentStatsRead';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = getJwtSecret();
 
 function getTokenFromCookieHeader(cookieHeader: string | undefined): string | null {

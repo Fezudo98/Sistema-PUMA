@@ -671,8 +671,9 @@ export async function saveSelfPacedAnswer(data: {
     // enxergasse a primeira gravação). Nesse caso, devolve a resposta já salva como
     // sucesso (idempotente) em vez de erro — igual ao tratamento acima — para não
     // travar o aluno em loop de reenvio.
+    let savedAnswer: { createdAt: Date };
     try {
-      await prisma.answer.create({
+      savedAnswer = await prisma.answer.create({
         data: {
           questionId,
           studentId,
@@ -681,7 +682,8 @@ export async function saveSelfPacedAnswer(data: {
           isCorrect,
           pontuacao,
           isRaffle: false
-        }
+        },
+        select: { createdAt: true }
       });
     } catch (err: any) {
       if (err?.code === 'P2002') {
@@ -704,11 +706,13 @@ export async function saveSelfPacedAnswer(data: {
 
     // Só chega aqui numa gravação nova de verdade (o branch de duplicata acima
     // sempre retorna antes) — seguro incrementar as estatísticas pré-agregadas.
-    // Encadeado (não disparado em paralelo) pra nunca ter duas escritas concorrentes
-    // na mesma linha de StudentStats; disparado sem await pra não atrasar a resposta
-    // ao aluno com esse trabalho em segundo plano.
-    (async () => {
-      const answerCreatedAt = new Date();
+    // Aguarda a atualização antes de liberar a próxima questão. A versão anterior
+    // disparava uma Promise solta e devolvia imediatamente; respostas sucessivas do
+    // mesmo aluno podiam então disputar a mesma linha de StudentStats no SQLite.
+    // Uma falha dos agregados não invalida a resposta (que já foi persistida), mas
+    // fica registrada e o fold idempotente será tentado novamente na conclusão.
+    const answerCreatedAt = savedAnswer.createdAt;
+    try {
       await recordAnswerDelta({
         studentId,
         isCorrect,
@@ -719,6 +723,13 @@ export async function saveSelfPacedAnswer(data: {
         simuladoTipo: question.simulado.tipo,
         simuladoCreatedAt: question.simulado.createdAt
       });
+    } catch (statsError) {
+      console.error("Erro ao atualizar contadores de StudentStats:", statsError);
+    }
+
+    // A sequência é independente dos demais contadores. Mesmo que o delta acima
+    // encontre contenção no SQLite, ainda tentamos fechar/recontar o dia.
+    try {
       await foldSimuladoCompletionIfNeeded(studentId, question.simuladoId, {
         tipo: question.simulado.tipo,
         status: question.simulado.status,
@@ -730,7 +741,9 @@ export async function saveSelfPacedAnswer(data: {
       if (question.simulado.tipo === "BLOCO_PROVA") {
         await foldBlocoProvaDailyProgress(studentId, answerCreatedAt);
       }
-    })().catch((err) => console.error("Erro ao atualizar StudentStats:", err));
+    } catch (streakError) {
+      console.error("Erro ao atualizar sequência diária:", streakError);
+    }
 
     return {
       success: true,
@@ -978,4 +991,3 @@ export async function forceGenerateAllDailySimuladosAction() {
     }
   });
 }
-
