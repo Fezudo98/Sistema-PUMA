@@ -160,9 +160,7 @@ const getBadges = (stats: any) => {
       desc: 'Alcançar 750.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 95%.',
       color: 'text-fuchsia-400',
       bg: 'bg-fuchsia-950/20',
-      border: 'border-fuchsia-500/50',
-      scoreThreshold: 750000,
-      accuracyThreshold: 95
+      border: 'border-fuchsia-500/50'
     },
     {
       id: 'madrugador',
@@ -1390,9 +1388,6 @@ export default function StudentDashboardClient({
             {getBadges(stats).map((b: any) => {
               const isUnlocked = user?.unlockedBadges?.includes(b.id);
               const Icon = b.icon;
-              const scorePct = b.scoreThreshold
-                ? Math.min(100, Math.round(((stats?.totalScore || 0) / b.scoreThreshold) * 100))
-                : null;
               return (
                 <div key={b.id} className={`flex items-start gap-4 p-3 rounded-lg border ${isUnlocked ? b.border + ' ' + b.bg : 'border-border bg-card/30 grayscale opacity-50'} transition-all`}>
                   <div className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-inner ${isUnlocked ? b.border + ' ' + b.color : 'border-border text-muted-foreground'}`}>
@@ -1408,20 +1403,6 @@ export default function StudentDashboardClient({
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{b.desc}</p>
-                    {!isUnlocked && scorePct !== null && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
-                          <span>Progresso (pontos)</span>
-                          <span className="font-bold text-heading">{scorePct}%</span>
-                        </div>
-                        <Progress value={scorePct} className="w-full h-1.5 bg-muted [&>div]:bg-fuchsia-500" />
-                        {b.accuracyThreshold && (stats?.accuracy || 0) < b.accuracyThreshold && (
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            Taxa de acertos atual: {stats?.accuracy || 0}% (mín. {b.accuracyThreshold}%)
-                          </p>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               );
