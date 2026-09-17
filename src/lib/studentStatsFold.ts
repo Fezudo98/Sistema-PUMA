@@ -526,7 +526,7 @@ export async function evaluateAndUnlockBadges(studentId: string): Promise<{ newl
     { id: "raio", name: "Pronto Resposta (Raio)", earned: stats.hasRaio && totalScore >= 50000, exclusive: false },
     { id: "caveira", name: "Caveira", earned: stats.advancedSimuladosCount >= 40 && accuracy >= 92 && totalScore >= 200000, exclusive: false },
     { id: "padrao", name: "Padrão PM", earned: totalScore >= 300000 && accuracy >= 92, exclusive: false },
-    { id: "lenda", name: "Lenda PUMA", earned: totalScore >= 750000 && accuracy >= 95, exclusive: false },
+    { id: "lenda", name: "Lenda PUMA", earned: totalScore >= 750000 && accuracy >= 94, exclusive: false },
     { id: "madrugador", name: "Madrugador", earned: stats.madrugadorCount >= 20, exclusive: false },
     { id: "coruja", name: "Coruja da Guarita", earned: stats.corujaCount >= 20, exclusive: false },
     { id: "fimdesemana", name: "Guerreiro de Fim de Semana", earned: stats.completeWeekendsCount >= 4, exclusive: false },
