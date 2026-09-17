@@ -8,6 +8,48 @@ import { sendPushToUser } from "@/lib/push";
 // (o dia vira à meia-noite, então o aviso começa às 22h).
 const WARNING_START_HOUR = 22;
 
+// Variações engraçadas do aviso de sequência em risco — uma é sorteada por aluno a
+// cada disparo, pra não cansar quem recebe o mesmo aviso todo dia às 22h.
+const STREAK_WARNING_VARIANTS: Array<(name: string, streakDays: number) => { title: string; body: string }> = [
+  (name, streakDays) => ({
+    title: "O simulado não se resolve sozinho",
+    body: `Sabe, ${name}, o simulado de hoje não vai se resolver sozinho. Faltam poucas horas e sua sequência de ${streakDays} dias tá te olhando.`
+  }),
+  (name, streakDays) => ({
+    title: "Sua sequência está pedindo arrego",
+    body: `${name}, sua sequência de ${streakDays} dias está pendurada por um fio. Ela confia em você — não deixa cair hoje.`
+  }),
+  (name, streakDays) => ({
+    title: "O Comando está de olho",
+    body: `Recruta ${name}, faltam poucas horas pro dia virar e a missão de hoje ainda não foi cumprida. O Sargento tá contando.`
+  }),
+  (name) => ({
+    title: "Psiu, recruta",
+    body: `Psiu, ${name}. Aquele simulado aí não vai clicar em "responder" sozinho. Bora resolver isso antes da meia-noite.`
+  }),
+  (name, streakDays) => ({
+    title: "Alerta vermelho de sequência",
+    body: `Alerta, ${name}: menos de 2h pro dia virar e sua sequência de ${streakDays} dias ainda não foi garantida hoje.`
+  }),
+  (name) => ({
+    title: "Treino duro hoje, choro evitado amanhã",
+    body: `${name}, treino duro hoje evita choro amanhã. Resolve logo esse simulado e volta pra cama tranquilo.`
+  }),
+  (name, streakDays) => ({
+    title: "Faltam poucas horas, soldado",
+    body: `${name}, o relógio não para e sua sequência de ${streakDays} dias também não devia. Ainda dá tempo de garantir hoje.`
+  }),
+  (name) => ({
+    title: "O inimigo não descansa",
+    body: `${name}, a prova não tira folga, você também não deveria hoje. Falta pouco tempo pro dia virar — vai lá.`
+  })
+];
+
+function pickStreakWarningMessage(name: string, streakDays: number) {
+  const variant = STREAK_WARNING_VARIANTS[Math.floor(Math.random() * STREAK_WARNING_VARIANTS.length)];
+  return variant(name, streakDays);
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const key = searchParams.get("key") || "";
@@ -57,9 +99,11 @@ export async function GET(request: Request) {
 
       if (!hasStreakAtRisk) continue;
 
+      const firstName = (student.name || "recruta").trim().split(/\s+/)[0];
+      const { title, body } = pickStreakWarningMessage(firstName, perf.streakDays);
       await sendPushToUser(student.id, {
-        title: "Sua sequência está em risco!",
-        body: `Faltam poucas horas pra virar o dia e você ainda não garantiu hoje. Não perca sua sequência de ${perf.streakDays} dias!`,
+        title,
+        body,
         url: "/aluno/painel",
         tag: `streak-warning-${todayStr}`
       });

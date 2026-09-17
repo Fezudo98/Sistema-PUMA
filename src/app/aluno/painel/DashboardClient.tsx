@@ -25,6 +25,7 @@ import { ChoqueUnlockToast } from "@/components/ChoqueUnlockToast";
 import { RaioUnlockToast } from "@/components/RaioUnlockToast";
 import { BopeUnlockToast } from "@/components/BopeUnlockToast";
 import { InstallAppCard } from "@/components/InstallAppCard";
+import { NotificationOptInCard } from "@/components/NotificationOptInCard";
 import PushNotificationManager from "@/components/PushNotificationManager";
 
 const LEIS_DA_SELVA = [
@@ -1503,6 +1504,7 @@ export default function StudentDashboardClient({
         </Card>
 
         <InstallAppCard />
+        <NotificationOptInCard />
 
         {/* Prominent Banner: Central de Inteligência & Chat com Mentor IA */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-950/90 via-background/95 to-indigo-950/90 border border-blue-500/40 p-6 sm:p-8 shadow-2xl">
