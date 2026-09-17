@@ -157,7 +157,7 @@ const getBadges = (stats: any) => {
       earned: false,
       exclusive: false,
       isElite: true,
-      desc: 'Alcançar 750.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 95%.',
+      desc: 'Alcançar 750.000 pontos totais e ter no mínimo taxa global de acertos (geral) em 94%.',
       color: 'text-fuchsia-400',
       bg: 'bg-fuchsia-950/20',
       border: 'border-fuchsia-500/50'
