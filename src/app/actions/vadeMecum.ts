@@ -1,87 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateWithGeminiFallback } from "@/lib/gemini";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import { getCachedApostilaText } from "@/lib/apostilaCache";
 import { queueGenerationTask } from "./dailySimulado";
-
-const modelVersions = [
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.1-flash"
-];
-
-// Helper to generate content with priority and fallback keys/models
-async function generateWithFallback(content: any[]) {
-  // 1°: PRIORIDADE MÁXIMA PARA CRIAÇÃO DO VADE MECUM: Claude Sonnet 5
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (anthropicKey) {
-    try {
-      console.log("[VADE MECUM AI - PRIORIDADE 1] Gerando resumo tático com Claude Sonnet 5...");
-      const Anthropic = require("@anthropic-ai/sdk");
-      const anthropic = new Anthropic({ apiKey: anthropicKey });
-
-      let promptText = "";
-      for (const item of content) {
-        if (typeof item === "string") {
-          promptText += item + "\n\n";
-        } else if (item?.text) {
-          promptText += item.text + "\n\n";
-        }
-      }
-
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-5",
-        max_tokens: 16000,
-        messages: [{ role: "user", content: promptText.trim() }]
-      });
-
-      // Claude Sonnet 5 é um modelo com "Extended Thinking" — a resposta vem com
-      // blocos [0] = {type: "thinking"} e [1] = {type: "text"}.
-      // Precisamos encontrar o bloco de texto correto em vez de assumir que é o índice 0.
-      const textBlock = response.content.find((block: any) => block.type === "text");
-      const rawText = textBlock?.text || "";
-      if (rawText) {
-        console.log(`✅ [VADE MECUM AI - PRIORIDADE 1] Resumo tático gerado com sucesso pelo Claude Sonnet 5! (stop_reason: ${response.stop_reason}, tokens: ${response.usage?.output_tokens})`);
-        return { response: { text: () => rawText } };
-      } else {
-        console.log("⚠️ [VADE MECUM AI] Resposta do Claude Sonnet 5 não continha bloco de texto. Blocos recebidos:", response.content.map((b: any) => b.type));
-      }
-    } catch (claudeErr: any) {
-      console.warn("[VADE MECUM AI] Falha ou limite no Claude Sonnet 5. Recorrendo à frota de chaves Gemini...", claudeErr.message || claudeErr);
-    }
-  }
-
-  // 2°: Fallback na frota de chaves Gemini com piso no modelo 3.1 flash
-  const apiKeys = [
-    { label: "principal", key: process.env.GEMINI_API_KEY || "" },
-    { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
-    { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" },
-    { label: "fallback_3", key: process.env.GEMINI_API_KEY_FALLBACK_3 || "" },
-    { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
-  ].filter(k => Boolean(k.key));
-
-  if (apiKeys.length === 0) {
-    throw new Error("Nenhuma chave do Gemini ou Claude disponível no servidor.");
-  }
-
-  for (const modelVersion of modelVersions) {
-    for (const keyObj of apiKeys) {
-      try {
-        console.log(`[VADE MECUM AI FALLBACK] Tentando chave [${keyObj.label}] com modelo [${modelVersion}]...`);
-        const genAI = new GoogleGenerativeAI(keyObj.key);
-        const model = genAI.getGenerativeModel({ model: modelVersion });
-        return await model.generateContent(content);
-      } catch (error: any) {
-        console.warn(`[VADE MECUM AI FALLBACK] Chave [${keyObj.label}] falhou com modelo ${modelVersion}:`, error.message);
-      }
-    }
-  }
-
-  throw new Error("O Claude Sonnet 5 (Prioridade 1) e todas as chaves do Gemini (até piso 3.1 flash) falharam na geração do Vade Mecum.");
-}
 
 // Generate the Vade Mecum summary using Gemini. Não exportada — só pode ser chamada
 // por código server-side do próprio módulo (checkAndGenerateMissingVadeMecums), nunca
@@ -146,7 +70,7 @@ Rigorosamente estruture o documento nas seguintes seções:
 
 Foque exclusivamente nas informações presentes no documento abaixo e entregue um resumo completo sem economizar nos detalhes essenciais:`;
 
-      const response = await generateWithFallback([
+      const response = await generateWithGeminiFallback([
         { text: systemPrompt },
         { text: `--- TEXTO DA APOSTILA: "${apostila.title}" ---\n${rawText}` }
       ]);

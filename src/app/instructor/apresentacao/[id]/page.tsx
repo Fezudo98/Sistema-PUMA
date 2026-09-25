@@ -6,7 +6,7 @@ import InstructorPresentationClient from "./InstructorPresentationClient";
 export default async function InstructorPresentationPage({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const user = await getUser();
   if (!user || user.role !== "INSTRUCTOR") {

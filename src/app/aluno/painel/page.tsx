@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getStudentEffectiveStats } from "@/lib/studentStatsRead";
 import { getCachedGeneralRanking } from "@/lib/ranking";
+import { getFortalezaDay } from "@/lib/fortalezaDate";
 
 const PAST_DAILY_SIMULADOS_LIMIT = 30;
 const SPECIAL_SIMULADOS_LIMIT = 50;
@@ -39,6 +40,7 @@ export default async function AlunoPainel() {
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date();
   todayEnd.setHours(23, 59, 59, 999);
+  const dailyDate = getFortalezaDay();
 
   // Consultas independentes entre si rodam em paralelo em vez de uma atrás da outra.
   const [
@@ -49,13 +51,17 @@ export default async function AlunoPainel() {
     pastDailySimulados,
     activeRooms,
     specialSimulados,
-    provaApostilas
+    provaApostilas,
+    runningDailyJobs
   ] = await Promise.all([
     getCachedGeneralRanking(),
     prisma.simulado.findMany({
       where: {
         tipo: "DAILY",
-        createdAt: { gte: todayStart, lte: todayEnd }
+        OR: [
+          { dailyDate },
+          { dailyDate: null, createdAt: { gte: todayStart, lte: todayEnd } }
+        ]
       },
       include: {
         questions: { select: { id: true } }
@@ -98,7 +104,15 @@ export default async function AlunoPainel() {
       orderBy: { createdAt: "desc" },
       take: SPECIAL_SIMULADOS_LIMIT
     }),
-    prisma.apostila.findMany({ where: { isProvaSubject: true } })
+    prisma.apostila.findMany({ where: { isProvaSubject: true } }),
+    prisma.dailyGenerationJob.count({
+      where: {
+        jobType: "ASSEMBLE",
+        scheduledFor: dailyDate,
+        status: "RUNNING",
+        startedAt: { gte: new Date(Date.now() - 30 * 60 * 1000) }
+      }
+    })
   ]);
 
   const blocosDeProva = provaApostilas.length > 0
@@ -196,15 +210,9 @@ export default async function AlunoPainel() {
     history
   };
 
-  // Primeiro login do dia: se houver apostilas ativas sem simulado gerado hoje, dispara em background
-  const isGeneratingDaily = activeApostilasCount > 0 && dailySimulados.length < activeApostilasCount;
-
-  if (isGeneratingDaily) {
-    const { checkAndGenerateDailySimulados } = await import("@/app/actions/dailySimulado");
-    checkAndGenerateDailySimulados().catch((err) => {
-      console.error("[BACKGROUND GENERATION] Geração paralela em background falhou:", err);
-    });
-  }
+  // O painel só observa o job persistido. Abrir/recarregar a página nunca dispara
+  // geração nem montagem de simulados.
+  const isGeneratingDaily = activeApostilasCount > 0 && runningDailyJobs > 0;
 
   // Set com as questões já respondidas pelo aluno, restrito só às questões dos
   // simulados exibidos nesta página (não o histórico completo do aluno) — dá pra

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { formatApostilaTitle } from "@/lib/utils";
 import { renderHighlightedText } from "@/lib/highlightText";
 
-export default async function InstructorPresentationReview({ params }: { params: { id: string } }) {
+export default async function InstructorPresentationReview({ params }: { params: Promise<{ id: string }> }) {
   const user = await getUser();
   if (!user || user.role !== "INSTRUCTOR") {
     redirect("/auth/login");

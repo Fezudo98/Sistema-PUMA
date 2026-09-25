@@ -3,80 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { getStudentEffectiveStats } from "@/lib/studentStatsRead";
 import { getCachedGeneralRanking } from "@/lib/ranking";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateWithGeminiFallback } from "@/lib/gemini";
 import { revalidatePath } from "next/cache";
 import { queueGenerationTask } from "./dailySimulado";
 import { getCachedApostilaText } from "@/lib/apostilaCache";
-
-const modelVersions = [
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.1-flash"
-];
-
-// Generate chat response with fallback key and models
-async function chatWithFallback(content: any[]) {
-  const apiKeys = [
-    { label: "principal", key: process.env.GEMINI_API_KEY || "" },
-    { label: "fallback_1", key: process.env.GEMINI_API_KEY_FALLBACK || "" },
-    { label: "fallback_2", key: process.env.GEMINI_API_KEY_FALLBACK_2 || "" },
-    { label: "fallback_3", key: process.env.GEMINI_API_KEY_FALLBACK_3 || "" },
-    { label: "fallback_4", key: process.env.GEMINI_API_KEY_FALLBACK_4 || "" }
-  ].filter(k => Boolean(k.key));
-
-  if (apiKeys.length === 0) {
-    throw new Error("Nenhuma chave do Gemini configurada no servidor.");
-  }
-
-  for (const modelVersion of modelVersions) {
-    for (const keyObj of apiKeys) {
-      try {
-        console.log(`[CHAT GENERATION] Tentando chave [${keyObj.label}] com modelo [${modelVersion}]...`);
-        const genAI = new GoogleGenerativeAI(keyObj.key);
-        const model = genAI.getGenerativeModel({ model: modelVersion });
-        return await model.generateContent(content);
-      } catch (error: any) {
-        console.warn(`[CHAT GENERATION] Chave [${keyObj.label}] falhou com modelo ${modelVersion}:`, error.message);
-      }
-    }
-  }
-
-  // 2°: Na hipótese de todas as chaves geminis falharem ao chegar no limite do 3.1 flash, usaremos a api da claude no modelo sonnet 5 de forma excepcional
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (anthropicKey) {
-    try {
-      console.warn("[CHAT GENERATION - FALLBACK EXCEPCIONAL] Todas as chaves Gemini falharam até o piso 3.1 flash. Acionando Claude Sonnet 5 de forma excepcional...");
-      const Anthropic = require("@anthropic-ai/sdk");
-      const anthropic = new Anthropic({ apiKey: anthropicKey });
-
-      let promptText = "";
-      for (const item of content) {
-        if (typeof item === "string") {
-          promptText += item + "\n\n";
-        } else if (item?.text) {
-          promptText += item.text + "\n\n";
-        }
-      }
-
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-5",
-        max_tokens: 8192,
-        messages: [{ role: "user", content: promptText.trim() }]
-      });
-
-      const textBlock = response.content.find((b: any) => b.type === "text");
-      const rawText = textBlock?.text || "";
-      if (rawText) {
-        console.log("✅ [CHAT AI - EXCEPCIONAL] Resposta gerada com sucesso pelo Claude Sonnet 5!");
-        return { response: { text: () => rawText } };
-      }
-    } catch (claudeErr: any) {
-      console.warn("[CHAT AI - EXCEPCIONAL] Falha com Claude Sonnet 5:", claudeErr.message || claudeErr);
-    }
-  }
-
-  throw new Error("Todas as chaves do Gemini (até piso 3.1 flash) e o fallback excepcional do Claude falharam na conversa com o mentor.");
-}
 
 // Get message history for the student for a specific booklet
 export async function getChatHistoryAction(apostilaId: string) {
@@ -262,7 +192,7 @@ ${chatHistoryText}
 Responda à última mensagem do aluno de acordo com estas diretrizes e baseando-se APENAS nas informações contidas nas apostilas fornecidas.`;
 
       // 6. Chamar o Gemini
-      const result = await chatWithFallback([systemPrompt]);
+      const result = await generateWithGeminiFallback([systemPrompt]);
       let reply = result.response.text().trim();
 
       let isSuspendedTriggered = false;
@@ -361,5 +291,3 @@ export async function getChatEnabledAction() {
     return true;
   }
 }
-
-

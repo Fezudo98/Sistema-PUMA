@@ -13,11 +13,12 @@
     "repair:streaks": "tsx scripts/repair_streaks.ts",
     "backfill:badges": "tsx scripts/backfill_badges.ts",
     "fix:questions": "tsx scripts/cleanup_bad_questions.ts",
+    "backfill:question-bank": "tsx scripts/backfill_question_bank.ts",
     "postinstall": "prisma generate && node scripts/copy_pdf_worker.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.4",
     "@base-ui/react": "^1.5.0",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.19.3",

@@ -10,7 +10,7 @@ import { formatApostilaTitle } from "@/lib/utils";
 import { JustificativaWithCitation } from "@/components/JustificativaWithCitation";
 import { renderHighlightedText } from "@/lib/highlightText";
 
-export default async function StudentSimuladoReview({ params }: { params: { id: string } }) {
+export default async function StudentSimuladoReview({ params }: { params: Promise<{ id: string }> }) {
   const user = await getUser();
   if (!user || user.role !== "STUDENT") {
     redirect("/aluno");

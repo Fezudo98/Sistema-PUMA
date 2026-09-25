@@ -376,15 +376,6 @@ export default function StudentDashboardClient({
     }
   }, [searchParams, router]);
 
-  useEffect(() => {
-    if (isGeneratingDaily) {
-      const interval = setInterval(() => {
-        router.refresh();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isGeneratingDaily, router]);
-
   const handleGenerateAnalysis = () => {
     if (!stats || stats.simuladosCount === 0 || isAnalysisDoneToday) return;
     setLoadingAi(true);

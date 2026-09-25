@@ -6,7 +6,7 @@ import StudentSelfPacedClient from "./StudentSelfPacedClient";
 export default async function StudentSelfPacedPage({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const user = await getUser();
   if (!user || user.role !== "STUDENT") {

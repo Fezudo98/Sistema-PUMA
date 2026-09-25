@@ -62,7 +62,7 @@ export default async function CadernoErrosPage() {
           
           <div className="flex items-center gap-4">
             <ThemeSwitcher />
-            <HeaderAvatar user={user} />
+            <HeaderAvatar initials={user.name?.charAt(0)?.toUpperCase() || "A"} avatarUrl={null} />
           </div>
         </div>
       </header>

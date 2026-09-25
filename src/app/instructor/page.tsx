@@ -57,32 +57,7 @@ export default async function InstructorDashboard() {
   });
   const isAnnouncementEnabled = announcementEnabledSetting?.value === "true";
 
-  // Primeiro login do dia do instrutor: se houver apostilas ativas sem simulado gerado hoje, dispara em background
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
-
-  const activeApostilasCount = await prisma.apostila.count({
-    where: { isActive: true }
-  });
-
-  const dailySimuladosCount = await prisma.simulado.count({
-    where: {
-      tipo: "DAILY",
-      createdAt: {
-        gte: todayStart,
-        lte: todayEnd
-      }
-    }
-  });
-
-  if (activeApostilasCount > 0 && dailySimuladosCount < activeApostilasCount) {
-    const { checkAndGenerateDailySimulados } = await import("@/app/actions/dailySimulado");
-    checkAndGenerateDailySimulados().catch((err) => {
-      console.error("[INSTRUCTOR DASHBOARD] Geração em background falhou:", err);
-    });
-  }
+  // A página do instrutor é somente leitura. A montagem diária pertence ao cron.
 
   // Trigger missing Vade Mecum generation in the background
   const { checkAndGenerateMissingVadeMecums } = await import("@/app/actions/vadeMecum");

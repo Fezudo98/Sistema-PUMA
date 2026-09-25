@@ -8,27 +8,27 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  name     String   // Nome (Instrutor) ou QRA (Aluno)
-  username String   @unique // Login único
-  senha    String
-  role     String   @default("INSTRUCTOR") // INSTRUCTOR | STUDENT
-  avatarUrl String? // Foto de perfil
-  aiAnalysis String?
-  aiAnalysisSimuladoCount Int? @default(0)
-  aiAnalysisDate DateTime?
-  unlockedBadges String? @default("")
-  displayedBadges String? @default("") // JSON não; CSV de ids de brevês (subconjunto de unlockedBadges) escolhidos pelo aluno pra aparecer ao lado da divisa no ranking
-  numero   Int?
-  answers  Answer[]
-  suspendedUntil DateTime?
-  isTestUser Boolean  @default(false)
-  bonusStreakDays Int @default(0) // Correção administrativa manual da sequência diária (ex.: falha do sistema fez o aluno perder a sequência)
-  pelotao String? // null = pelotão padrão (dono do sistema); preenchido = aluno de pelotão convidado — aparece separado no Ranking Geral, só entre os do mesmo pelotão
-  hasSeenDueloIntro Boolean @default(false) // Já viu o modal de apresentação do modo Duelo
-  lastStreakWarningDay String? // YYYY-MM-DD do último aviso "vai perder a sequência" já enviado, pra não repetir no mesmo dia
-  pushSubscriptions PushSubscription[]
-  stats StudentStats?
+  id                      String             @id @default(uuid())
+  name                    String // Nome (Instrutor) ou QRA (Aluno)
+  username                String             @unique // Login único
+  senha                   String
+  role                    String             @default("INSTRUCTOR") // INSTRUCTOR | STUDENT
+  avatarUrl               String? // Foto de perfil
+  aiAnalysis              String?
+  aiAnalysisSimuladoCount Int?               @default(0)
+  aiAnalysisDate          DateTime?
+  unlockedBadges          String?            @default("")
+  displayedBadges         String?            @default("") // JSON não; CSV de ids de brevês (subconjunto de unlockedBadges) escolhidos pelo aluno pra aparecer ao lado da divisa no ranking
+  numero                  Int?
+  answers                 Answer[]
+  suspendedUntil          DateTime?
+  isTestUser              Boolean            @default(false)
+  bonusStreakDays         Int                @default(0) // Correção administrativa manual da sequência diária (ex.: falha do sistema fez o aluno perder a sequência)
+  pelotao                 String? // null = pelotão padrão (dono do sistema); preenchido = aluno de pelotão convidado — aparece separado no Ranking Geral, só entre os do mesmo pelotão
+  hasSeenDueloIntro       Boolean            @default(false) // Já viu o modal de apresentação do modo Duelo
+  lastStreakWarningDay    String? // YYYY-MM-DD do último aviso "vai perder a sequência" já enviado, pra não repetir no mesmo dia
+  pushSubscriptions       PushSubscription[]
+  stats                   StudentStats?
 
   @@index([role])
 }
@@ -39,44 +39,52 @@ model Simulado {
   status            String     @default("WAITING") // WAITING | ACTIVE | FINISHED
   tipo              String     @default("LIVE") // LIVE | DAILY | SPECIAL | BLOCO_PROVA
   instructorId      String
+  apostilaId        String?
+  apostila          Apostila?  @relation(fields: [apostilaId], references: [id], onDelete: SetNull)
   apostilaName      String?
+  dailyDate         String? // YYYY-MM-DD em America/Fortaleza; preenchido nos DAILY novos
   topics            String?
   difficulty        String     @default("AVANCADO") // Apenas AVANCADO
   isTeamCompetition Boolean    @default(false)
   isRaceMode        Boolean    @default(false) // Modo Corrida: só o 1º acerto geral marca ponto pra equipe
-  teamNames         String?    // JSON array com nomes das equipes
-  studentTeams      String?    // JSON map { studentId: teamId }
+  teamNames         String? // JSON array com nomes das equipes
+  studentTeams      String? // JSON map { studentId: teamId }
   hasAppealed       Boolean    @default(false)
   createdAt         DateTime   @default(now())
   expiresAt         DateTime?
   questions         Question[]
 
+  @@unique([tipo, apostilaId, dailyDate])
   @@index([instructorId])
   @@index([tipo, status])
   @@index([tipo, createdAt])
+  @@index([apostilaId])
 }
 
 model Question {
-  id             String   @id @default(uuid())
-  simuladoId     String
-  simulado       Simulado @relation(fields: [simuladoId], references: [id])
-  enunciado      String
-  alternativas   String   // JSON array
-  correta        Int      // Index
-  justificativa  String
-  tempoLimite    Int      // Segundos
-  status         String   @default("PENDING") // PENDING | ACTIVE | FINISHED
-  hasAppeal      Boolean  @default(false)
-  appealStatus   String?  // PENDING | ANNULLED | CORRECTED | REJECTED
-  appealReason   String?
-  appealedBy     String?
-  appealResponse String?
-  answers        Answer[]
+  id                 String            @id @default(uuid())
+  simuladoId         String
+  simulado           Simulado          @relation(fields: [simuladoId], references: [id])
+  enunciado          String
+  alternativas       String // JSON array
+  correta            Int // Index
+  justificativa      String
+  tempoLimite        Int // Segundos
+  status             String            @default("PENDING") // PENDING | ACTIVE | FINISHED
+  hasAppeal          Boolean           @default(false)
+  appealStatus       String? // PENDING | ANNULLED | CORRECTED | REJECTED
+  appealReason       String?
+  appealedBy         String?
+  appealResponse     String?
+  answers            Answer[]
   presentationAnswer Int? // Marcação do instrutor no Modo Apresentação (índice da alternativa que a turma escolheu)
-  sourceQuestionId String? // Se esta questão é uma cópia dentro de um Bloco de Provas, aponta para a Question original do simulado diário
-  topico String? // Tópico atribuído pela IA na geração, escolhido da lista fixa Apostila.provaTopics (só quando a apostila é matéria de prova)
+  sourceQuestionId   String? // Se esta questão é uma cópia dentro de um Bloco de Provas, aponta para a Question original do simulado diário
+  sourceBankItemId   String?
+  sourceBankItem     QuestionBankItem? @relation(fields: [sourceBankItemId], references: [id], onDelete: SetNull)
+  topico             String? // Tópico atribuído pela IA na geração, escolhido da lista fixa Apostila.provaTopics (só quando a apostila é matéria de prova)
 
   @@index([simuladoId])
+  @@index([sourceBankItemId])
 }
 
 model Answer {
@@ -92,9 +100,9 @@ model Answer {
   isRaffle    Boolean  @default(false)
   createdAt   DateTime @default(now())
 
+  @@unique([questionId, studentId])
   @@index([studentId])
   @@index([questionId])
-  @@unique([questionId, studentId])
   @@index([isRaffle])
   @@index([studentId, isCorrect])
 }
@@ -105,15 +113,15 @@ model Answer {
 // resposta, não O(histórico total)). src/lib/stats.ts continua existindo como
 // referência/auditoria, não é mais o caminho quente de leitura.
 model StudentStats {
-  studentId String   @id
-  user      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String @id
+  user      User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  totalAnswers             Int @default(0)
-  sumPontuacao             Int @default(0) // soma bruta de Answer.pontuacao (todas as respostas)
-  sumTempoGasto            Int @default(0) // pra avgTime = sumTempoGasto / totalAnswers
-  simuladosCount           Int @default(0)
-  completedTotalQuestions  Int @default(0) // denominador da acurácia (só simulados completos)
-  completedCorrectAnswers  Int @default(0) // numerador da acurácia
+  totalAnswers            Int @default(0)
+  sumPontuacao            Int @default(0) // soma bruta de Answer.pontuacao (todas as respostas)
+  sumTempoGasto           Int @default(0) // pra avgTime = sumTempoGasto / totalAnswers
+  simuladosCount          Int @default(0)
+  completedTotalQuestions Int @default(0) // denominador da acurácia (só simulados completos)
+  completedCorrectAnswers Int @default(0) // numerador da acurácia
 
   todayAccumDay    String? // YYYY-MM-DD (America/Fortaleza) a que o acumulador abaixo pertence
   todayAccumPoints Int     @default(0)
@@ -179,15 +187,66 @@ model StudentSimuladoCompletion {
 }
 
 model Apostila {
-  id           String   @id @default(uuid())
-  title        String
-  filePath     String
-  instructorId String
-  isActive     Boolean  @default(true)
-  isProvaSubject Boolean @default(false) // Marcada pelo instrutor: matéria com prova em breve, gera Bloco de Provas
-  provaTopics String? // JSON array de strings — lista fixa de tópicos da apostila, extraída pela IA e revisada pelo instrutor
-  vadeMecum    String?
-  createdAt    DateTime @default(now())
+  id             String               @id @default(uuid())
+  title          String
+  filePath       String
+  instructorId   String
+  isActive       Boolean              @default(true)
+  isProvaSubject Boolean              @default(false) // Marcada pelo instrutor: matéria com prova em breve, gera Bloco de Provas
+  provaTopics    String? // JSON array de strings — lista fixa de tópicos da apostila, extraída pela IA e revisada pelo instrutor
+  vadeMecum      String?
+  createdAt      DateTime             @default(now())
+  questionBank   QuestionBankItem[]
+  dailySimulados Simulado[]
+  generationJobs DailyGenerationJob[]
+}
+
+// Questões reutilizáveis dos simulados diários. O hash impede que o backfill ou uma
+// reposição da IA grave a mesma questão duas vezes para a mesma apostila.
+model QuestionBankItem {
+  id            String     @id @default(uuid())
+  apostilaId    String
+  apostila      Apostila   @relation(fields: [apostilaId], references: [id], onDelete: Cascade)
+  contentHash   String
+  enunciado     String
+  alternativas  String // JSON array
+  correta       Int
+  justificativa String
+  tempoLimite   Int        @default(60)
+  topico        String?
+  origin        String     @default("HISTORICAL") // HISTORICAL | AI
+  status        String     @default("ACTIVE") // ACTIVE | DISABLED
+  firstUsedAt   DateTime?
+  lastUsedAt    DateTime?
+  useCount      Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  questions     Question[]
+
+  @@unique([apostilaId, contentHash])
+  @@index([apostilaId, status, lastUsedAt])
+  @@index([apostilaId, useCount])
+}
+
+// Estado persistente dos jobs: sobrevive a reinícios do PM2 e torna cron/retries
+// observáveis e idempotentes.
+model DailyGenerationJob {
+  id             String    @id @default(uuid())
+  jobType        String // ASSEMBLE | REPLENISH
+  apostilaId     String
+  apostila       Apostila  @relation(fields: [apostilaId], references: [id], onDelete: Cascade)
+  scheduledFor   String // dia YYYY-MM-DD ou chave semanal YYYY-Www
+  status         String    @default("PENDING") // PENDING | RUNNING | COMPLETED | FAILED
+  generatedCount Int       @default(0)
+  durationMs     Int?
+  lastError      String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([jobType, apostilaId, scheduledFor])
+  @@index([status, updatedAt])
 }
 
 // Duelo 1v1 entre dois alunos, com aposta de flexões. Cada linha já é o desafio + o
@@ -197,26 +256,26 @@ model Apostila {
 // FINISHED (resultado gravado). Sem @relation pra User/Apostila/Simulado, seguindo a
 // mesma convenção de LiveMatchResult.studentId/Simulado.instructorId (strings soltas).
 model Duelo {
-  id              String    @id @default(uuid())
-  challengerId    String
-  challengedId    String?   // null enquanto QUEUED sem par
-  apostilaId      String
-  apostilaName    String    // snapshot — sobrevive a rename/exclusão da apostila
-  flexoesAposta   Int
-  questionCount   Int       @default(10)
-  status          String    @default("PENDING_INVITE")
-  origin          String    @default("CHALLENGE") // CHALLENGE | QUEUE
-  simuladoId      String?   @unique // Simulado tipo "DUELO" que hospeda a partida
-  winnerId        String?
-  loserId         String?
-  isDraw          Boolean   @default(false)
-  debtPaid        Boolean   @default(false)
-  debtPaidAt      DateTime?
+  id                        String    @id @default(uuid())
+  challengerId              String
+  challengedId              String? // null enquanto QUEUED sem par
+  apostilaId                String
+  apostilaName              String // snapshot — sobrevive a rename/exclusão da apostila
+  flexoesAposta             Int
+  questionCount             Int       @default(10)
+  status                    String    @default("PENDING_INVITE")
+  origin                    String    @default("CHALLENGE") // CHALLENGE | QUEUE
+  simuladoId                String?   @unique // Simulado tipo "DUELO" que hospeda a partida
+  winnerId                  String?
+  loserId                   String?
+  isDraw                    Boolean   @default(false)
+  debtPaid                  Boolean   @default(false)
+  debtPaidAt                DateTime?
   debtClearedByInstructorId String?
-  forfeitedById   String?
-  createdAt       DateTime  @default(now())
-  respondedAt     DateTime?
-  finishedAt      DateTime?
+  forfeitedById             String?
+  createdAt                 DateTime  @default(now())
+  respondedAt               DateTime?
+  finishedAt                DateTime?
 
   @@index([challengerId])
   @@index([challengedId])
@@ -243,22 +302,22 @@ model PushSubscription {
 }
 
 model ExclusiveBadge {
-  id          String   @id @default(uuid())
-  badgeId     String
-  userId      String
-  simuladoId  String
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  badgeId    String
+  userId     String
+  simuladoId String
+  createdAt  DateTime @default(now())
 }
 
 // Resultado de um aluno em uma sala LIVE de Competição em Equipes, gravado quando o
 // instrutor encerra o simulado. Alimenta os brevês "Líder de Equipe" e "Sprint Tático".
 model LiveMatchResult {
-  id          String   @id @default(uuid())
-  simuladoId  String
-  studentId   String
-  wonTeam     Boolean  @default(false) // esteve na equipe com maior pontuação somada ao encerrar a sala
-  raceWins    Int      @default(0) // quantas rodadas do Modo Corrida o aluno venceu nessa sala
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  simuladoId String
+  studentId  String
+  wonTeam    Boolean  @default(false) // esteve na equipe com maior pontuação somada ao encerrar a sala
+  raceWins   Int      @default(0) // quantas rodadas do Modo Corrida o aluno venceu nessa sala
+  createdAt  DateTime @default(now())
 
   @@index([studentId])
 }
@@ -266,7 +325,7 @@ model LiveMatchResult {
 model ChatMessage {
   id            String   @id @default(uuid())
   studentId     String
-  role          String   // "user" | "assistant"
+  role          String // "user" | "assistant"
   content       String
   apostilaId    String?
   apostilaTitle String?
@@ -281,40 +340,40 @@ model SystemSetting {
 }
 
 model InventoryItem {
-  id          String   @id @default(uuid())
-  codigo      Int      @unique
-  categoria   String   // Equipamentos, Eletrodomésticos, Móveis, Material de Limpeza, Outros
+  id          String             @id @default(uuid())
+  codigo      Int                @unique
+  categoria   String // Equipamentos, Eletrodomésticos, Móveis, Material de Limpeza, Outros
   descricao   String
-  quantidade  Int      @default(1)
-  estado      String   @default("Bom") // Novo | Bom | Regular | Danificado | Em Manutenção
+  quantidade  Int                @default(1)
+  estado      String             @default("Bom") // Novo | Bom | Regular | Danificado | Em Manutenção
   observacoes String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   histories   InventoryHistory[]
 }
 
 model InventoryHistory {
-  id           String        @id @default(uuid())
+  id           String         @id @default(uuid())
   itemId       String?
   item         InventoryItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
-  itemDesc     String        // Salvo para auditoria mesmo que o item seja removido
+  itemDesc     String // Salvo para auditoria mesmo que o item seja removido
   userId       String
-  userName     String        // Nome/QRA do usuário que alterou
-  userRole     String        // INSTRUCTOR | STUDENT
-  actionType   String        // CREATE | UPDATE | DELETE
-  changeDetail String        // Detalhe da mudança ("Alterou Estado de Bom para Danificado", etc.)
-  createdAt    DateTime      @default(now())
+  userName     String // Nome/QRA do usuário que alterou
+  userRole     String // INSTRUCTOR | STUDENT
+  actionType   String // CREATE | UPDATE | DELETE
+  changeDetail String // Detalhe da mudança ("Alterou Estado de Bom para Danificado", etc.)
+  createdAt    DateTime       @default(now())
 }
 
 model ApostilaAnnotation {
-  id           String   @id @default(uuid())
-  userId       String
-  apostilaId   String
-  content      String // O comentário do aluno (post-it)
+  id            String   @id @default(uuid())
+  userId        String
+  apostilaId    String
+  content       String // O comentário do aluno (post-it)
   highlightData String // JSON contendo o texto marcado, áreas, página etc.
-  color        String? // Opcional, para permitir escolher cores (ex: yellow, green, red)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
+  color         String? // Opcional, para permitir escolher cores (ex: yellow, green, red)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   @@index([userId, apostilaId])
 }

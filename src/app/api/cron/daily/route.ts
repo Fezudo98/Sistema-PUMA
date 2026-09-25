@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    console.log("[CRON] Iniciando geração proativa automática de simulados diários...");
+    console.log("[CRON] Montando simulados diários a partir do banco local...");
     const res = await checkAndGenerateDailySimulados();
     return NextResponse.json({ success: true, details: res });
   } catch (err: any) {

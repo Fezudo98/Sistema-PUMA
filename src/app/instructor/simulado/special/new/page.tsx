@@ -241,7 +241,7 @@ export default function NovoSimuladoEspecial() {
                       <Clock className="w-4 h-4 text-purple-500" />
                       Tempo por Questão
                     </label>
-                    <Select value={tempoPorQuestao} onValueChange={setTempoPorQuestao}>
+                    <Select value={tempoPorQuestao} onValueChange={(value) => setTempoPorQuestao(value || "60")}>
                       <SelectTrigger className="h-12 text-base bg-background border-border text-heading">
                         <SelectValue placeholder="Tempo" />
                       </SelectTrigger>
@@ -261,7 +261,7 @@ export default function NovoSimuladoEspecial() {
                       <Clock className="w-4 h-4 text-purple-500" />
                       Validade da Missão
                     </label>
-                    <Select value={daysToExpire} onValueChange={setDaysToExpire}>
+                    <Select value={daysToExpire} onValueChange={(value) => setDaysToExpire(value || "3")}>
                       <SelectTrigger className="h-12 text-base bg-background border-border text-heading">
                         <SelectValue placeholder="Prazo" />
                       </SelectTrigger>

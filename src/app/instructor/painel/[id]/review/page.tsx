@@ -3,7 +3,7 @@ import { getUser } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import ReviewClient from "./ReviewClient";
 
-export default async function SimuladoReviewPage({ params }: { params: { id: string } }) {
+export default async function SimuladoReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getUser();
   if (!user || user.role !== "INSTRUCTOR") redirect("/auth/login");
 

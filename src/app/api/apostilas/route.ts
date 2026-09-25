@@ -55,11 +55,14 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Trigger daily simulated exam generation for the new/updated booklet immediately in background
+    // Inicializa o banco da nova apostila fora do caminho da resposta. Só depois
+    // monta o diário localmente; abrir o painel nunca dispara esta operação.
     try {
-      const { generateDailySimuladoForSingleApostila, queueGenerationTask } = await import("@/app/actions/dailySimulado");
+      const { queueGenerationTask } = await import("@/app/actions/dailySimulado");
+      const { replenishQuestionBankForApostila, assembleDailySimuladoForApostila } = await import("@/lib/questionBank");
       queueGenerationTask(async () => {
-        return generateDailySimuladoForSingleApostila(apostila.id);
+        await replenishQuestionBankForApostila(apostila.id, true);
+        return assembleDailySimuladoForApostila(apostila.id);
       }).then((res) => {
         console.log(`[APOSTILA UPLOAD] Geração proativa para "${apostila.title}" concluída:`, res);
       }).catch((err) => {
