@@ -28,6 +28,29 @@ test("limita questões inéditas a cinco", () => {
   assert.equal(selected.filter((item) => item.useCount === 0).length, 5);
 });
 
+test("usa questões inéditas para completar o primeiro diário", () => {
+  const unused = Array.from({ length: 35 }, (_, index) => candidate(`new-${index}`, {
+    useCount: 0,
+    lastUsedAt: null,
+  }));
+  const selected = selectDailyBankItems(unused, { now });
+
+  assert.equal(selected.length, 25);
+  assert.equal(selected.filter((item) => item.useCount === 0).length, 25);
+});
+
+test("usa apenas as inéditas necessárias quando há poucas questões usadas", () => {
+  const unused = Array.from({ length: 30 }, (_, index) => candidate(`new-${index}`, {
+    useCount: 0,
+    lastUsedAt: null,
+  }));
+  const reused = Array.from({ length: 10 }, (_, index) => candidate(`old-${index}`));
+  const selected = selectDailyBankItems([...unused, ...reused], { now });
+
+  assert.equal(selected.length, 25);
+  assert.equal(selected.filter((item) => item.useCount === 0).length, 15);
+});
+
 test("prioriza itens fora da janela de sete dias", () => {
   const eligible = candidate("eligible", { lastUsedAt: new Date("2026-09-17T11:59:59.000Z") });
   const tooRecent = candidate("recent", { lastUsedAt: new Date("2026-09-20T12:00:00.000Z") });

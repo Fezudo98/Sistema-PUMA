@@ -61,7 +61,9 @@ export function selectDailyBankItems<T extends DailyBankCandidate>(
   const unused = candidates
     .filter((item) => item.useCount === 0)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id));
-  add(spreadByTopic(unused).slice(0, newLimit), total);
+  const reusedCount = candidates.filter((item) => item.useCount > 0).length;
+  const unusedNeeded = Math.max(newLimit, total - reusedCount);
+  add(spreadByTopic(unused).slice(0, unusedNeeded), total);
 
   const outsideWindow = candidates
     .filter((item) => item.useCount > 0 && timestamp(item.lastUsedAt) <= cutoff)
