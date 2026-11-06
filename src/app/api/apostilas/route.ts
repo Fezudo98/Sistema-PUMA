@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getUser } from "@/app/actions/auth";
 import { promises as fs } from "fs";
 import path from "path";
+import { titleFromApostilaPdf } from "@/lib/apostilaTitle";
 export async function POST(req: NextRequest) {
   try {
     const user = await getUser();
@@ -36,13 +37,18 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
     await fs.writeFile(filePath, buffer);
 
-    // Generate a unique title to avoid overwriting existing materials
-    let finalTitle = file.name;
+    // O título visível vem do conteúdo da apostila; o nome do arquivo é reserva.
+    let extractedTitle: string | null = null;
+    try {
+      extractedTitle = await titleFromApostilaPdf(buffer);
+    } catch (error) {
+      console.warn("[APOSTILA UPLOAD] Não foi possível ler o título do PDF:", error);
+    }
+    const baseTitle = extractedTitle || file.name.replace(/\.pdf$/i, "");
+    let finalTitle = baseTitle;
     let counter = 1;
     while (await prisma.apostila.findFirst({ where: { title: finalTitle } })) {
-      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-      const ext = file.name.split('.').pop() || "pdf";
-      finalTitle = `${nameWithoutExt} (${counter}).${ext}`;
+      finalTitle = `${baseTitle} (${counter})`;
       counter++;
     }
 
